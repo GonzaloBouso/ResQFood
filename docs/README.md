@@ -82,6 +82,7 @@ ResQFood funcionará como un puente entre donantes y receptores de alimentos.
 Uso de **Scrum** para gestionar el desarrollo del proyecto.
 - **Duración de Sprints:** 1 semana.
 - **Sprint Review y Retrospective:** Jueves a las 10:30 AM.
+- **Sprint Planning:** Todos los miercoles.
 - **Daily Meetings:** Lunes a viernes a las 10:00 AM (15 min).
 
 ### Equipo de Trabajo
