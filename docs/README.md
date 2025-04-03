@@ -90,6 +90,7 @@ Uso de **Scrum** para gestionar el desarrollo del proyecto.
 - **Líder Backend:** Milagros Villafañe
 - **Encargado de Testing:** Gonzalo Bouso
 - **Encargado de Documentación:** Milagros Villafañe
+- **Encargado del manejo de Trello:** Agustín Iturbe
 
 ## Justificación del Stack Tecnológico (MERN)
 El MERN Stack (MongoDB, Express.js, React, Node.js) es ideal para una plataforma como ResQFood debido a:
