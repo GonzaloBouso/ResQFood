@@ -50,6 +50,7 @@ ResQFood funcionará como un puente entre donantes y receptores de alimentos.
 
 ## Flujo de Donaciones y Funcionalidades Detalladas
 ### Donación General
+. Creacion de perfiles de usuarios generales.
 1. El donador publica una donación.
 2. El producto aparece en el feed de receptores cercanos.
 3. Un receptor solicita el producto.
@@ -59,9 +60,10 @@ ResQFood funcionará como un puente entre donantes y receptores de alimentos.
    - Si la entrega no se completa y el donador no ingresa el código de confirmación, el producto volverá a estar disponible.
 6. Se genera un código ID para el receptor.
 7. El donador ingresa el código ID para confirmar la entrega.
-8. El producto deja de estar disponible en la plataforma.
-9. Se eliminan las otras solicitudes del producto.
-10. El receptor puede puntuar al donador.
+8. Se le notifica al receptor con un resumen de la donacion que recibio (Id de entrega, ubicacion, horario y detalles del producto)
+9. El producto deja de estar disponible en la plataforma.
+10. Se eliminan las otras solicitudes del producto.
+11. El receptor puede puntuar al donador.
 
 ### Donación Local (Empresas o Restaurantes)
 1. Creación de perfil de empresa.
@@ -72,6 +74,18 @@ ResQFood funcionará como un puente entre donantes y receptores de alimentos.
 6. El cliente paga en efectivo.
 7. La empresa ingresa el código brindado por el cliente.
 8. El producto se publica como donación disponible en la plataforma.
+9. El producto aparece en el feed de receptores cercanos.
+10. Un receptor solicita el producto.
+11. El donador acepta la solicitud.
+12. El receptor acepta los términos de entrega.
+   - El producto cambia su estado a **"pendiente"**, lo que significa que sigue visible pero no puede ser solicitado por otros receptores.
+   - Si la entrega no se completa y el donador no ingresa el código de confirmación, el producto volverá a estar disponible.
+13. Se genera un código ID para el receptor.
+14. El donador ingresa el código ID para confirmar la entrega.
+15. Se le notifica al receptor con un resumen de la donacion que recibio (Id de entrega, ubicacion, horario y detalles del producto)
+16. El producto deja de estar disponible en la plataforma.
+17. Se eliminan las otras solicitudes del producto.
+18. El receptor puede puntuar al donador.
 
 ## Impacto Esperado
 1. Reducir significativamente el desperdicio de alimentos.
