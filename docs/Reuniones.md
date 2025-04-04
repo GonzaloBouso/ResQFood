@@ -36,3 +36,6 @@ En esta reunión, el equipo definió las funcionalidades principales de la aplic
 Dado que en la reunión anterior no estuvo presente todo el equipo, en esta sesión con el equipo completo se finalizó la planificación. Se revisaron y ajustaron las decisiones tomadas en la reunión del 01/04/2025, asegurando que todo el equipo estuviera alineado con las funcionalidades definidas.
 
 ---
+## Reunión 3: Sprint Review – 03/04/2025 
+
+Durante esta reunión, el cliente revisó el avances realizados hasta el momento y aprobó la planificación general del proyecto. Brindó su conformidad con los avances logrados hasta la fecha. Como parte de la retroalimentación, solicitó que el equipo avance con el diseño y el maquetado de las interfaces, para asegurar una mejor visualización del producto final y facilitar futuras iteraciones en la plataforma. El equipo revisó la arquitectura del sistema que se usaría  y tras evaluar los beneficios y desafíos de la implementación de microservicios, se decidió trabajar con una arquitectura cliente-servidor.
