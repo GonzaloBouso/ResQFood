@@ -122,17 +122,14 @@ El MERN Stack (MongoDB, Express.js, React, Node.js) es ideal para una plataforma
 4. **Notion/Google Docs:** Documentación colaborativa.
 
 ## Arquitectura del Proyecto
-Se ha optado por una **arquitectura de microservicios** para asegurar escalabilidad y modularidad.
-- **Microservicio de Usuarios**: Manejo de autenticación y perfiles.
-- **Microservicio de Publicaciones**: Gestión de donaciones.
-- **Microservicio de Notificaciones**: Alertas en tiempo real.
+Se ha optado por una **arquitectura de cliente-servidor** brindando mayor flexibilidad, escalabilidady facilidad de mantenimiento.
 
-### Ventajas de los Microservicios
-- **Escalabilidad independiente**
-- **Desarrollo y mantenimiento modular**
-- **Flexibilidad tecnológica**
-- **Resiliencia y tolerancia a fallos**
-- **Facilidad para futuras integraciones**
+### Ventajas de la Arquitectura cliente-servidor
+- **Escalabilidad**
+- **Seguridad**
+- **Mantenimiento eficiente**
+- **flexibilidad**
+- **Mejor UX**
 
 ## Diseño
 A continuación, se presenta un primer boceto de la pantalla de inicio (Home Page) de ResQFood. Este diseño no es definitivo y servirá como base para futuras iteraciones.
