@@ -112,8 +112,7 @@ El MERN Stack (MongoDB, Express.js, React, Node.js) es ideal para una plataforma
 1. **Desarrollo Full-Stack con JavaScript**
 2. **Escalabilidad y Manejo de Datos en Tiempo Real**
 3. **Integración con Funcionalidades Clave**
-4. **Modularidad y Escalabilidad con Microservicios**
-5. **Comunidad y Soporte Activo**
+4. **Comunidad y Soporte Activo**
 
 ## Herramientas
 1. **Trello:** Gestión de tareas.
