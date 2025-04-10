@@ -51,21 +51,8 @@ ResQFood funcionará como un puente entre quienes tienen alimentos en buen estad
    - Usuario Local (Empresas o restaurantes): Solo puede ser donador.
 
    ###Requisitos de los Usuarios
-|| Campo                  | Obligatorio | Descripción                                              | Funciona | Visible en publicación |
-|------------------------|-------------|----------------------------------------------------------|----------|-------------------------|
-| Título                | ✅ Sí       | Breve descripción del alimento (Ej: "Caja de frutas variadas") | ✅ Sí    | ✅ Sí                  |
-| Descripción           | ✅ Sí       | Detalles adicionales sobre el alimento                   | ✅ Sí    | ✅ Sí                  |
-| Imagen del alimento   | ✅ Sí       | Foto del alimento para mostrar su estado                 | ✅ Sí    | ✅ Sí                  |
-| Cantidad disponible   | ✅ Sí       | Número de porciones o unidades disponibles               | ✅ Sí    | ✅ Sí                  |
-| Categoría             | ✅ Sí       | Tipo de alimento (Ej: "Frutas", "Verduras", etc.)        | ✅ Sí    | ✅ Sí                  |
-| Fecha de V.           | ✅ Sí       | Fecha límite para consumir el alimento                   | ✅ Sí    | ✅ Sí                  |
-| Ubicación de retiro   | ✅ Sí       | Dirección o zona para retirar la donación                | ✅ Sí    | ✅ Sí                  |
-| Método de entrega     | ✅ Sí       | Retiro en persona o entrega a domicilio (si aplica)      | ✅ Sí    | ✅ Sí                  |
-| Horario de disponibilidad | ✅ Sí    | Franja horaria para retirar el alimento                  | ✅ Sí    | ✅ Sí                  |
-| Estado del alimento   | ✅ Sí       | Opciones como "Fresco", "Congelado", etc.                | ✅ Sí    | ✅ Sí                  |
-| Condiciones especiales| ❌ No       | Notas como "Debe ser refrigerado", etc.                  | ✅ Sí    | ✅ Sí                  |
-| Información de contacto | ✅ Sí     | Teléfono o email para coordinar la entrega               | ✅ Sí    | ✅ Sí                  |
-| Donación anónima      | ❌ No       | Si el usuario desea que no se muestre su nombre          | ✅ Sí    | ✅ Sí                  |
+![Diseño Home Page](img/tablaUsuarios.png)
+![Diseño Home Page](img/tablaUsuario2.png)
 
 2. **Registro y Autenticación**: Los usuarios deberán crear una cuenta para participar.
 3. **Publicación de Alimentos**: Los donantes podrán especificar detalles sobre los alimentos disponibles
