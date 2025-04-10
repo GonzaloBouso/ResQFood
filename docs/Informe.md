@@ -174,6 +174,7 @@ A continuación, se presenta un primer boceto de la pantalla de inicio (Home Pag
 
 ![Diseño Home Page](img/PrimerSketch.jpeg)
 
+### Diseño de la Home Page para Usuarios no Registrados
 
 ### Secciones Clave
 1. Hero Section (Encabezado Principal)

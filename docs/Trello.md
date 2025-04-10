@@ -1,9 +1,9 @@
-#TRELLO
-##Introducción
+# TRELLO
+## Introducción
 El tablero de Trello es la herramienta principal que utilizamos  en el equipo para gestionar tareas de desarrollo de la aplicación **ResQFood**.  
 Nos permite organizar, priorizar y hacer seguimiento del avance de las tareas según la metodología **scrum**
 
-##Estructura del tablero
+## Estructura del tablero
 El orden de las listas del tablero es el siguiente:
 
 - **Backlog**: Contiene las tareas planificadas que aún no fueron asignadas a un sprint en curso.
@@ -17,7 +17,7 @@ El orden de las listas del tablero es el siguiente:
 - 🟪 **Morada**: Tareas **Back end**.
 - 🟥 **Roja**: Tareas **generales o de configuración**, que no pertenecen exclusivamente al frontend ni al backend.
 
-##Registro Diario de Cambios
+## Registro Diario de Cambios
 
 02/03/2025
 
