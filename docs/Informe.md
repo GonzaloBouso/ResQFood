@@ -51,25 +51,21 @@ ResQFood funcionará como un puente entre quienes tienen alimentos en buen estad
    - Usuario Local (Empresas o restaurantes): Solo puede ser donador.
 
    ###Requisitos de los Usuarios
-| Campo                  | Usuario (general) | Usuario (Local)        | Moderador          | Administrador      | Funcional | Visible |
-|------------------------|--------------------|-------------------------|--------------------|--------------------|-----------|---------|
-| Nombre                | ✅ Sí              | ✅ Sí                   | ✅ Sí              | ✅ Sí              | ✅ Sí      | ✅ Sí    |
-| Email                 | ✅ Sí              | ✅ Sí                   | ✅ Sí              | ✅ Sí              | ✅ Sí      | ❌ No    |
-| Teléfono              | ✅ Opcional        | ✅ Obligatorio          | ✅ Opcional        | ✅ Opcional        | ✅ Sí      | ✅ Sí    |
-| Ubicación             | ✅ Opcional        | ✅ Obligatorio          | ❌ No aplica       | ❌ No aplica       | ✅ Sí      | ✅ Sí    |
-| Foto de perfil        | ✅ Opcional        | ✅ Opcional             | ✅ Opcional        | ✅ Opcional        | ✅ Sí      | ✅ Sí    |
-| Roles                 | “General”         | “Local”                | “Moderador”        | “Admin”           | ✅ Sí      | ❌ No    |
-| Donaciones hechas     | ✅ Sí              | ✅ Sí                   | ❌ No aplica       | ❌ No aplica       | ✅ Sí      | ✅ Sí    |
-| Donaciones recibidas  | ✅ Sí              | ❌ No aplica            | ❌ No aplica       | ❌ No aplica       | ✅ Sí      | ✅ Sí    |
-| Tipo de negocio       | ❌ No aplica       | ✅ Rest./Panad./etc.    | ❌ No aplica       | ❌ No aplica       | ✅ Sí      | ✅ Sí    |
-| Menú disponible       | ❌ No aplica       | ✅ Sí                   | ❌ No aplica       | ❌ No aplica       | ✅ Sí      | ✅ Sí    |
-| Horario de atención   | ❌ No aplica       | ✅ Sí                   | ❌ No aplica       | ❌ No aplica       | ✅ Sí      | ✅ Sí    |
-| Gestionar reportes    | ❌ No aplica       | ❌ No aplica            | ✅ Sí              | ✅ Sí              | ✅ Sí      | ❌ No    |
-| Eliminar publicaciones| ❌ No aplica       | ❌ No aplica            | ✅ Sí              | ✅ Sí              | ✅ Sí      | ❌ No    |
-| Suspender usuarios    | ❌ No aplica       | ❌ No aplica            | ❌ No aplica       | ✅ Sí              | ✅ Sí      | ❌ No    |
-| Administrar roles     | ❌ No aplica       | ❌ No aplica            | ❌ No aplica       | ✅ Sí              | ✅ Sí      | ❌ No    |
-| Acceso total al sistema| ❌ No aplica       | ❌ No aplica            | ❌ No aplica       | ✅ Sí              | ✅ Sí      | ❌ No    |
-
+|| Campo                  | Obligatorio | Descripción                                              | Funciona | Visible en publicación |
+|------------------------|-------------|----------------------------------------------------------|----------|-------------------------|
+| Título                | ✅ Sí       | Breve descripción del alimento (Ej: "Caja de frutas variadas") | ✅ Sí    | ✅ Sí                  |
+| Descripción           | ✅ Sí       | Detalles adicionales sobre el alimento                   | ✅ Sí    | ✅ Sí                  |
+| Imagen del alimento   | ✅ Sí       | Foto del alimento para mostrar su estado                 | ✅ Sí    | ✅ Sí                  |
+| Cantidad disponible   | ✅ Sí       | Número de porciones o unidades disponibles               | ✅ Sí    | ✅ Sí                  |
+| Categoría             | ✅ Sí       | Tipo de alimento (Ej: "Frutas", "Verduras", etc.)        | ✅ Sí    | ✅ Sí                  |
+| Fecha de V.           | ✅ Sí       | Fecha límite para consumir el alimento                   | ✅ Sí    | ✅ Sí                  |
+| Ubicación de retiro   | ✅ Sí       | Dirección o zona para retirar la donación                | ✅ Sí    | ✅ Sí                  |
+| Método de entrega     | ✅ Sí       | Retiro en persona o entrega a domicilio (si aplica)      | ✅ Sí    | ✅ Sí                  |
+| Horario de disponibilidad | ✅ Sí    | Franja horaria para retirar el alimento                  | ✅ Sí    | ✅ Sí                  |
+| Estado del alimento   | ✅ Sí       | Opciones como "Fresco", "Congelado", etc.                | ✅ Sí    | ✅ Sí                  |
+| Condiciones especiales| ❌ No       | Notas como "Debe ser refrigerado", etc.                  | ✅ Sí    | ✅ Sí                  |
+| Información de contacto | ✅ Sí     | Teléfono o email para coordinar la entrega               | ✅ Sí    | ✅ Sí                  |
+| Donación anónima      | ❌ No       | Si el usuario desea que no se muestre su nombre          | ✅ Sí    | ✅ Sí                  |
 
 2. **Registro y Autenticación**: Los usuarios deberán crear una cuenta para participar.
 3. **Publicación de Alimentos**: Los donantes podrán especificar detalles sobre los alimentos disponibles
