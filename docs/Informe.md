@@ -50,14 +50,14 @@ ResQFood funcionará como un puente entre quienes tienen alimentos en buen estad
    - Usuario General: Puede ser receptor o donador.
    - Usuario Local (Empresas o restaurantes): Solo puede ser donador.
 
-   ###Requisitos de los Usuarios
+   ### Requisitos de los Usuarios
 ![Diseño Home Page](img/tablaUsuarios.png)
 ![Diseño Home Page](img/tablaUsuario2.png)
 
 2. **Registro y Autenticación**: Los usuarios deberán crear una cuenta para participar.
 3. **Publicación de Alimentos**: Los donantes podrán especificar detalles sobre los alimentos disponibles
 
-###Requisitos de las publicaciones
+### Requisitos de las publicaciones
 
 | Campo                  | Obligatorio | Descripción                                              | Funciona | Visible en publicación |
 |------------------------|-------------|----------------------------------------------------------|----------|-------------------------|
