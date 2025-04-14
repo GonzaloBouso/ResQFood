@@ -1,9 +1,9 @@
 # ResQFood
 
 ## Equipo
-- Gonzalo Bouso
-- Milagros Villafañe
-- Agustín Iturbe
+Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
+
+---
 
 ## Índice
 1. [Introducción](#introducción)
@@ -13,72 +13,133 @@
 5. [Descripción de la Solución](#descripción-de-la-solución)
 6. [Características Principales](#características-principales)
 7. [Flujo de Donaciones: Pasos y Detalles Funcionales](#flujo-de-donaciones-pasos-y-detalles-funcionales)
-   -[Donación General](#donación-general)
-   -[Donación Local(Empresas o Restaurantes)](#donación-local-empresas-o-restaurantes)
+    - [Donación General](#donación-general)
+    - [Donación Local (Empresas o Restaurantes)](#donación-local-empresas-o-restaurantes)
 8. [Metodología de Trabajo](#metodología-de-trabajo)
 9. [Equipo de Trabajo](#equipo-de-trabajo)
 10. [Justificación del Stack Tecnológico (MERN) para ResQFood](#justificación-del-stack-tecnológico-mern-para-resqfood)
 11. [Herramientas](#herramientas)
 12. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
 13. [Diseño](#diseño)
-14. [Diseño de la Home Page para Usuarios No Registrados](diseño-de-la-home-page-para-usuarios-no-registrados)
+    - [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)
+    - [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)
+
+---
 
 ## Introducción
-El desperdicio de alimentos es un problema global con importantes implicancias económicas, sociales y ambientales.Se estima que diariamente se descartan grandes cantidades de alimentos en buen estado debido a su proxima fecha de caducidad o por no ser utilizados. Este proyecto busca abordar esta problemática mediante el desarrollo de una plataforma que facilite la redistribución de alimentos no deseados, fomentando el aprovechamiento de los recursos y reduciendo el desperdicio.
+El desperdicio de alimentos es un problema global con importantes implicancias económicas, sociales y ambientales. Se estima que diariamente se descartan grandes cantidades de alimentos en buen estado debido a su proximidad a la fecha de caducidad o por no ser utilizados. Este proyecto busca abordar esta problemática mediante el desarrollo de una plataforma que facilite la redistribución de alimentos no deseados, fomentando el aprovechamiento de los recursos y reduciendo el desperdicio.
+
+---
 
 ## Problema Identificado
-Los alimentos cercanos a su fecha de caducidad suelen ser desechados innecesariamente en hogares y establecimientos como restaurantes y supermercados. Este desperdicio no solo impacta en el medio ambiente, sino que también representa una perdida de recursos valiosos y una oportunidad desaprovechda de ayudar a quienes más lo necesitan.
+Los alimentos cercanos a su fecha de caducidad suelen ser desechados innecesariamente en hogares y establecimientos como restaurantes y supermercados. Este desperdicio no solo impacta negativamente en el medio ambiente, sino que también representa una pérdida de recursos valiosos y una oportunidad desaprovechada de ayudar a quienes más lo necesitan.
+
+---
 
 ## Objetivo del Proyecto
-Desarrollar una aplicación móvil que permita:
+Desarrollar una aplicación móvil e intuitiva que permita:
 1. Publicar alimentos que ya no necesitan, especificando detalles como tipo, cantidad y fecha de caducidad.
 2. Localizar alimentos disponibles en su zona.
 3. Coordinar la recolección de dichos alimentos de manera sencilla y eficiente.
 
+---
+
 ## Impacto Esperado
-1. Reducir significativamente el desperdicio de alimentos en el ambito doméstico y comercial.
-2. Contribuir a una economía circular y sostenible.
-3. Ayudar a personas en situación de necesidad a acceder a recursos alimenticios gratuitos.
+1. Reducir significativamente el desperdicio de alimentos en el ámbito doméstico y comercial.
+2. Contribuir al fortalecimiento de una economía circular y sostenible.
+3. Ayudar a personas en situación de necesidad a acceder a recursos alimentarios gratuitos.
+
+---
 
 ## Descripción de la Solución
-ResQFood funcionará como un puente entre quienes tienen alimentos en buen estado que no planean consumir y personas o instituciones que puedan aprovecharlos.
+La plataforma funcionará como un puente entre quienes tienen alimentos en buen estado que no planean consumir y personas o instituciones que puedan aprovecharlos.
 - **Para los donantes:** Podrán registrar alimentos de manera rápida, cargando una breve descripción, fotografía y detalles de disponibilidad.
 - **Para los receptores:** Podrán buscar alimentos según su ubicación y necesidad, comunicándose directamente con los donantes a través de la aplicación.
 - **Geolocalización:** La app incluirá mapas interactivos para facilitar el contacto entre usuarios cercanos.
+
 ## Características Principales
-1. **Tipo de Usuario**  
-   - Usuario General: Puede ser receptor o donador.
-   - Usuario Local (Empresas o restaurantes): Solo puede ser donador.
 
-   ### Requisitos de los Usuarios
-![Diseño Home Page](img/tablaUsuarios.png)
-![Diseño Home Page](img/tablaUsuario2.png)
+### 1. Tipo de Usuario
+- **Usuario General:** Puede ser receptor o donador.
+- **Usuario Local (Empresas o Restaurantes):** Solo puede ser donador.
 
-2. **Registro y Autenticación**: Los usuarios deberán crear una cuenta para participar.
-3. **Publicación de Alimentos**: Los donantes podrán especificar detalles sobre los alimentos disponibles
+#### Requisitos de los Usuarios
 
-### Requisitos de las publicaciones
+| Requisito               | Usuario (General) | Usuario (Local) | Moderador | Administrador | Funcional | Visible |
+|-------------------------|-------------------|-----------------|-----------|---------------|-----------|---------|
+| Nombre                 | ✅ Sí             | ✅ Sí           | ✅ Sí     | ✅ Sí         | ✅ Sí     | ✅ Sí   |
+| Email                  | ✅ Sí             | ✅ Sí           | ✅ Sí     | ✅ Sí         | ✅ Sí     | ❌ No   |
+| Teléfono               | ✅ Opcional       | ✅ Obligatorio  | ✅ Opcional | ✅ Opcional  | ✅ Sí     | ✅ Sí   |
+| Ubicación              | ✅ Opcional       | ✅ Obligatorio  | ❌ No aplica | ❌ No aplica | ✅ Sí     | ✅ Sí   |
+| Foto de perfil         | ✅ Opcional       | ✅ Opcional     | ✅ Opcional | ✅ Opcional  | ✅ Sí     | ✅ Sí   |
+| Roles                  | “General”        | “Local”         | “Moderador” | “Admin”     | ✅ Sí     | ❌ No   |
+| Donaciones hechas      | ✅ Sí             | ✅ Sí           | ❌ No aplica | ❌ No aplica | ✅ Sí     | ✅ Sí   |
+| Donaciones recibidas   | ✅ Sí             | ❌ No aplica    | ❌ No aplica | ❌ No aplica | ✅ Sí     | ✅ Sí   |
+| Tipo de negocio        | ❌ No aplica      | ✅ Rest./Panad./etc. | ❌ No aplica | ❌ No aplica | ✅ Sí     | ✅ Sí   |
+| Menú disponible        | ❌ No aplica      | ✅ Sí           | ❌ No aplica | ❌ No aplica | ✅ Sí     | ✅ Sí   |
+| Horario de atención    | ❌ No aplica      | ✅ Sí           | ❌ No aplica | ❌ No aplica | ✅ Sí     | ✅ Sí   |
+| Gestionar reportes     | ❌ No aplica      | ❌ No aplica    | ✅ Sí     | ✅ Sí         | ✅ Sí     | ❌ No   |
+| Eliminar publicaciones | ❌ No aplica      | ❌ No aplica    | ✅ Sí     | ✅ Sí         | ✅ Sí     | ❌ No   |
+| Suspender usuarios     | ❌ No aplica      | ❌ No aplica    | ❌ No aplica | ✅ Sí       | ✅ Sí     | ❌ No   |
+| Administrar roles      | ❌ No aplica      | ❌ No aplica    | ❌ No aplica | ✅ Sí       | ✅ Sí     | ❌ No   |
+| Acceso total al sistema| ❌ No aplica      | ❌ No aplica    | ❌ No aplica | ✅ Sí       | ✅ Sí     | ❌ No   |
+| Botón editar perfil    | ✅ Sí             | ✅ Sí           | ✅ Sí     | ✅ Sí         | ✅ Sí     | ✅ Sí   |
+| Descripción de la empresa | ❌ No         | ✅ Sí           | ❌ No aplica | ❌ No aplica | ✅ Sí     | ✅ Sí   |
+| Historial de cambios   | ❌ No aplica      | ❌ No aplica    | ❌ No      | ✅ Sí         | ✅ Sí     | ❌ No   |
 
-| Campo                  | Obligatorio | Descripción                                              | Funciona | Visible en publicación |
-|------------------------|-------------|----------------------------------------------------------|----------|-------------------------|
-| Título                | ✅ Sí       | Breve descripción del alimento (Ej: "Caja de frutas variadas") | ✅ Sí    | ✅ Sí                  |
-| Descripción           | ✅ Sí       | Detalles adicionales sobre el alimento                   | ✅ Sí    | ✅ Sí                  |
-| Imagen del alimento   | ✅ Sí       | Foto del alimento para mostrar su estado                 | ✅ Sí    | ✅ Sí                  |
-| Cantidad disponible   | ✅ Sí       | Número de porciones o unidades disponibles               | ✅ Sí    | ✅ Sí                  |
-| Categoría             | ✅ Sí       | Tipo de alimento (Ej: "Frutas", "Verduras", etc.)        | ✅ Sí    | ✅ Sí                  |
-| Fecha de V.           | ✅ Sí       | Fecha límite para consumir el alimento                   | ✅ Sí    | ✅ Sí                  |
-| Ubicación de retiro   | ✅ Sí       | Dirección o zona para retirar la donación                | ✅ Sí    | ✅ Sí                  |
-| Método de entrega     | ✅ Sí       | Retiro en persona o entrega a domicilio (si aplica)      | ✅ Sí    | ✅ Sí                  |
-| Horario de disponibilidad | ✅ Sí    | Franja horaria para retirar el alimento                  | ✅ Sí    | ✅ Sí                  |
-| Estado del alimento   | ✅ Sí       | Opciones como "Fresco", "Congelado", etc.                | ✅ Sí    | ✅ Sí                  |
-| Condiciones especiales| ❌ No       | Notas como "Debe ser refrigerado", etc.                  | ✅ Sí    | ✅ Sí                  |
-| Información de contacto | ✅ Sí     | Teléfono o email para coordinar la entrega               | ✅ Sí    | ✅ Sí                  |
-| Donación anónima      | ❌ No       | Si el usuario desea que no se muestre su nombre          | ✅ Sí    | ✅ Sí                  |
+---
 
-4. **Búsqueda y Filtrado**: Los receptores podrán buscar alimentos según categoría, ubicación o cercanía a la fecha de caducidad.
-5. **Reservación de Alimentos**: El usuario receptor podrá seleccionar un alimento en una publicación, que al ser aprobado por el donante el alimento dejará de estar disponible.
-6. **Notificaciones**: Alertas para donantes y receptores sobre nuevas publicaciones o solicitudes
-7. **Sistema de Calificaciones**: Para garantizar la confianza y transparencia entre los usuarios.
+### 2. Registro y Autenticación
+Los usuarios deberán crear una cuenta para participar.
+
+---
+
+### 3. Publicación de Alimentos
+Los donantes podrán especificar detalles sobre los alimentos disponibles.
+
+#### Requisitos de las Publicaciones
+
+| Requisito             | Obligatorio | Descripción                              | Funciona | Visible en Publicación |
+|-----------------------|-------------|------------------------------------------|----------|-------------------------|
+| Título               | ✅ Sí       | Breve descripción del alimento           | ❌ No    | ✅ Sí                  |
+| Descripción          | ✅ Sí       | Detalles adicionales sobre el alimento   | ❌ No    | ✅ Sí                  |
+| Imagen del alimento  | ✅ Sí       | Foto del alimento                        | ❌ No    | ✅ Sí                  |
+| Cantidad disponible  | ✅ Sí       | Número de porciones o unidades           | ✅ Sí    | ✅ Sí                  |
+| Categoría            | ✅ Sí       | Tipo de alimento (Ej: "Frutas")          | ❌ No    | ✅ Sí                  |
+| Fecha de V.          | ✅ Opcional | Fecha límite para consumir el alimento   | ❌ No    | ✅ Sí                  |
+| Ubicación de retiro  | ✅ Sí       | Dirección o zona                         | ❌ No    | ✅ Sí                  |
+| Método de entrega    | ✅ Sí       | Retiro en persona o entrega a domicilio  | ❌ No    | ✅ Sí                  |
+| Horario de disponibilidad | ✅ Sí | Franja horaria                           | ❌ No    | ✅ Sí                  |
+| Estado del alimento  | ✅ Sí       | Opciones como "Fresco"                   | ❌ No    | ✅ Sí                  |
+| Condiciones especiales | ❌ Opcional | Notas como "Debe ser refrigerado"       | ❌ No    | ✅ Sí                  |
+| Información de contacto | ✅ Sí    | Teléfono o email                         | ❌ No    | ✅ Sí                  |
+| Donación anónima     | ❌ No       | Si el usuario desea ocultar su nombre    | ❌ No    | ✅ Sí                  |
+| Fecha de elaboración | ❌ Opcional | Fecha en que fue elaborado el alimento   | ❌ No    | ✅ Sí                  |
+| Precio               | ✅ Sí       | Costo del alimento, si aplica           | ❌ No    | ✅ Sí                  |
+| Botón publicar       | ✅ Sí       | Permite confirmar y enviar la publicación | ✅ Sí   | ❌ No                  |
+| Botón ver detalle    | ✅ Sí       | Dirección al detalle completo            | ✅ Sí    | ✅ Sí                  |
+| Botón solicitar donación | ✅ Sí  | Permite al usuario manifestar interés    | ✅ Sí    | ✅ Sí                  |
+
+---
+
+### 4. Búsqueda y Filtrado
+Los receptores podrán buscar alimentos según categoría, ubicación o cercanía a la fecha de caducidad.
+
+---
+
+### 5. Reservación de Alimentos
+El usuario receptor podrá seleccionar un alimento en una publicación. Una vez aprobado por el donante, el alimento dejará de estar disponible.
+
+---
+
+### 6. Notificaciones
+Alertas para donantes y receptores sobre nuevas publicaciones o solicitudes.
+
+---
+
+### 7. Sistema de Calificaciones
+Para garantizar la confianza y transparencia entre los usuarios.
+
 
 ## Flujo de Donaciones: Pasos y Detalles Funcionales
 ### Donación General
