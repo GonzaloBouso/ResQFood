@@ -31,6 +31,6 @@ El orden de las listas del tablero es el siguiente:
 ![Diseño Home Page](img/dia2-tabler2.png)
 
 
-01/04/2025
+08/04/2025
 ![Diseño Home Page](img/dia3Tablero1.png)
 ![Diseño Home Page](img/dia3Tablero2.png)
