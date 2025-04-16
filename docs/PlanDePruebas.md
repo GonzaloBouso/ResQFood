@@ -2,15 +2,15 @@
 
 ## 📑 Índice
 
-1. 🎯 [Objetivos y Alcance](#1-objetivos-y-alcance)  
-2. 🧠 [Estrategia de Pruebas](#2-estrategia-de-pruebas)  
-3. 🚦 [Criterios de Entrada y Salida](#3-criterios-de-entrada-y-salida)  
-4. 🧰 [Recursos y Herramientas](#4-recursos-y-herramientas)  
-5. 📊 [Cronograma](#5-cronograma)  
-6. ⚠️ [Riesgos y Contingencias](#6-riesgos-y-contingencias)  
-7. ✅ [Criterios de Aceptación](#7-criterios-de-aceptación)  
-8. 🥇 [Priorización de Casos de Prueba](#8-priorización-de-casos-de-prueba)  
-9. 📝 [Documentación y Registro de Resultados](#9-documentación-y-registro-de-resultados)  
+1. 🎯 Objetivos y Alcance 
+2. 🧠 Estrategia de Pruebas
+3. 🚦 Criterios de Entrada y Salida
+4. 🧰 Recursos y Herramientas  
+5. 📊 Cronograma  
+6. ⚠️ Riesgos y Contingencias  
+7. ✅ Criterios de Aceptación 
+8. 🥇 Priorización de Casos de Prueba  
+9. 📝 Documentación y Registro de Resultados  
 
 ---
 
