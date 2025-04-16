@@ -1,96 +1,129 @@
-# Plan de Pruebas – ResQFood
-________________________________________
+# 🧪 Plan de Pruebas – ResQFood
+
 ## 📑 Índice
-1. 📌 Objetivo del plan
-2. 📅 Cronograma estimado
-3. 🧩 Alcance de las pruebas
-4. 🛠 Estrategia de pruebas
-5. 🔍 Diseño de pruebas
-6. 📋 Casos de prueba esperados
-7. 👥 Responsables
-8. 🧰 Herramientas a utilizar
-9. 📍 Criterios de entrada y salida
-10. 📉 Métricas de evaluación
-11. 🔄 Gestión de incidencias
-12. 🗂 Artefactos generados
-13. 🕵️‍♂️ Seguimiento y revisión
-________________________________________
 
-## 1. 📌 Objetivo del plan
-Definir una hoja de ruta concreta y operativa para llevar a cabo el proceso de pruebas del sistema ResQFood, garantizando que los entregables cumplan con los criterios de calidad definidos antes del cierre del cuatrimestre y vacaciones de invierno.
+1. 🎯 [Objetivos y Alcance](#1-objetivos-y-alcance)  
+2. 🧠 [Estrategia de Pruebas](#2-estrategia-de-pruebas)  
+3. 🚦 [Criterios de Entrada y Salida](#3-criterios-de-entrada-y-salida)  
+4. 🧰 [Recursos y Herramientas](#4-recursos-y-herramientas)  
+5. 📊 [Cronograma](#5-cronograma)  
+6. ⚠️ [Riesgos y Contingencias](#6-riesgos-y-contingencias)  
+7. ✅ [Criterios de Aceptación](#7-criterios-de-aceptación)  
+8. 🥇 [Priorización de Casos de Prueba](#8-priorización-de-casos-de-prueba)  
+9. 📝 [Documentación y Registro de Resultados](#9-documentación-y-registro-de-resultados)  
 
-## 2. 📅 Cronograma estimado
-- **Semana 1-2**: Diseño de pruebas unitarias y automatizadas.
-- **Semana 3-4**: Ejecución de pruebas unitarias e integración parcial.
-- **Semana 5-6**: Diseño y ejecución de pruebas funcionales, pruebas E2E y pruebas de rendimiento.
-- **Semana 7**: Pruebas de aceptación, regresión, revisión de bugs y cierre.
-⚠️ Este cronograma se adaptará de acuerdo al avance real del desarrollo y a las reuniones del equipo.
+---
 
-## 3. 🧩 Alcance de las pruebas
-- Pruebas funcionales de donación entre usuarios generales (core del proyecto).
-- Validaciones de responsividad y experiencia de usuario.
-- Automatización de pruebas en los módulos más críticos.
-- Pruebas de integración y rendimiento de la API.
-- Documentación de casos y resultados.
-El módulo de donaciones desde usuarios locales será incluido solo si hay tiempo disponible.
+## 1. 🎯 Objetivos y Alcance
 
-## 4. 🛠 Estrategia de pruebas
-El plan de pruebas se basa en el enfoque ágil y ciclos iterativos de Scrum. Las pruebas se integran desde las primeras etapas y se ajustan sprint a sprint. Se realizarán pruebas:
-- Manuales y automatizadas (con Selenium)
-- De carga (con JMeter)
-- En distintos navegadores y dispositivos (responsividad)
+### Objetivo  
+Validar que las funcionalidades implementadas en la plataforma ResQFood cumplan con los requisitos funcionales y no funcionales establecidos, enfocándose especialmente en la funcionalidad principal: **la donación de alimentos entre usuarios generales**.
 
-## 5. 🔍 Diseño de pruebas
-Los casos de prueba se redactarán basados en los criterios de aceptación de las historias de usuario y contemplarán:
-- Precondiciones
-- Pasos a seguir
-- Resultado esperado
-- Resultado real
+### Alcance  
+- Funcionalidades CRUD para registro de alimentos.  
+- Funcionalidades de gestión de donaciones.  
+- Validación de comentarios y calificaciones.  
+- Pruebas de integración entre usuarios y el sistema de donación.  
+- Pruebas automatizadas con Selenium.  
+- Pruebas de rendimiento con JMeter.
 
-## 6. 📋 Casos de prueba esperados
-Ejemplos:
-- Registro de usuario (formulario válido, inválido, duplicado)
-- Inicio de sesión (con cuenta Google y manual)
-- Donación de alimento (flujo completo, errores posibles)
-- Visualización correcta en dispositivos móviles
-- Carga y respuesta del sistema ante múltiples solicitudes
+---
 
-## 7. 👥 Responsables
-- **Encargado de Testing y Documentación**: Gonzalo Isaias Bouso
-  - Diseñar, ejecutar y documentar pruebas
-  - Supervisar resultados y métricas
-  - Reportar bugs
-- **Desarrolladores**:
-  - Ejecutar pruebas unitarias y solucionar incidencias
-- **Scrum Master**:
-  - Garantizar que el proceso de testing se mantenga en cada sprint
+## 2. 🧠 Estrategia de Pruebas
 
-## 8. 🧰 Herramientas a utilizar
-- **Selenium**: Automatización de interfaz
-- **JMeter**: Pruebas de carga
-- **GitHub Actions**: CI/CD y ejecución automática de tests
-- **Jira / Trello**: Gestión de tareas y bugs
+El enfoque general será el siguiente:
 
-## 9. 📍 Criterios de entrada y salida
-- **Entrada**: Historia de usuario lista, desarrollo completo, revisión técnica hecha.
-- **Salida**: Todas las pruebas pasadas, sin bugs críticos abiertos, revisión en demo.
+- 🔹 **Pruebas Funcionales:** Validar operaciones CRUD sobre alimentos y donaciones.
+- 🔹 **Pruebas de Integración:** Verificar el flujo entre usuarios, alimentos y donaciones.
+- 🔹 **Pruebas Automatizadas:** Utilizar Selenium para automatizar escenarios clave.
+- 🔹 **Pruebas de Rendimiento:** Evaluar el comportamiento bajo carga con JMeter.
+- 🔹 **Pruebas Exploratorias:** Detectar errores inesperados durante el uso general.
+- 🔹 **Pruebas de Usabilidad:** Asegurar que la interfaz sea intuitiva y accesible.
 
-## 10. 📉 Métricas de evaluación
-- Tasa de éxito de casos de prueba
-- Cobertura de pruebas automatizadas
-- Bugs por sprint y tiempo promedio de resolución
-- Tiempo de respuesta en pruebas de carga
+---
 
-## 11. 🔄 Gestión de incidencias
-- Cada incidencia será registrada en Jira/Trello
-- Se etiquetará por severidad y prioridad
-- Se revisará en cada daily y sprint review
+## 3. 🚦 Criterios de Entrada y Salida
 
-## 12. 🗂 Artefactos generados
-- Casos de prueba (Excel o Notion)
-- Reportes de ejecución
-- Evidencias con capturas de pantalla
-- Logs de automatización
+### Criterios de Entrada  
+- Desarrollo del sistema en una etapa estable.  
+- Base de datos y servicios en funcionamiento.  
+- Herramientas de testing configuradas correctamente.  
 
-## 13. 🕵️‍♂️ Seguimiento y revisión
-El plan será revisado al comienzo de cada sprint por el Encargado de Testing. Los cambios serán documentados. Se generará un resumen de calidad al final del proyecto junto con la presentación final de ResQFood.
+### Criterios de Salida  
+- Todas las pruebas funcionales y automatizadas completadas.  
+- Los defectos críticos y altos resueltos.  
+- Informes de pruebas documentados y revisados.  
+
+---
+
+## 4. 🧰 Recursos y Herramientas
+
+- 👨‍💻 **Equipo de trabajo:** Testers, desarrolladores y responsable QA.  
+- 🔧 **Herramientas:**  
+  - Postman (APIs)  
+  - MongoDB Compass (BD)  
+  - Selenium (pruebas automatizadas)  
+  - JMeter (pruebas de carga)  
+  - GitHub Projects / Jira (gestión de tareas)  
+- 💻 **Entorno:** Docker, ambiente de staging en la nube.
+
+---
+
+## 5. 📊 Cronograma
+
+| Fase                      | Duración     | Actividades principales                                |
+|---------------------------|--------------|--------------------------------------------------------|
+| Configuración de entorno  | 1 semana     | Setup de MongoDB, Selenium, JMeter                    |
+| Pruebas funcionales       | 2 semanas    | Validación de funciones clave                         |
+| Pruebas de integración    | 1 semana     | Testing entre módulos de usuario y donaciones         |
+| Automatización con Selenium | 1 semana  | Scripts de prueba y validación de flujos principales  |
+| Pruebas de rendimiento    | 1 semana     | Carga con JMeter, análisis de resultados              |
+| Análisis y documentación  | 1 semana     | Registro de resultados, informe final                 |
+
+---
+
+## 6. ⚠️ Riesgos y Contingencias
+
+| Riesgo                                              | Contingencia                                                  |
+|-----------------------------------------------------|----------------------------------------------------------------|
+| Cambios en requerimientos funcionales               | Replanificación del testing y revisión de casos de prueba      |
+| Integración defectuosa entre componentes            | Aislamiento del error y pruebas por unidad                     |
+| Falta de tiempo para automatización completa        | Priorización de casos críticos para Selenium                   |
+| Problemas de rendimiento en el entorno de pruebas   | Ajustes en infraestructura de testing o pruebas en horarios no pico |
+
+---
+
+## 7. ✅ Criterios de Aceptación
+
+- ✔️ Todas las funcionalidades críticas probadas y validadas.  
+- ✔️ Defectos críticos solucionados antes de la entrega.  
+- ✔️ Reportes completos de pruebas funcionales y automatizadas.  
+- ✔️ Validación del rendimiento bajo carga aceptable.
+
+---
+
+## 8. 🥇 Priorización de Casos de Prueba
+
+- 🔺 Alta Prioridad:  
+  - Registro y visualización de alimentos.  
+  - Donación entre usuarios generales.  
+  - Registro de usuarios e inicio de sesión.  
+
+- 🔸 Media Prioridad:  
+  - Comentarios y calificaciones.  
+  - Actualización o eliminación de alimentos.  
+
+- 🔻 Baja Prioridad:  
+  - Funcionalidades secundarias no esenciales para MVP.  
+  - Acciones administrativas o reportes.
+
+---
+
+## 9. 📝 Documentación y Registro de Resultados
+
+- 📋 **Evidencia de pruebas:** Capturas de pantalla, logs y grabaciones de pruebas automatizadas.  
+- 📁 **Formato de resultados:** Se utilizará una planilla compartida para registrar cada ejecución de prueba, estado, errores encontrados y evidencia asociada.  
+- 🔄 **Control de versiones:** El documento se actualizará en cada iteración del testing con fecha y cambios realizados.  
+- 📌 **Repositorio:** Toda la documentación estará en el repositorio de GitHub del proyecto.
+
+---
