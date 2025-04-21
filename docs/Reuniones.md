@@ -61,3 +61,17 @@ o	Definición de los campos obligatorios y opcionales para las publicaciones (no
 o	Discusión y ajustes en el diseño inicial de la Home Page, asegurando una experiencia de usuario intuitiva y accesible.
 o	Planificación para incluir secciones clave como: búsqueda de alimentos disponibles, destacados, y acceso rápido a las publicaciones recientes.
 
+## Reunión 5: Sprint Planning – 16/04/2025
+En esta reunión el equipo el equipo trabajó en dos aspectos clave del proyecto:
+1.	**Definición de planes, políticas y estrategias de testing**:
+o	Se establecieron las bases para el testing de la aplicación, definiendo tipos de pruebas, herramientas a utilizar, y el cronograma estimado para las mismas.
+o	Se discutieron estrategias para asegurar la calidad del código y del producto final.
+2.	**Redefinición de funcionalidades de la aplicación**: Se tomó la decisión de eliminar la funcionalidad de donación local y centrar los esfuerzos en dos tipos de usuarios 
+Esta decisión permiten al equipo enfocarse en entregar un prototipo funcional y eficiente que cumpla con los objetivos principales del proyecto.
+
+
+
+## Reunión 6: Sprint Review -17/04/2025 (Reprogramada)
+Debido a conflictos de agenda entre los miembros del equipo, la reunión Sprint Review no se llevó a cabo. Se acordó reprogramarla para una fecha posterior que permita revisar los avances y planificar los siguientes pasos.
+
+
