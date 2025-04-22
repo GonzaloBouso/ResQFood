@@ -20,7 +20,7 @@ Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
 10. [Herramientas](#herramientas)  
 11. [Arquitectura del Proyecto](#arquitectura-del-proyecto)  
 12. [Diseño](#diseño)  
-    - [Bocetos de la Aplicación](#bocetos-de-la-aplicación)  
+    - [Más Bocetos de la App](#mas-bocetos-de-la-app)  
     - [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)  
     - [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)  
 13. [Metodología de Trabajo](#metodología-de-trabajo)  
