@@ -21,16 +21,18 @@ El orden de las listas del tablero es el siguiente:
 
 02/03/2025
 
-![Diseño Home Page](img/dia1-Tablero.png)
-![Diseño Home Page](img/dia1-Tablero2.png)
+![Diseño Home Page](img/trello/dia1-Tablero.png)
+![Diseño Home Page](img/trello/dia1-Tablero2.png)
 
 
 03/04/2025
 
-![Diseño Home Page](img/dia2-tablero.png)
-![Diseño Home Page](img/dia2-tabler2.png)
+![Diseño Home Page](img/trello/dia2-Tablero.png)
+![Diseño Home Page](img/trello/dia2-Tablero2.png)
 
 
 08/04/2025
-![Diseño Home Page](img/dia3Tablero1.png)
-![Diseño Home Page](img/dia3Tablero2.png)
+![Diseño Home Page](img/trello/dia3Tablero.png)
+![Diseño Home Page](img/trello/dia3Tablero2.png)
+
+16/04/2025

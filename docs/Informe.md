@@ -242,7 +242,47 @@ La arquitectura cliente-servidor no solo se ajusta a los objetivos actuales del 
 ## Diseño
 A continuación, se presenta un primer boceto de la pantalla de inicio (Home Page) de ResQFood. Este diseño no es definitivo y servirá como base para futuras iteraciones.
 
-![Diseño Home Page](img/PrimerSketch.jpeg)
+![Diseño Home Page](img/bocetos/PrimerSketch.jpeg)
+
+## Más Bocetos de la App
+
+**Mapa de donaciones**:
+![Diseño Home Page](img/bocetos/mapaDeDonaciones.jpeg)
+
+**Principal, opción de creación y filtrado de publicaciones**:
+![Diseño Home Page](img/bocetos/principalCreacionFiltPublic.jpeg)
+
+**Creación de publicación**:
+![Diseño Home Page](img/bocetos/creacionPublicacion.jpeg)
+
+**Publicación creada**:
+![Diseño Home Page](img/bocetos/publicacionCreada.jpeg)
+![Diseño Home Page](img/bocetos/publicacionCreada2.jpeg)
+
+**Notificaciones**:
+![Diseño Home Page](img/bocetos/notificaciones.jpeg)
+![Diseño Home Page](img/bocetos/notificaciones2.jpeg)
+
+**Información de retiro**: 
+![Diseño Home Page](img/bocetos/informacionDeRetiro.jpeg)
+
+**Información de alimento donado**:
+![Diseño Home Page](img/bocetos/infoAlimentoDonado.jpeg)
+
+**Información de solicitudes**:
+![Diseño Home Page](img/bocetos/infoSolicitudes.jpeg)
+
+**Usuario general**:
+![Diseño Home Page](img/bocetos/usuarioGeneral.jpeg)
+
+**Historial de donaciones**:
+![Diseño Home Page](img/bocetos/historialDonaciones.jpeg)
+
+**Historial de recepciones**:
+![Diseño Home Page](img/bocetos/hitorialRecepciones.jpeg)
+
+**Calificaciones**:
+![Diseño Home Page](img/bocetos/calificaciones.jpeg)
 
 ### Diseño de la Home Page para Usuarios no Registrados
 
@@ -438,3 +478,6 @@ o	Cada sprint produce un incremento funcional del producto, llamado Incremento.
 	Transparencia: Todos los involucrados deben tener claridad sobre el estado del proyecto.
 	Inspección: Monitoreo constante del progreso para identificar problemas.
 	Adaptación: Ajuste rápido de las estrategias en respuesta a los desafíos.
+
+
+![Diseño Home Page](img/Scrum.png)
