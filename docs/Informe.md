@@ -33,7 +33,7 @@ El desperdicio de alimentos es un problema global con importantes implicancias e
 ---
 
 ## Objetivo del Proyecto
-Desarrollar una aplicación web e intuitiva que permita:
+Desarrollar una aplicación web intuitiva que permita:
 1. Publicar alimentos que ya no necesitan, especificando detalles como tipo, cantidad y fecha de caducidad.
 2. Localizar alimentos disponibles en su zona.
 3. Coordinar la recolección de dichos alimentos de manera sencilla y eficiente.
@@ -56,7 +56,7 @@ La plataforma funcionará como un puente entre quienes tienen alimentos en buen 
 
 ### 1. Tipo de Usuario
 - **Usuario General:** Puede ser receptor o donador.
-- **Usuario Local (Empresas o Restaurantes):** Solo puede ser donador.
+- **Usuario Local (Empresas o Restaurantes):** Solo puede ser donador, no receptor.
 
 ## Requisitos de los Usuarios
 
