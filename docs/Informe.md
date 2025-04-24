@@ -4,27 +4,37 @@
 Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
 
 ---
+# Tabla de Contenido
 
-## Tabla de Contenido  
 1. [Introducción](#introducción)  
 2. [Objetivo del Proyecto](#objetivo-del-proyecto)  
 3. [Problema Identificado](#problema-identificado)  
 4. [Descripción de la Solución](#descripción-de-la-solución)  
 5. [Características Principales](#características-principales)  
-    - [Requisitos de los Usuarios](#requisitos-de-los-usuarios)  
-    - [Requisitos de las Publicaciones](#requisitos-de-las-publicaciones)  
-6. [Flujo de Donaciones: Pasos y Detalles Funcionales](#flujo-de-donaciones-pasos-y-detalles-funcionales)  
-7. [Impacto Esperado](#impacto-esperado)  
-8. [Justificación del Stack Tecnológico (MERN)](#justificación-del-stack-tecnológico-mern)  
-9. [Equipo de Trabajo](#equipo-de-trabajo)  
-10. [Herramientas](#herramientas)  
-11. [Arquitectura del Proyecto](#arquitectura-del-proyecto)  
-12. [Diseño](#diseño)  
-    - [Más Bocetos de la App](#mas-bocetos-de-la-app)  
-    - [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)  
-    - [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)  
-13. [Metodología de Trabajo](#metodología-de-trabajo)  
-    - [Uso de Scrum](#uso-de-scrum)  
+6. [Requisitos de los Usuarios](#requisitos-de-los-usuarios)  
+7. [Requisitos de las Publicaciones](#requisitos-de-las-publicaciones)  
+8. [Flujo de Donaciones: Pasos y Detalles Funcionales](#flujo-de-donaciones-pasos-y-detalles-funcionales)  
+   - [Donación General](#donación-general)  
+9. [Impacto Esperado](#impacto-esperado)  
+10. [Justificación del Stack Tecnológico (MERN)](#justificación-del-stack-tecnológico-mern)  
+11. [Equipo de Trabajo](#equipo-de-trabajo)  
+12. [Herramientas](#herramientas)  
+13. [Arquitectura del Proyecto](#arquitectura-del-proyecto)  
+14. [Diseño](#diseño)  
+    - [Bocetos de la Aplicación](#bocetos-de-la-aplicación)  
+15. 📚 [Documentación de Diseño - ResQFood (Opción 2: Estética Minimalista)](#documentación-de-diseño---resqfood-opción-2-estética-minimalista)  
+    - [Introducción](#introducción-1)  
+    - [Paleta de Colores](#paleta-de-colores)  
+    - [Tipografía](#tipografía)  
+    - [Iconografía](#iconografía)  
+    - [Espaciado y Márgenes](#espaciado-y-márgenes)  
+    - [Elementos Interactivos](#elementos-interactivos)  
+    - [Otros Elementos Visuales](#otros-elementos-visuales)  
+16. [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)  
+17. [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)  
+18. [Metodología de Trabajo](#metodología-de-trabajo)  
+    - [Uso de Scrum](#uso-de-scrum)
+
 ---
 
 ## Introducción
@@ -132,6 +142,8 @@ Alertas para donantes y receptores sobre nuevas publicaciones o solicitudes.
 Para garantizar la confianza y transparencia entre los usuarios.
 
 
+---
+
 ## Flujo de Donaciones: Pasos y Detalles Funcionales
 ### Donación General
 
@@ -157,6 +169,8 @@ Para garantizar la confianza y transparencia entre los usuarios.
 3. Ayudar a personas en situación de necesidad a acceder a recursos alimentarios gratuitos.
 
 
+---
+
 ## Justificación del Stack Tecnológico (MERN)
 El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías más adecuadas para desarrollar una red social como ResQFood, que conecta a personas que desean donar alimentos con aquellas que los necesitan. La elección de este stack se basa en los siguientes factores:
 1. **Desarrollo Full-Stack con JavaScript**: El uso de JavaScript en todo el stack (frontend, backend y base de datos) simplifica el desarrollo, ya que permite mantener un único lenguaje de programación en toda la aplicación. Esto ofrece:
@@ -180,6 +194,8 @@ El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías m
 ### Conclusión :
  El MERN Stack ofrece una combinación ideal de velocidad, escalabilidad, facilidad de desarrollo e integración con funcionalidades clave para redes sociales. Su arquitectura basada en JavaScript en todo el stack, permite desarrollar ResQFood de manera eficiente y preparada para el crecimiento futuro. 🚀
 
+---
+
 ### Equipo de Trabajo
 - **Scrum Master:** Gonzalo Bouso
 - **Líder Frontend:** Agustín Iturbe
@@ -188,12 +204,16 @@ El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías m
 - **Encargado de Documentación:** Milagros Villafañe
 - **Encargado del manejo de Trello:** Agustín Iturbe
 
+
+---
+
 ## Herramientas
 1. **Trello:** Gestión de tareas.
 2. **Jira:** Seguimiento de bugs y testing.
 3. **GitHub:** Control de versiones.
 4. **Notion/Google Docs:** Documentación colaborativa.
 
+---
 
 ## Arquitectura del proyecto
 
@@ -238,6 +258,8 @@ Un frontend moderno desarrollado con React + Vite permite:
 **Conclusión**
 La arquitectura cliente-servidor no solo se ajusta a los objetivos actuales del proyecto ResQFood, sino que también garantiza su sostenibilidad y capacidad de expansión en el futuro. Este enfoque nos posiciona para ofrecer una plataforma confiable, eficiente y escalable para abordar el problema del desperdicio de alimentos. 
 
+
+---
 
 ## Diseño
 A continuación, se presenta un primer boceto de la pantalla de inicio (Home Page) de ResQFood. Este diseño no es definitivo y servirá como base para futuras iteraciones.
@@ -284,6 +306,120 @@ A continuación, se presenta un primer boceto de la pantalla de inicio (Home Pag
 **Calificaciones**:
 ![Diseño Home Page](img/bocetos/calificaciones.jpeg)
 
+
+---
+
+## 📚 Documentación de Diseño - ResQFood (Opción 2: Estética Minimalista)
+#### 1. Introducción
+**Objetivo**: Esta sección describe las directrices visuales de la aplicación ResQFood en una versión más moderna y minimalista. Incluye la paleta de colores, tipografía, iconografía y otros elementos clave de diseño. El propósito es mantener una experiencia de usuario limpia, clara y coherente.
+Audiencia: Este documento está dirigido a diseñadores, desarrolladores y otros stakeholders involucrados en el desarrollo visual y técnico del proyecto.
+________________________________________
+#### 2. Paleta de Colores
+La siguiente paleta se enfoca en tonos suaves, neutros y modernos, con énfasis en la simplicidad visual.
+**Colores Principales**:
+**Color Primario**:
+•	Hex: #5A738E
+•	RGB: (90, 115, 142)
+•	Uso: Botones primarios, encabezados, enlaces activos.
+**Color Secundario**:
+•	Hex: #A8D5BA
+•	RGB: (168, 213, 186)
+•	Uso: Elementos secundarios como íconos, etiquetas o botones secundarios.
+**Colores de Fondo**:
+**Fondo Claro (Principal)**:
+•	Hex: #FFFFFF
+•	RGB: (255, 255, 255)
+•	Uso: Fondo de la aplicación, tarjetas y formularios.
+**Fondo Gris Suave**:
+•	Hex: #F5F7FA
+•	RGB: (245, 247, 250)
+•	Uso: Áreas ligeramente contrastadas como secciones o fondos secundarios.
+**Colores de Texto**:
+**Texto Primario**:
+•	Hex: #2E2E2E
+•	RGB: (46, 46, 46)
+•	Uso: Títulos, encabezados, textos principales.
+**Texto Secundario**:
+•	Hex: #7D7D7D
+•	RGB: (125, 125, 125)
+•	Uso: Descripciones, subtítulos, textos de ayuda.
+________________________________________
+#### 3. Tipografía
+Las fuentes utilizadas están pensadas para asegurar legibilidad y estilo moderno.
+**Fuente Principal**:
+•	Nombre: Inter
+•	Estilos: Regular, Medium, Bold
+•	Uso: Textos generales, encabezados, formularios, botones.
+**Fuente Secundaria (opcional)**:
+•	Nombre: Poppins
+•	Estilos: Regular, Bold
+•	Uso: Titulares grandes, citas destacadas.
+**Tamaños de Fuente**:
+•	Títulos Principales (H1): 32px
+•	Subtítulos (H2): 24px
+•	Texto Normal: 16px
+•	Texto Secundario: 14px
+•	Botones: 16–18px
+________________________________________
+#### 4. Iconografía
+**Estilo de íconos**: Lineales, minimalistas y monocromáticos. Se prioriza la claridad y consistencia.
+**Librerías sugeridas**: Lucide Icons, Feather Icons, Heroicons.
+**Íconos Relevantes**:
+•	🥗 Íconos de Alimentos: Representan categorías (frutas, verduras, pan, etc.).
+•	🎁 Íconos de Donaciones: Corazón, caja abierta, manos.
+•	👤 Íconos de Usuario: Perfil, avatar, ajustes.
+•	🔍 Íconos de Filtro: Lista, embudo, sliders.
+________________________________________
+#### 5. Espaciado y Márgenes
+El espaciado generoso ayuda a mantener una estética limpia y profesional.
+**Recomendaciones**:
+•	Márgenes exteriores: 24px
+•	Márgenes internos: 16px
+•	Espaciado entre elementos: 24px
+•	Distancia entre secciones/párrafos: 16px
+________________________________________
+#### 6. Elementos Interactivos
+**Botones**:
+**Botón primario**:
+•	Fondo: #5A738E
+•	Texto: Blanco
+•	Bordes: Redondeados (8px)
+•	Hover: Oscurecimiento leve + transición suave
+**Botón secundario**:
+•	Fondo: #A8D5BA
+•	Texto: Gris oscuro
+•	Borde: 1px sólido gris claro
+•	Hover: sombra sutil
+**Formularios**:
+•	Bordes suaves (#E0E0E0)
+•	Texto de entrada en gris oscuro
+•	Placeholder gris claro
+•	Bordes redondeados (8px)
+•	Transición de foco con borde verde menta
+________________________________________
+#### 7. Otros Elementos Visuales#### 
+**Loader (Cargando)**:
+•	Animación de círculo giratorio en gris suave o verde claro.
+**Alertas**:
+•	Éxito: Fondo #A3E4D7 – Texto blanco o gris oscuro.
+•	Error: Fondo #F5B7B1 – Texto rojo oscuro.
+•	Info: Fondo #F0F3F4 – Texto gris.
+**Modal de Confirmación**:
+•	Fondo oscuro semitransparente
+•	Cuadro blanco con bordes redondeados
+•	Botón primario centrado
+
+![Diseño Home Page](img/diseño.jpeg)
+
+
+
+## Diseño UX/UI
+Para visualizar el prototipo interactivo del diseño de la aplicación, visita el siguiente enlace en Figma:  
+[Prototipo ResQFood en Figma](https://www.figma.com/design/3JPAqtqi6R1U7tjWSTbVaU/ResQfood?node-id=0-1&t=CYVF0Fi65byTt0KI-1)
+
+
+---
+
 ### Diseño de la Home Page para Usuarios no Registrados
 
 ### Secciones Clave
@@ -296,7 +432,16 @@ A continuación, se presenta un primer boceto de la pantalla de inicio (Home Pag
   o	"Regístrate Gratis" (llamada a la acción principal).
   o	"Explorar donaciones" (permite ver publicaciones sin registrarse).
 
-2. ¿Cómo Funciona ResQFood?
+2. Beneficios de Unirte a ResQFood
+**Objetivo**: Explicar por qué vale la pena registrarse.
+Elementos:
+-	**Listado de beneficios con íconos**:
+o	Accede a donaciones gratuitas.
+o	Ayuda a reducir el desperdicio de alimentos.
+o	Forma parte de una comunidad solidaria.
+o	Registra tu negocio y dona de manera fácil.
+
+3. ¿Cómo Funciona ResQFood?
 **Objetivo**: Explicar de forma simple cómo se usa la plataforma.
 **Elementos**:
 -	Infografía con 4 pasos:
@@ -306,7 +451,7 @@ A continuación, se presenta un primer boceto de la pantalla de inicio (Home Pag
 4.	¡Reduce el desperdicio y ayuda a quienes lo necesitan!
 -	Botón CTA: "Empieza Ahora" (redirige a la página de registro).
 
-3. Últimas Donaciones Disponibles (Vista Limitada)
+4. Últimas Donaciones Disponibles (Vista Limitada)
 **Objetivo**: Mostrar ejemplos de donaciones reales para incentivar el registro.
 **Elementos**:
 -	Tarjetas de donaciones recientes con información parcial:
@@ -316,29 +461,13 @@ o	Ubicación aproximada (sin dirección exacta).
 o	**Mensaje**: "Regístrate para ver más detalles y solicitar donaciones."
 -	**Botón CTA**: "Ver más donaciones" (redirige a registro).
 
-4. Beneficios de Unirte a ResQFood
-**Objetivo**: Explicar por qué vale la pena registrarse.
-Elementos:
--	**Listado de beneficios con íconos**:
-o	Accede a donaciones gratuitas.
-o	Ayuda a reducir el desperdicio de alimentos.
-o	Forma parte de una comunidad solidaria.
-o	Registra tu negocio y dona de manera fácil.
--	**Botón CTA**: "Regístrate Ahora".
-
-5. Testimonios de Usuarios
-**Objetivo**: Mostrar experiencias positivas de personas que usan la plataforma.
-**Elementos**:
--	Frases cortas de usuarios reales (ejemplo: "Gracias a ResQFood, recuperé alimentos en buen estado y ayudé a otros.").
--	Fotos de perfil (opcional, puede ser anónimo).
-
-6. Sección para Empresas y Locales Gastronómicos
+5. Sección para Empresas y Locales Gastronómicos
 **Objetivo**: Incentivar a negocios a registrarse y participar.
 **Elementos**:
 -	**Mensaje clave**: "Si tienes un restaurante, supermercado o panadería, puedes donar tu excedente y reducir desperdicio."
 -	**Botón CTA**: "Registra tu negocio".
 
-7. Footer (Pie de Página)
+6. Footer (Pie de Página)
 **Objetivo**: Proveer información adicional.
 **Elementos**:
 -	Enlaces a "Términos y Condiciones", "Política de Privacidad" y "Contacto".
@@ -396,13 +525,7 @@ o	Por tipo de alimento (panadería, frutas, comida preparada, etc.).
 -	Solicitudes de donación enviadas y su estado (pendiente, aceptada, rechazada).
 -	Mensajes recientes con otros usuarios.
 
-5. Sección de Comunidad y Testimonios
-**Objetivo**: Fomentar la confianza y participación en la plataforma.
-**Elementos**:
--	Historias de éxito de otros usuarios.
--	Invitación a compartir su experiencia con una nueva publicación.
-
-6. Notificaciones y Recomendaciones
+5. Notificaciones y Recomendaciones
 **Objetivo**: Mantener al usuario informado sobre actividad relevante.
 **Elementos**:
 -	**Notificaciones recientes sobre**:
@@ -413,7 +536,7 @@ o	Nuevas donaciones cercanas disponibles.
 o	"Basado en tu ubicación, hay 3 donaciones disponibles ahora."
 o	"Hay un evento comunitario cerca de ti. ¿Te gustaría participar?"
 
-7. Botón Fijo de Acción Rápida
+6. Botón Fijo de Acción Rápida
 **Objetivo**: Facilitar acciones comunes desde cualquier parte del sitio.
 **Elementos**:
 -	**Botón flotante en la esquina con accesos rápidos a**:
@@ -421,7 +544,7 @@ o	Publicar nueva donación.
 o	Explorar donaciones.
 o	Mensajes recientes.
 
-8. Footer (Pie de Página)
+7. Footer (Pie de Página)
 **Objetivo**: Proveer información adicional y enlaces útiles.
 **Elementos**:
 -	Enlaces a políticas, soporte y redes sociales.
@@ -431,6 +554,8 @@ Diseño y Experiencia:
 -	Personalización según el historial y ubicación del usuario.
 -	Facilidad de uso con acciones rápidas y notificaciones en tiempo real.
 
+
+---
 
 ## Metodología de Trabajo
 Uso de **Scrum** para gestionar el desarrollo del proyecto.

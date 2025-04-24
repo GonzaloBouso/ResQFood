@@ -69,9 +69,29 @@ o	Se discutieron estrategias para asegurar la calidad del código y del producto
 2.	**Redefinición de funcionalidades de la aplicación**: Se tomó la decisión de eliminar la funcionalidad de donación local y centrar los esfuerzos en dos tipos de usuarios 
 Esta decisión permiten al equipo enfocarse en entregar un prototipo funcional y eficiente que cumpla con los objetivos principales del proyecto.
 
-
-
 ## Reunión 6: Sprint Review -17/04/2025 (Reprogramada)
 Debido a conflictos de agenda entre los miembros del equipo, la reunión Sprint Review no se llevó a cabo. Se acordó reprogramarla para una fecha posterior que permita revisar los avances y planificar los siguientes pasos.
 
+## Reunión 8: Martes 22/04/2025 (No realizada)
 
+No se llevó a cabo la reunión debido a problemas de tiempo de cada miembro del equipo y porque uno de los miembros estaba enfermo. Se acordó reagendarla en una fecha posterior.
+
+## Reunión 8: Diseño y Prototipado – 24/04/2025
+
+En esta reunión, el equipo se centró en afinar los detalles del diseño de la aplicación y dio inicio al prototipado utilizando Figma como herramienta principal. También se finalizó la versión del Product Backlog.
+
+**Puntos clave tratados**:
+
+**Detalles del diseño**:
+
+Refinamiento de la interfaz de usuario con un enfoque en minimalismo y usabilidad.
+
+Discusión sobre la tipografía, colorimetría, etc.
+
+**Prototipado inicial**:
+
+Creación de las primeras pantallas prototipadas en Figma.
+
+Actualización del Product Backlog:
+
+Repriorización de tareas para asegurar una alineación eficiente con los objetivos del sprint en curso.
