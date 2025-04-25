@@ -50,19 +50,19 @@ Backend:
 
 
 ## 📂 Estructura del Proyecto
-
 📂 resqfood/
- ┣ 📂 frontend/      # Código del frontend (React)
- ┃ ┣ 📂 src/
- ┃ ┃ ┣ 📂 components/
- ┃ ┃ ┣ 📂 pages/
- ┃ ┃ ┣ 📂 context/
- ┃ ┃ ┗ index.jsx
- ┣ 📂 backend/       # Código del backend (Express)
- ┃ ┣ 📂 models/
- ┃ ┣ 📂 routes/
- ┃ ┣ server.js
- ┗ package.
+┣ 📂 frontend/ # Código del frontend (React)
+┃ ┣ 📂 src/
+┃ ┃ ┣ 📂 components/
+┃ ┃ ┣ 📂 pages/
+┃ ┃ ┣ 📂 context/
+┃ ┃ ┗ index.jsx
+┣ 📂 backend/ # Código del backend (Express)
+┃ ┣ 📂 models/
+┃ ┣ 📂 routes/
+┃ ┣ server.js
+┗ package.json
+
  
 ## 🌟 Funcionalidades
 
