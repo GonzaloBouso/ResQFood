@@ -6,23 +6,26 @@ Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
 ---
 # Tabla de Contenido
 
-1. [Introducción](#introducción)  
-2. [Objetivo del Proyecto](#objetivo-del-proyecto)  
-3. [Problema Identificado](#problema-identificado)  
-4. [Descripción de la Solución](#descripción-de-la-solución)  
-5. [Características Principales](#características-principales)  
-6. [Requisitos de los Usuarios](#requisitos-de-los-usuarios)  
-7. [Requisitos de las Publicaciones](#requisitos-de-las-publicaciones)  
-8. [Flujo de Donaciones: Pasos y Detalles Funcionales](#flujo-de-donaciones-pasos-y-detalles-funcionales)  
+1. [Equipo de Trabajo](#equipo-de-trabajo)
+2. [Introducción](#introducción)  
+3. [Objetivo del Proyecto](#objetivo-del-proyecto)  
+4. [Problema Identificado](#problema-identificado)  
+5. [Descripción de la Solución](#descripción-de-la-solución)  
+6. [Impacto Esperado](#impacto-esperado)  
+7. [Características Principales](#características-principales)  
+8. [Requisitos de los Usuarios](#requisitos-de-los-usuarios)  
+9. [Requisitos de las Publicaciones](#requisitos-de-las-publicaciones)  
+10. [Flujo de Donaciones: Pasos y Detalles Funcionales](#flujo-de-donaciones-pasos-y-detalles-funcionales)  
    - [Donación General](#donación-general)  
-9. [Impacto Esperado](#impacto-esperado)  
-10. [Justificación del Stack Tecnológico (MERN)](#justificación-del-stack-tecnológico-mern)  
-11. [Equipo de Trabajo](#equipo-de-trabajo)  
-12. [Herramientas](#herramientas)  
-13. [Arquitectura del Proyecto](#arquitectura-del-proyecto)  
-14. [Diseño](#diseño)  
+11. [Justificación del Stack Tecnológico (MERN)](#justificación-del-stack-tecnológico-mern)  
+12. [Metodología de Trabajo](#metodología-de-trabajo)  
+    - [Uso de Scrum](#uso-de-scrum)
+13. [Herramientas](#herramientas)  
+14. [Arquitectura del Proyecto](#arquitectura-del-proyecto)  
+15. [Justificación del uso de Mongo DB para la base de Datos](justificacion-del-uso-de-mongo-db-para-la-base-de-datos)
+16. [Diseño](#diseño)  
     - [Bocetos de la Aplicación](#bocetos-de-la-aplicación)  
-15. 📚 [Documentación de Diseño - ResQFood (Opción 2: Estética Minimalista)](#documentación-de-diseño---resqfood-opción-2-estética-minimalista)  
+17. 📚 [Documentación de Diseño - ResQFood (Opción 2: Estética Minimalista)](#documentación-de-diseño---resqfood-opción-2-estética-minimalista)  
     - [Introducción](#introducción-1)  
     - [Paleta de Colores](#paleta-de-colores)  
     - [Tipografía](#tipografía)  
@@ -30,10 +33,19 @@ Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
     - [Espaciado y Márgenes](#espaciado-y-márgenes)  
     - [Elementos Interactivos](#elementos-interactivos)  
     - [Otros Elementos Visuales](#otros-elementos-visuales)  
-16. [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)  
-17. [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)  
-18. [Metodología de Trabajo](#metodología-de-trabajo)  
-    - [Uso de Scrum](#uso-de-scrum)
+18. [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)  
+19. [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)  
+
+
+---
+
+### Equipo de Trabajo
+- **Scrum Master:** Gonzalo Bouso
+- **Líder Frontend:** Agustín Iturbe
+- **Líder Backend:** Milagros Villafañe
+- **Encargado de Testing:** Gonzalo Bouso
+- **Encargado de Documentación:** Milagros Villafañe
+- **Encargado del manejo de Trello:** Agustín Iturbe
 
 ---
 
@@ -53,7 +65,6 @@ Desarrollar una aplicación web intuitiva que permita:
 Los alimentos cercanos a su fecha de caducidad suelen ser desechados innecesariamente en hogares y establecimientos como restaurantes y supermercados. Este desperdicio no solo impacta negativamente en el medio ambiente, sino que también representa una pérdida de recursos valiosos y una oportunidad desaprovechada de ayudar a quienes más lo necesitan.
 
 
-
 ---
 
 ## Descripción de la Solución
@@ -61,6 +72,15 @@ La plataforma funcionará como un puente entre quienes tienen alimentos en buen 
 - **Para los donantes:** Podrán registrar alimentos de manera rápida, cargando una breve descripción, fotografía y detalles de disponibilidad.
 - **Para los receptores:** Podrán buscar alimentos según su ubicación y necesidad, comunicándose directamente con los donantes a través de la aplicación.
 - **Geolocalización:** La app incluirá mapas interactivos para facilitar el contacto entre usuarios cercanos.
+
+---
+
+## Impacto Esperado
+1. Reducir significativamente el desperdicio de alimentos en el ámbito doméstico y comercial.
+2. Contribuir al fortalecimiento de una economía circular y sostenible.
+3. Ayudar a personas en situación de necesidad a acceder a recursos alimentarios gratuitos.
+
+---
 
 ## Características Principales
 
@@ -91,12 +111,11 @@ La plataforma funcionará como un puente entre quienes tienen alimentos en buen 
 | **Descripción de la empresa** | ❌ No    | ✅ Sí         | ❌ No aplica | ❌ No aplica | ✅ Sí      | ✅ Sí    |
 | **Historial de cambios**| ❌ No aplica    | ❌ No aplica  | ❌ No      | ✅ Sí         | ✅ Sí      | ❌ No    |
 
----
 
 ## 2. Registro y Autenticación
 Los usuarios deberán crear una cuenta para participar.
 
----
+
 
 ## 3. Publicación de Alimentos
 
@@ -121,28 +140,28 @@ Los usuarios deberán crear una cuenta para participar.
 | **Botón ver detalle**   | ✅ Sí       | Muestra el detalle completo de la publicación | ✅ Sí| ✅ Sí                  |
 | **Botón solicitar donación** | ✅ Sí| Manifiesta interés en recibir la donación  | ✅ Sí    | ✅ Sí                  |
 
----
 
 ## 4. Búsqueda y Filtrado
 Los receptores podrán buscar alimentos según categoría, ubicación o cercanía a la fecha de caducidad.
 
----
+
 
 ## 5. Reservación de Alimentos
 El usuario receptor podrá seleccionar un alimento en una publicación. Al ser aprobado por el donante, el alimento dejará de estar disponible.
 
----
+
 
 ## 6. Notificaciones
 Alertas para donantes y receptores sobre nuevas publicaciones o solicitudes.
 
----
+
 
 ## 7. Sistema de Calificaciones
 Para garantizar la confianza y transparencia entre los usuarios.
 
 
 ---
+
 
 ## Flujo de Donaciones: Pasos y Detalles Funcionales
 ### Donación General
@@ -161,18 +180,13 @@ Para garantizar la confianza y transparencia entre los usuarios.
 10. El receptor puede puntuar al donador.
 
 
----
-
-## Impacto Esperado
-1. Reducir significativamente el desperdicio de alimentos en el ámbito doméstico y comercial.
-2. Contribuir al fortalecimiento de una economía circular y sostenible.
-3. Ayudar a personas en situación de necesidad a acceder a recursos alimentarios gratuitos.
-
 
 ---
+
 
 ## Justificación del Stack Tecnológico (MERN)
 El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías más adecuadas para desarrollar una red social como ResQFood, que conecta a personas que desean donar alimentos con aquellas que los necesitan. La elección de este stack se basa en los siguientes factores:
+
 1. **Desarrollo Full-Stack con JavaScript**: El uso de JavaScript en todo el stack (frontend, backend y base de datos) simplifica el desarrollo, ya que permite mantener un único lenguaje de programación en toda la aplicación. Esto ofrece:
 ✅ Código más limpio y reutilizable, evitando la necesidad de cambiar entre lenguajes.
 ✅ Menor curva de aprendizaje, ya que todos los desarrolladores pueden trabajar tanto en frontend como en backend sin problemas.
@@ -194,18 +208,65 @@ El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías m
 ### Conclusión :
  El MERN Stack ofrece una combinación ideal de velocidad, escalabilidad, facilidad de desarrollo e integración con funcionalidades clave para redes sociales. Su arquitectura basada en JavaScript en todo el stack, permite desarrollar ResQFood de manera eficiente y preparada para el crecimiento futuro. 🚀
 
----
-
-### Equipo de Trabajo
-- **Scrum Master:** Gonzalo Bouso
-- **Líder Frontend:** Agustín Iturbe
-- **Líder Backend:** Milagros Villafañe
-- **Encargado de Testing:** Gonzalo Bouso
-- **Encargado de Documentación:** Milagros Villafañe
-- **Encargado del manejo de Trello:** Agustín Iturbe
-
 
 ---
+
+
+## Metodología de Trabajo
+Uso de **Scrum** para gestionar el desarrollo del proyecto.
+Para gestionar el desarrollo del proyecto, se empleará la metodología Scrum, que permitirá la entrega iterativa de funcionalidades y la mejora continua a través de la retroalimentación.
+
+- **Duración de Sprints:** 1 semana.
+- **Sprint Review y Retrospective:** Jueves a las 10:30 AM.
+- **Sprint Planning:** Todos los miercoles.
+- **Daily Meetings:** Lunes a viernes a las 10:00 AM (15 min).
+
+---
+
+### Uso de Scrum
+  Scrum es una metodología ágil para la gestión y desarrollo de proyectos complejos. Se utiliza comúnmente en el desarrollo de software, pero también puede aplicarse en otros contextos. Su objetivo es entregar productos de alta calidad mediante un enfoque iterativo e incremental, promoviendo la colaboración, la flexibilidad y la mejora continua.
+Principales características de Scrum:
+1.	**Iteraciones cortas y repetitivas (Sprints)**:
+o	Los proyectos se dividen en periodos de tiempo fijo llamados sprints (generalmente de 1 a 4 semanas).
+o	Cada sprint produce un incremento funcional del producto, llamado Incremento.
+2.	**Roles en Scrum: Scrum define tres roles principales**:
+	Product Owner:
+	Representa al cliente o los interesados (stakeholders).
+	Es responsable de gestionar el Product Backlog y priorizar las tareas según el valor para el negocio.
+	Scrum Master:
+	Actúa como facilitador y guía para el equipo.
+	Asegura que Scrum se implemente correctamente y elimina impedimentos que bloqueen al equipo.
+	Development Team:
+	Es un grupo autoorganizado de profesionales que se encargan de desarrollar el producto.
+3.	**Artefactos clave**:
+	Product Backlog:
+	Lista priorizada de tareas, características y requisitos del producto.
+	Sprint Backlog:
+	Conjunto de tareas seleccionadas del Product Backlog que se trabajarán durante un sprint.
+	Incremento:
+	El producto funcional y entregable al final de cada sprint.
+4.	**Eventos en Scrum**:
+	Sprint Planning:
+	Reunión al inicio de cada sprint para planificar qué tareas del Product Backlog se incluirán en el Sprint Backlog.
+	Daily Scrum:
+	Reunión diaria de 15 minutos donde el equipo responde tres preguntas clave:
+1.	¿Qué hice ayer?
+2.	¿Qué haré hoy?
+3.	¿Hay algo que me bloquee?
+	Sprint Review:
+	Revisión al final del sprint para presentar el incremento y recibir retroalimentación de los interesados.
+	Sprint Retrospective:
+	Reunión para reflexionar sobre el sprint terminado y discutir mejoras para futuros sprints.
+5.	**Principios básicos de Scrum**:
+	Transparencia: Todos los involucrados deben tener claridad sobre el estado del proyecto.
+	Inspección: Monitoreo constante del progreso para identificar problemas.
+	Adaptación: Ajuste rápido de las estrategias en respuesta a los desafíos.
+
+
+![Diseño Home Page](img/Scrum.png)
+
+---
+
 
 ## Herramientas
 1. **Trello:** Gestión de tareas.
@@ -213,7 +274,9 @@ El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías m
 3. **GitHub:** Control de versiones.
 4. **Notion/Google Docs:** Documentación colaborativa.
 
+
 ---
+
 
 ## Arquitectura del proyecto
 
@@ -260,6 +323,22 @@ La arquitectura cliente-servidor no solo se ajusta a los objetivos actuales del 
 
 
 ---
+
+
+## Justificación del uso de Mongo DB para la base de Datos
+
+ Para la base de datos de nuestro proyecto Utilizaremos Mongo DB debido a las siguientes razones:
+
+ 1. **Flexibilidad en el manejo de datos no estructurados**: MongoDB es una base de datos NOSQL que utiliza un modelo basado en documentos JSON. Esto es ideal para ResQFood, ya que los datos relacionados con usuarios, publicaciones de donaciones, solicitudes y notificaciones pueden variar en estructura.
+ 2. **Escalabilidad horizontal**: ResQFood tiene el potencial de crecer exponencialmente, especialmente si se adopta por una comunidad amolica. MongoDB permite escalar horizontalmente mediante la fregmentación de datos, lo que garantiza un rendimiento óptimo incluso con grandes volúmenes de datos y multiples usuarios simultáneos.
+ 3. **Velocidad en el desarrollo**: Dado que MongoDB utiliza un formato JSON para almacenar documentos, se integra facilmente con Javascript y Node.js, que son  parte del stack MERN que usamos. Esto acelera el desarrollo, ya que no es necesario mapear entre modelos relacionales y objetos de código.
+ 5. **Alta disponibilidad y replicación**: MongoDB ofrecee caracteristicas avanzadas como replicación yrecuperación ante desastres, asegurando que los datos de los usuarios, publicaciones y solicitudes estén disponibles de manera confiable, incluso en caso de fallos.
+ 6. **Adopción de tecnología moderna**: MongoDB es ampliamente utilizado en aplicaciones modernas debido a su capacidad de manejar grandes volumenes de datos y proporcionar un rendimiento consistente. Esto asegura que ResQFood esté basado en tecnología moderna y escalable, adecuado para aplicaciones que buscan crecer con el tiempo.
+ 7. **Reducción del desperdicio de tiempo en migraciones**: A diferencia de bases de datos relacionales que requieren modificaciones constantes en el esquema conforme evolucionan las necesidades del proyecto, MongoDB se adapta facílmente a cambio en los datos sin necesidad de migraciones complejas.
+
+
+---
+
 
 ## Diseño
 A continuación, se presenta un primer boceto de la pantalla de inicio (Home Page) de ResQFood. Este diseño no es definitivo y servirá como base para futuras iteraciones.
@@ -553,56 +632,3 @@ Diseño y Experiencia:
 -	Interfaz amigable y dinámica con información relevante en primer plano.
 -	Personalización según el historial y ubicación del usuario.
 -	Facilidad de uso con acciones rápidas y notificaciones en tiempo real.
-
-
----
-
-## Metodología de Trabajo
-Uso de **Scrum** para gestionar el desarrollo del proyecto.
-Para gestionar el desarrollo del proyecto, se empleará la metodología Scrum, que permitirá la entrega iterativa de funcionalidades y la mejora continua a través de la retroalimentación.
-- **Duración de Sprints:** 1 semana.
-- **Sprint Review y Retrospective:** Jueves a las 10:30 AM.
-- **Sprint Planning:** Todos los miercoles.
-- **Daily Meetings:** Lunes a viernes a las 10:00 AM (15 min).
-
-### Uso de Scrum
-  Scrum es una metodología ágil para la gestión y desarrollo de proyectos complejos. Se utiliza comúnmente en el desarrollo de software, pero también puede aplicarse en otros contextos. Su objetivo es entregar productos de alta calidad mediante un enfoque iterativo e incremental, promoviendo la colaboración, la flexibilidad y la mejora continua.
-Principales características de Scrum:
-1.	**Iteraciones cortas y repetitivas (Sprints)**:
-o	Los proyectos se dividen en periodos de tiempo fijo llamados sprints (generalmente de 1 a 4 semanas).
-o	Cada sprint produce un incremento funcional del producto, llamado Incremento.
-2.	**Roles en Scrum: Scrum define tres roles principales**:
-	Product Owner:
-	Representa al cliente o los interesados (stakeholders).
-	Es responsable de gestionar el Product Backlog y priorizar las tareas según el valor para el negocio.
-	Scrum Master:
-	Actúa como facilitador y guía para el equipo.
-	Asegura que Scrum se implemente correctamente y elimina impedimentos que bloqueen al equipo.
-	Development Team:
-	Es un grupo autoorganizado de profesionales que se encargan de desarrollar el producto.
-3.	**Artefactos clave**:
-	Product Backlog:
-	Lista priorizada de tareas, características y requisitos del producto.
-	Sprint Backlog:
-	Conjunto de tareas seleccionadas del Product Backlog que se trabajarán durante un sprint.
-	Incremento:
-	El producto funcional y entregable al final de cada sprint.
-4.	**Eventos en Scrum**:
-	Sprint Planning:
-	Reunión al inicio de cada sprint para planificar qué tareas del Product Backlog se incluirán en el Sprint Backlog.
-	Daily Scrum:
-	Reunión diaria de 15 minutos donde el equipo responde tres preguntas clave:
-1.	¿Qué hice ayer?
-2.	¿Qué haré hoy?
-3.	¿Hay algo que me bloquee?
-	Sprint Review:
-	Revisión al final del sprint para presentar el incremento y recibir retroalimentación de los interesados.
-	Sprint Retrospective:
-	Reunión para reflexionar sobre el sprint terminado y discutir mejoras para futuros sprints.
-5.	**Principios básicos de Scrum**:
-	Transparencia: Todos los involucrados deben tener claridad sobre el estado del proyecto.
-	Inspección: Monitoreo constante del progreso para identificar problemas.
-	Adaptación: Ajuste rápido de las estrategias en respuesta a los desafíos.
-
-
-![Diseño Home Page](img/Scrum.png)

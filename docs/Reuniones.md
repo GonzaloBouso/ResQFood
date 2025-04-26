@@ -19,7 +19,7 @@ El Sprint 0 es la fase preparatoria del proyecto en la metodología Scrum. Su ob
 
 ---
 
-##  Reunión 1: Sprint Planning – 01/04/2025
+##  Sprint Planning 1 – 01/04/2025
 En esta reunión, el equipo definió las funcionalidades principales de la aplicación y realizó el primer wireframe. Se discutieron aspectos clave del diseño y flujo de usuario para la plataforma.
 
 ###  Puntos clave tratados:
@@ -32,17 +32,17 @@ En esta reunión, el equipo definió las funcionalidades principales de la aplic
 
 ---
 
-## Reunión 2 – 02/04/2025 (Sprint Planning 2.0)
+## 02/04/2025 (Sprint Planning 2.0)
 Dado que en la reunión anterior no estuvo presente todo el equipo, en esta sesión con el equipo completo se finalizó la planificación. Se revisaron y ajustaron las decisiones tomadas en la reunión del 01/04/2025, asegurando que todo el equipo estuviera alineado con las funcionalidades definidas.
 
 ---
-## Reunión 3: Sprint Review – 03/04/2025 
+## Sprint Review 1– 03/04/2025 
 
 Durante esta reunión, el cliente revisó el avances realizados hasta el momento y aprobó la planificación general del proyecto. Brindó su conformidad con los avances logrados hasta la fecha. Como parte de la retroalimentación, solicitó que el equipo avance con el diseño y el maquetado de las interfaces, para asegurar una mejor visualización del producto final y facilitar futuras iteraciones en la plataforma. El equipo revisó la arquitectura del sistema que se usaría  y tras evaluar los beneficios y desafíos de la implementación de microservicios, se decidió trabajar con una arquitectura cliente-servidor.
 
 
 ---
-## Reunión 4: Discusión sobre Requisitos y Diseño – 08/04/2025
+## Reunión Tecnica: Discusión sobre Requisitos y Diseño – 08/04/2025
 En esta reunión, el equipo trabajó en la definición y refinamiento de los requisitos específicos para los perfiles de usuario y las publicaciones de alimentos en la plataforma. Además, se discutió el diseño de la Home Page y aspectos relacionados con los roles administrativos.
 ### Puntos clave tratados:
 
@@ -61,7 +61,7 @@ o	Definición de los campos obligatorios y opcionales para las publicaciones (no
 o	Discusión y ajustes en el diseño inicial de la Home Page, asegurando una experiencia de usuario intuitiva y accesible.
 o	Planificación para incluir secciones clave como: búsqueda de alimentos disponibles, destacados, y acceso rápido a las publicaciones recientes.
 
-## Reunión 5: Sprint Planning – 16/04/2025
+## Sprint Planning 2 – 16/04/2025
 En esta reunión el equipo el equipo trabajó en dos aspectos clave del proyecto:
 1.	**Definición de planes, políticas y estrategias de testing**:
 o	Se establecieron las bases para el testing de la aplicación, definiendo tipos de pruebas, herramientas a utilizar, y el cronograma estimado para las mismas.
@@ -69,14 +69,14 @@ o	Se discutieron estrategias para asegurar la calidad del código y del producto
 2.	**Redefinición de funcionalidades de la aplicación**: Se tomó la decisión de eliminar la funcionalidad de donación local y centrar los esfuerzos en dos tipos de usuarios 
 Esta decisión permiten al equipo enfocarse en entregar un prototipo funcional y eficiente que cumpla con los objetivos principales del proyecto.
 
-## Reunión 6: Sprint Review -17/04/2025 (Reprogramada)
+##  Sprint Review 2 -17/04/2025 (Reprogramada)
 Debido a conflictos de agenda entre los miembros del equipo, la reunión Sprint Review no se llevó a cabo. Se acordó reprogramarla para una fecha posterior que permita revisar los avances y planificar los siguientes pasos.
 
-## Reunión 8: Martes 22/04/2025 (No realizada)
+## Reunión Cancelada: 22/04/2025 
 
 No se llevó a cabo la reunión debido a problemas de tiempo de cada miembro del equipo y porque uno de los miembros estaba enfermo. Se acordó reagendarla en una fecha posterior.
 
-## Reunión 8: Diseño y Prototipado – 24/04/2025
+## Reunión 7: Diseño y Prototipado – 23/04/2025
 
 En esta reunión, el equipo se centró en afinar los detalles del diseño de la aplicación y dio inicio al prototipado utilizando Figma como herramienta principal. También se finalizó la versión del Product Backlog.
 
@@ -95,3 +95,11 @@ Creación de las primeras pantallas prototipadas en Figma.
 Actualización del Product Backlog:
 
 Repriorización de tareas para asegurar una alineación eficiente con los objetivos del sprint en curso.
+
+## Presentación de avances – 24/04/2025
+En esta reunión, realizada en el aula de clases, el equipo presentó al profesor de Proyecto Final los avances alcanzados en el diseño del prototipado y la planificación del proyecto. El objetivo fue obtener aprobación y feedback para continuar con las siguientes fases del desarrollo.
+
+**Resultados de la reunión**:
+
+ o El profesor aprobó los avances presentados en el prototipado y la planificación.
+ o Se solicitó que para la próxima reunión, programada para el 01/05/2025, el equipo presente un primer avance del código.

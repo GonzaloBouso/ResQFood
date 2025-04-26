@@ -50,8 +50,24 @@ Backend:
 
 
 ## 📂 Estructura del Proyecto
-resqfood/ ┣ 📂 frontend/ # Código del frontend (React) ┃ ┣ 📂 src/ ┃ ┃ ┣ 📂 components/ ┃ ┃ ┣ 📂 pages/ ┃ ┃ ┣ 📂 context/ ┃ ┃ ┗ index.jsx ┣ 📂 backend/ # Código del backend (Express) ┃ ┣ 📂 models/ ┃ ┣ 📂 routes/ ┃ ┣ server.js ┣ 📂 docs/ # Documentación del proyecto ┗ package.json
- 
+resqfood/
+├── frontend/               
+│   ├── src/
+│   │   ├── components/      
+│   │   ├── pages/           
+│   │   ├── context/        
+│   │   └── index.jsx        
+│
+├── backend/                
+│   ├── models/              
+│   ├── routes/      
+│   └── server.js            
+│
+├── docs/                    
+├── package.json             
+└── README.md               
+
+
 ## 🌟 Funcionalidades
 
 ✅ Registro y autenticación de usuarios (JWT)
