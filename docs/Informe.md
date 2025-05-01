@@ -4,27 +4,49 @@
 Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
 
 ---
+# Tabla de Contenido
 
-## Tabla de Contenido  
-1. [Introducción](#introducción)  
-2. [Objetivo del Proyecto](#objetivo-del-proyecto)  
-3. [Problema Identificado](#problema-identificado)  
-4. [Descripción de la Solución](#descripción-de-la-solución)  
-5. [Características Principales](#características-principales)  
-    - [Requisitos de los Usuarios](#requisitos-de-los-usuarios)  
-    - [Requisitos de las Publicaciones](#requisitos-de-las-publicaciones)  
-6. [Flujo de Donaciones: Pasos y Detalles Funcionales](#flujo-de-donaciones-pasos-y-detalles-funcionales)  
-7. [Impacto Esperado](#impacto-esperado)  
-8. [Justificación del Stack Tecnológico (MERN)](#justificación-del-stack-tecnológico-mern)  
-9. [Equipo de Trabajo](#equipo-de-trabajo)  
-10. [Herramientas](#herramientas)  
-11. [Arquitectura del Proyecto](#arquitectura-del-proyecto)  
-12. [Diseño](#diseño)  
-    - [Más Bocetos de la App](#mas-bocetos-de-la-app)  
-    - [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)  
-    - [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)  
-13. [Metodología de Trabajo](#metodología-de-trabajo)  
-    - [Uso de Scrum](#uso-de-scrum)  
+1. [Equipo de Trabajo](#equipo-de-trabajo)
+2. [Introducción](#introducción)  
+3. [Objetivo del Proyecto](#objetivo-del-proyecto)  
+4. [Problema Identificado](#problema-identificado)  
+5. [Descripción de la Solución](#descripción-de-la-solución)  
+6. [Impacto Esperado](#impacto-esperado)  
+7. [Características Principales](#características-principales)  
+8. [Requisitos de los Usuarios](#requisitos-de-los-usuarios)  
+9. [Requisitos de las Publicaciones](#requisitos-de-las-publicaciones)  
+10. [Flujo de Donaciones: Pasos y Detalles Funcionales](#flujo-de-donaciones-pasos-y-detalles-funcionales)  
+   - [Donación General](#donación-general)  
+11. [Justificación del Stack Tecnológico (MERN)](#justificación-del-stack-tecnológico-mern)  
+12. [Metodología de Trabajo](#metodología-de-trabajo)  
+    - [Uso de Scrum](#uso-de-scrum)
+13. [Herramientas](#herramientas)  
+14. [Arquitectura del Proyecto](#arquitectura-del-proyecto)  
+15. [Justificación del uso de Mongo DB para la base de Datos](justificacion-del-uso-de-mongo-db-para-la-base-de-datos)
+16. [Diseño](#diseño)  
+    - [Bocetos de la Aplicación](#bocetos-de-la-aplicación)  
+17. 📚 [Documentación de Diseño - ResQFood (Opción 2: Estética Minimalista)](#documentación-de-diseño---resqfood-opción-2-estética-minimalista)  
+    - [Introducción](#introducción-1)  
+    - [Paleta de Colores](#paleta-de-colores)  
+    - [Tipografía](#tipografía)  
+    - [Iconografía](#iconografía)  
+    - [Espaciado y Márgenes](#espaciado-y-márgenes)  
+    - [Elementos Interactivos](#elementos-interactivos)  
+    - [Otros Elementos Visuales](#otros-elementos-visuales)  
+18. [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)  
+19. [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)  
+
+
+---
+
+### Equipo de Trabajo
+- **Scrum Master:** Gonzalo Bouso
+- **Líder Frontend:** Agustín Iturbe
+- **Líder Backend:** Milagros Villafañe
+- **Encargado de Testing:** Gonzalo Bouso
+- **Encargado de Documentación:** Milagros Villafañe
+- **Encargado del manejo de Trello:** Agustín Iturbe
+
 ---
 
 ## Introducción
@@ -43,7 +65,6 @@ Desarrollar una aplicación web intuitiva que permita:
 Los alimentos cercanos a su fecha de caducidad suelen ser desechados innecesariamente en hogares y establecimientos como restaurantes y supermercados. Este desperdicio no solo impacta negativamente en el medio ambiente, sino que también representa una pérdida de recursos valiosos y una oportunidad desaprovechada de ayudar a quienes más lo necesitan.
 
 
-
 ---
 
 ## Descripción de la Solución
@@ -51,6 +72,15 @@ La plataforma funcionará como un puente entre quienes tienen alimentos en buen 
 - **Para los donantes:** Podrán registrar alimentos de manera rápida, cargando una breve descripción, fotografía y detalles de disponibilidad.
 - **Para los receptores:** Podrán buscar alimentos según su ubicación y necesidad, comunicándose directamente con los donantes a través de la aplicación.
 - **Geolocalización:** La app incluirá mapas interactivos para facilitar el contacto entre usuarios cercanos.
+
+---
+
+## Impacto Esperado
+1. Reducir significativamente el desperdicio de alimentos en el ámbito doméstico y comercial.
+2. Contribuir al fortalecimiento de una economía circular y sostenible.
+3. Ayudar a personas en situación de necesidad a acceder a recursos alimentarios gratuitos.
+
+---
 
 ## Características Principales
 
@@ -81,12 +111,11 @@ La plataforma funcionará como un puente entre quienes tienen alimentos en buen 
 | **Descripción de la empresa** | ❌ No    | ✅ Sí         | ❌ No aplica | ❌ No aplica | ✅ Sí      | ✅ Sí    |
 | **Historial de cambios**| ❌ No aplica    | ❌ No aplica  | ❌ No      | ✅ Sí         | ✅ Sí      | ❌ No    |
 
----
 
 ## 2. Registro y Autenticación
 Los usuarios deberán crear una cuenta para participar.
 
----
+
 
 ## 3. Publicación de Alimentos
 
@@ -111,25 +140,27 @@ Los usuarios deberán crear una cuenta para participar.
 | **Botón ver detalle**   | ✅ Sí       | Muestra el detalle completo de la publicación | ✅ Sí| ✅ Sí                  |
 | **Botón solicitar donación** | ✅ Sí| Manifiesta interés en recibir la donación  | ✅ Sí    | ✅ Sí                  |
 
----
 
 ## 4. Búsqueda y Filtrado
 Los receptores podrán buscar alimentos según categoría, ubicación o cercanía a la fecha de caducidad.
 
----
+
 
 ## 5. Reservación de Alimentos
 El usuario receptor podrá seleccionar un alimento en una publicación. Al ser aprobado por el donante, el alimento dejará de estar disponible.
 
----
+
 
 ## 6. Notificaciones
 Alertas para donantes y receptores sobre nuevas publicaciones o solicitudes.
 
----
+
 
 ## 7. Sistema de Calificaciones
 Para garantizar la confianza y transparencia entre los usuarios.
+
+
+---
 
 
 ## Flujo de Donaciones: Pasos y Detalles Funcionales
@@ -149,16 +180,13 @@ Para garantizar la confianza y transparencia entre los usuarios.
 10. El receptor puede puntuar al donador.
 
 
----
 
-## Impacto Esperado
-1. Reducir significativamente el desperdicio de alimentos en el ámbito doméstico y comercial.
-2. Contribuir al fortalecimiento de una economía circular y sostenible.
-3. Ayudar a personas en situación de necesidad a acceder a recursos alimentarios gratuitos.
+---
 
 
 ## Justificación del Stack Tecnológico (MERN)
 El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías más adecuadas para desarrollar una red social como ResQFood, que conecta a personas que desean donar alimentos con aquellas que los necesitan. La elección de este stack se basa en los siguientes factores:
+
 1. **Desarrollo Full-Stack con JavaScript**: El uso de JavaScript en todo el stack (frontend, backend y base de datos) simplifica el desarrollo, ya que permite mantener un único lenguaje de programación en toda la aplicación. Esto ofrece:
 ✅ Código más limpio y reutilizable, evitando la necesidad de cambiar entre lenguajes.
 ✅ Menor curva de aprendizaje, ya que todos los desarrolladores pueden trabajar tanto en frontend como en backend sin problemas.
@@ -180,19 +208,74 @@ El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías m
 ### Conclusión :
  El MERN Stack ofrece una combinación ideal de velocidad, escalabilidad, facilidad de desarrollo e integración con funcionalidades clave para redes sociales. Su arquitectura basada en JavaScript en todo el stack, permite desarrollar ResQFood de manera eficiente y preparada para el crecimiento futuro. 🚀
 
-### Equipo de Trabajo
-- **Scrum Master:** Gonzalo Bouso
-- **Líder Frontend:** Agustín Iturbe
-- **Líder Backend:** Milagros Villafañe
-- **Encargado de Testing:** Gonzalo Bouso
-- **Encargado de Documentación:** Milagros Villafañe
-- **Encargado del manejo de Trello:** Agustín Iturbe
+
+---
+
+
+## Metodología de Trabajo
+Uso de **Scrum** para gestionar el desarrollo del proyecto.
+Para gestionar el desarrollo del proyecto, se empleará la metodología Scrum, que permitirá la entrega iterativa de funcionalidades y la mejora continua a través de la retroalimentación.
+
+- **Duración de Sprints:** 1 semana.
+- **Sprint Review y Retrospective:** Jueves a las 10:30 AM.
+- **Sprint Planning:** Todos los miercoles.
+- **Daily Meetings:** Lunes a viernes a las 10:00 AM (15 min).
+
+---
+
+### Uso de Scrum
+  Scrum es una metodología ágil para la gestión y desarrollo de proyectos complejos. Se utiliza comúnmente en el desarrollo de software, pero también puede aplicarse en otros contextos. Su objetivo es entregar productos de alta calidad mediante un enfoque iterativo e incremental, promoviendo la colaboración, la flexibilidad y la mejora continua.
+Principales características de Scrum:
+1.	**Iteraciones cortas y repetitivas (Sprints)**:
+o	Los proyectos se dividen en periodos de tiempo fijo llamados sprints (generalmente de 1 a 4 semanas).
+o	Cada sprint produce un incremento funcional del producto, llamado Incremento.
+2.	**Roles en Scrum: Scrum define tres roles principales**:
+	Product Owner:
+	Representa al cliente o los interesados (stakeholders).
+	Es responsable de gestionar el Product Backlog y priorizar las tareas según el valor para el negocio.
+	Scrum Master:
+	Actúa como facilitador y guía para el equipo.
+	Asegura que Scrum se implemente correctamente y elimina impedimentos que bloqueen al equipo.
+	Development Team:
+	Es un grupo autoorganizado de profesionales que se encargan de desarrollar el producto.
+3.	**Artefactos clave**:
+	Product Backlog:
+	Lista priorizada de tareas, características y requisitos del producto.
+	Sprint Backlog:
+	Conjunto de tareas seleccionadas del Product Backlog que se trabajarán durante un sprint.
+	Incremento:
+	El producto funcional y entregable al final de cada sprint.
+4.	**Eventos en Scrum**:
+	Sprint Planning:
+	Reunión al inicio de cada sprint para planificar qué tareas del Product Backlog se incluirán en el Sprint Backlog.
+	Daily Scrum:
+	Reunión diaria de 15 minutos donde el equipo responde tres preguntas clave:
+1.	¿Qué hice ayer?
+2.	¿Qué haré hoy?
+3.	¿Hay algo que me bloquee?
+	Sprint Review:
+	Revisión al final del sprint para presentar el incremento y recibir retroalimentación de los interesados.
+	Sprint Retrospective:
+	Reunión para reflexionar sobre el sprint terminado y discutir mejoras para futuros sprints.
+5.	**Principios básicos de Scrum**:
+	Transparencia: Todos los involucrados deben tener claridad sobre el estado del proyecto.
+	Inspección: Monitoreo constante del progreso para identificar problemas.
+	Adaptación: Ajuste rápido de las estrategias en respuesta a los desafíos.
+
+
+![Diseño Home Page](img/Scrum.png)
+
+---
+
 
 ## Herramientas
 1. **Trello:** Gestión de tareas.
 2. **Jira:** Seguimiento de bugs y testing.
 3. **GitHub:** Control de versiones.
 4. **Notion/Google Docs:** Documentación colaborativa.
+
+
+---
 
 
 ## Arquitectura del proyecto
@@ -237,6 +320,24 @@ Un frontend moderno desarrollado con React + Vite permite:
 
 **Conclusión**
 La arquitectura cliente-servidor no solo se ajusta a los objetivos actuales del proyecto ResQFood, sino que también garantiza su sostenibilidad y capacidad de expansión en el futuro. Este enfoque nos posiciona para ofrecer una plataforma confiable, eficiente y escalable para abordar el problema del desperdicio de alimentos. 
+
+
+---
+
+
+## Justificación del uso de Mongo DB para la base de Datos
+
+ Para la base de datos de nuestro proyecto Utilizaremos Mongo DB debido a las siguientes razones:
+
+ 1. **Flexibilidad en el manejo de datos no estructurados**: MongoDB es una base de datos NOSQL que utiliza un modelo basado en documentos JSON. Esto es ideal para ResQFood, ya que los datos relacionados con usuarios, publicaciones de donaciones, solicitudes y notificaciones pueden variar en estructura.
+ 2. **Escalabilidad horizontal**: ResQFood tiene el potencial de crecer exponencialmente, especialmente si se adopta por una comunidad amolica. MongoDB permite escalar horizontalmente mediante la fregmentación de datos, lo que garantiza un rendimiento óptimo incluso con grandes volúmenes de datos y multiples usuarios simultáneos.
+ 3. **Velocidad en el desarrollo**: Dado que MongoDB utiliza un formato JSON para almacenar documentos, se integra facilmente con Javascript y Node.js, que son  parte del stack MERN que usamos. Esto acelera el desarrollo, ya que no es necesario mapear entre modelos relacionales y objetos de código.
+ 5. **Alta disponibilidad y replicación**: MongoDB ofrecee caracteristicas avanzadas como replicación yrecuperación ante desastres, asegurando que los datos de los usuarios, publicaciones y solicitudes estén disponibles de manera confiable, incluso en caso de fallos.
+ 6. **Adopción de tecnología moderna**: MongoDB es ampliamente utilizado en aplicaciones modernas debido a su capacidad de manejar grandes volumenes de datos y proporcionar un rendimiento consistente. Esto asegura que ResQFood esté basado en tecnología moderna y escalable, adecuado para aplicaciones que buscan crecer con el tiempo.
+ 7. **Reducción del desperdicio de tiempo en migraciones**: A diferencia de bases de datos relacionales que requieren modificaciones constantes en el esquema conforme evolucionan las necesidades del proyecto, MongoDB se adapta facílmente a cambio en los datos sin necesidad de migraciones complejas.
+
+
+---
 
 
 ## Diseño
@@ -284,6 +385,120 @@ A continuación, se presenta un primer boceto de la pantalla de inicio (Home Pag
 **Calificaciones**:
 ![Diseño Home Page](img/bocetos/calificaciones.jpeg)
 
+
+---
+
+## 📚 Documentación de Diseño - ResQFood (Opción 2: Estética Minimalista)
+#### 1. Introducción
+**Objetivo**: Esta sección describe las directrices visuales de la aplicación ResQFood en una versión más moderna y minimalista. Incluye la paleta de colores, tipografía, iconografía y otros elementos clave de diseño. El propósito es mantener una experiencia de usuario limpia, clara y coherente.
+Audiencia: Este documento está dirigido a diseñadores, desarrolladores y otros stakeholders involucrados en el desarrollo visual y técnico del proyecto.
+________________________________________
+#### 2. Paleta de Colores
+La siguiente paleta se enfoca en tonos suaves, neutros y modernos, con énfasis en la simplicidad visual.
+**Colores Principales**:
+**Color Primario**:
+•	Hex: #5A738E
+•	RGB: (90, 115, 142)
+•	Uso: Botones primarios, encabezados, enlaces activos.
+**Color Secundario**:
+•	Hex: #A8D5BA
+•	RGB: (168, 213, 186)
+•	Uso: Elementos secundarios como íconos, etiquetas o botones secundarios.
+**Colores de Fondo**:
+**Fondo Claro (Principal)**:
+•	Hex: #FFFFFF
+•	RGB: (255, 255, 255)
+•	Uso: Fondo de la aplicación, tarjetas y formularios.
+**Fondo Gris Suave**:
+•	Hex: #F5F7FA
+•	RGB: (245, 247, 250)
+•	Uso: Áreas ligeramente contrastadas como secciones o fondos secundarios.
+**Colores de Texto**:
+**Texto Primario**:
+•	Hex: #2E2E2E
+•	RGB: (46, 46, 46)
+•	Uso: Títulos, encabezados, textos principales.
+**Texto Secundario**:
+•	Hex: #7D7D7D
+•	RGB: (125, 125, 125)
+•	Uso: Descripciones, subtítulos, textos de ayuda.
+________________________________________
+#### 3. Tipografía
+Las fuentes utilizadas están pensadas para asegurar legibilidad y estilo moderno.
+**Fuente Principal**:
+•	Nombre: Inter
+•	Estilos: Regular, Medium, Bold
+•	Uso: Textos generales, encabezados, formularios, botones.
+**Fuente Secundaria (opcional)**:
+•	Nombre: Poppins
+•	Estilos: Regular, Bold
+•	Uso: Titulares grandes, citas destacadas.
+**Tamaños de Fuente**:
+•	Títulos Principales (H1): 32px
+•	Subtítulos (H2): 24px
+•	Texto Normal: 16px
+•	Texto Secundario: 14px
+•	Botones: 16–18px
+________________________________________
+#### 4. Iconografía
+**Estilo de íconos**: Lineales, minimalistas y monocromáticos. Se prioriza la claridad y consistencia.
+**Librerías sugeridas**: Lucide Icons, Feather Icons, Heroicons.
+**Íconos Relevantes**:
+•	🥗 Íconos de Alimentos: Representan categorías (frutas, verduras, pan, etc.).
+•	🎁 Íconos de Donaciones: Corazón, caja abierta, manos.
+•	👤 Íconos de Usuario: Perfil, avatar, ajustes.
+•	🔍 Íconos de Filtro: Lista, embudo, sliders.
+________________________________________
+#### 5. Espaciado y Márgenes
+El espaciado generoso ayuda a mantener una estética limpia y profesional.
+**Recomendaciones**:
+•	Márgenes exteriores: 24px
+•	Márgenes internos: 16px
+•	Espaciado entre elementos: 24px
+•	Distancia entre secciones/párrafos: 16px
+________________________________________
+#### 6. Elementos Interactivos
+**Botones**:
+**Botón primario**:
+•	Fondo: #5A738E
+•	Texto: Blanco
+•	Bordes: Redondeados (8px)
+•	Hover: Oscurecimiento leve + transición suave
+**Botón secundario**:
+•	Fondo: #A8D5BA
+•	Texto: Gris oscuro
+•	Borde: 1px sólido gris claro
+•	Hover: sombra sutil
+**Formularios**:
+•	Bordes suaves (#E0E0E0)
+•	Texto de entrada en gris oscuro
+•	Placeholder gris claro
+•	Bordes redondeados (8px)
+•	Transición de foco con borde verde menta
+________________________________________
+#### 7. Otros Elementos Visuales#### 
+**Loader (Cargando)**:
+•	Animación de círculo giratorio en gris suave o verde claro.
+**Alertas**:
+•	Éxito: Fondo #A3E4D7 – Texto blanco o gris oscuro.
+•	Error: Fondo #F5B7B1 – Texto rojo oscuro.
+•	Info: Fondo #F0F3F4 – Texto gris.
+**Modal de Confirmación**:
+•	Fondo oscuro semitransparente
+•	Cuadro blanco con bordes redondeados
+•	Botón primario centrado
+
+![Diseño Home Page](img/diseño.jpeg)
+
+
+
+## Diseño UX/UI
+Para visualizar el prototipo interactivo del diseño de la aplicación, visita el siguiente enlace en Figma:  
+[Prototipo ResQFood en Figma](https://www.figma.com/design/3JPAqtqi6R1U7tjWSTbVaU/ResQfood?node-id=0-1&t=CYVF0Fi65byTt0KI-1)
+
+
+---
+
 ### Diseño de la Home Page para Usuarios no Registrados
 
 ### Secciones Clave
@@ -296,7 +511,16 @@ A continuación, se presenta un primer boceto de la pantalla de inicio (Home Pag
   o	"Regístrate Gratis" (llamada a la acción principal).
   o	"Explorar donaciones" (permite ver publicaciones sin registrarse).
 
-2. ¿Cómo Funciona ResQFood?
+2. Beneficios de Unirte a ResQFood
+**Objetivo**: Explicar por qué vale la pena registrarse.
+Elementos:
+-	**Listado de beneficios con íconos**:
+o	Accede a donaciones gratuitas.
+o	Ayuda a reducir el desperdicio de alimentos.
+o	Forma parte de una comunidad solidaria.
+o	Registra tu negocio y dona de manera fácil.
+
+3. ¿Cómo Funciona ResQFood?
 **Objetivo**: Explicar de forma simple cómo se usa la plataforma.
 **Elementos**:
 -	Infografía con 4 pasos:
@@ -306,7 +530,7 @@ A continuación, se presenta un primer boceto de la pantalla de inicio (Home Pag
 4.	¡Reduce el desperdicio y ayuda a quienes lo necesitan!
 -	Botón CTA: "Empieza Ahora" (redirige a la página de registro).
 
-3. Últimas Donaciones Disponibles (Vista Limitada)
+4. Últimas Donaciones Disponibles (Vista Limitada)
 **Objetivo**: Mostrar ejemplos de donaciones reales para incentivar el registro.
 **Elementos**:
 -	Tarjetas de donaciones recientes con información parcial:
@@ -316,29 +540,13 @@ o	Ubicación aproximada (sin dirección exacta).
 o	**Mensaje**: "Regístrate para ver más detalles y solicitar donaciones."
 -	**Botón CTA**: "Ver más donaciones" (redirige a registro).
 
-4. Beneficios de Unirte a ResQFood
-**Objetivo**: Explicar por qué vale la pena registrarse.
-Elementos:
--	**Listado de beneficios con íconos**:
-o	Accede a donaciones gratuitas.
-o	Ayuda a reducir el desperdicio de alimentos.
-o	Forma parte de una comunidad solidaria.
-o	Registra tu negocio y dona de manera fácil.
--	**Botón CTA**: "Regístrate Ahora".
-
-5. Testimonios de Usuarios
-**Objetivo**: Mostrar experiencias positivas de personas que usan la plataforma.
-**Elementos**:
--	Frases cortas de usuarios reales (ejemplo: "Gracias a ResQFood, recuperé alimentos en buen estado y ayudé a otros.").
--	Fotos de perfil (opcional, puede ser anónimo).
-
-6. Sección para Empresas y Locales Gastronómicos
+5. Sección para Empresas y Locales Gastronómicos
 **Objetivo**: Incentivar a negocios a registrarse y participar.
 **Elementos**:
 -	**Mensaje clave**: "Si tienes un restaurante, supermercado o panadería, puedes donar tu excedente y reducir desperdicio."
 -	**Botón CTA**: "Registra tu negocio".
 
-7. Footer (Pie de Página)
+6. Footer (Pie de Página)
 **Objetivo**: Proveer información adicional.
 **Elementos**:
 -	Enlaces a "Términos y Condiciones", "Política de Privacidad" y "Contacto".
@@ -396,13 +604,7 @@ o	Por tipo de alimento (panadería, frutas, comida preparada, etc.).
 -	Solicitudes de donación enviadas y su estado (pendiente, aceptada, rechazada).
 -	Mensajes recientes con otros usuarios.
 
-5. Sección de Comunidad y Testimonios
-**Objetivo**: Fomentar la confianza y participación en la plataforma.
-**Elementos**:
--	Historias de éxito de otros usuarios.
--	Invitación a compartir su experiencia con una nueva publicación.
-
-6. Notificaciones y Recomendaciones
+5. Notificaciones y Recomendaciones
 **Objetivo**: Mantener al usuario informado sobre actividad relevante.
 **Elementos**:
 -	**Notificaciones recientes sobre**:
@@ -413,7 +615,7 @@ o	Nuevas donaciones cercanas disponibles.
 o	"Basado en tu ubicación, hay 3 donaciones disponibles ahora."
 o	"Hay un evento comunitario cerca de ti. ¿Te gustaría participar?"
 
-7. Botón Fijo de Acción Rápida
+6. Botón Fijo de Acción Rápida
 **Objetivo**: Facilitar acciones comunes desde cualquier parte del sitio.
 **Elementos**:
 -	**Botón flotante en la esquina con accesos rápidos a**:
@@ -421,7 +623,7 @@ o	Publicar nueva donación.
 o	Explorar donaciones.
 o	Mensajes recientes.
 
-8. Footer (Pie de Página)
+7. Footer (Pie de Página)
 **Objetivo**: Proveer información adicional y enlaces útiles.
 **Elementos**:
 -	Enlaces a políticas, soporte y redes sociales.
@@ -430,54 +632,3 @@ Diseño y Experiencia:
 -	Interfaz amigable y dinámica con información relevante en primer plano.
 -	Personalización según el historial y ubicación del usuario.
 -	Facilidad de uso con acciones rápidas y notificaciones en tiempo real.
-
-
-## Metodología de Trabajo
-Uso de **Scrum** para gestionar el desarrollo del proyecto.
-Para gestionar el desarrollo del proyecto, se empleará la metodología Scrum, que permitirá la entrega iterativa de funcionalidades y la mejora continua a través de la retroalimentación.
-- **Duración de Sprints:** 1 semana.
-- **Sprint Review y Retrospective:** Jueves a las 10:30 AM.
-- **Sprint Planning:** Todos los miercoles.
-- **Daily Meetings:** Lunes a viernes a las 10:00 AM (15 min).
-
-### Uso de Scrum
-  Scrum es una metodología ágil para la gestión y desarrollo de proyectos complejos. Se utiliza comúnmente en el desarrollo de software, pero también puede aplicarse en otros contextos. Su objetivo es entregar productos de alta calidad mediante un enfoque iterativo e incremental, promoviendo la colaboración, la flexibilidad y la mejora continua.
-Principales características de Scrum:
-1.	**Iteraciones cortas y repetitivas (Sprints)**:
-o	Los proyectos se dividen en periodos de tiempo fijo llamados sprints (generalmente de 1 a 4 semanas).
-o	Cada sprint produce un incremento funcional del producto, llamado Incremento.
-2.	**Roles en Scrum: Scrum define tres roles principales**:
-	Product Owner:
-	Representa al cliente o los interesados (stakeholders).
-	Es responsable de gestionar el Product Backlog y priorizar las tareas según el valor para el negocio.
-	Scrum Master:
-	Actúa como facilitador y guía para el equipo.
-	Asegura que Scrum se implemente correctamente y elimina impedimentos que bloqueen al equipo.
-	Development Team:
-	Es un grupo autoorganizado de profesionales que se encargan de desarrollar el producto.
-3.	**Artefactos clave**:
-	Product Backlog:
-	Lista priorizada de tareas, características y requisitos del producto.
-	Sprint Backlog:
-	Conjunto de tareas seleccionadas del Product Backlog que se trabajarán durante un sprint.
-	Incremento:
-	El producto funcional y entregable al final de cada sprint.
-4.	**Eventos en Scrum**:
-	Sprint Planning:
-	Reunión al inicio de cada sprint para planificar qué tareas del Product Backlog se incluirán en el Sprint Backlog.
-	Daily Scrum:
-	Reunión diaria de 15 minutos donde el equipo responde tres preguntas clave:
-1.	¿Qué hice ayer?
-2.	¿Qué haré hoy?
-3.	¿Hay algo que me bloquee?
-	Sprint Review:
-	Revisión al final del sprint para presentar el incremento y recibir retroalimentación de los interesados.
-	Sprint Retrospective:
-	Reunión para reflexionar sobre el sprint terminado y discutir mejoras para futuros sprints.
-5.	**Principios básicos de Scrum**:
-	Transparencia: Todos los involucrados deben tener claridad sobre el estado del proyecto.
-	Inspección: Monitoreo constante del progreso para identificar problemas.
-	Adaptación: Ajuste rápido de las estrategias en respuesta a los desafíos.
-
-
-![Diseño Home Page](img/Scrum.png)
