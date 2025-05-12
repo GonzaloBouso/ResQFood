@@ -280,7 +280,7 @@ o	Cada sprint produce un incremento funcional del producto, llamado Incremento.
 
 ## Arquitectura del proyecto
 
-Para el desarrollo de nuestro proyecto final, hemos decidido utilizar la arquitectura cliente-servidor, debido a sus múltiples ventajas en términos de flexibilidad, escalabilidad, y mantenimiento. A continuación, se describen las principales razones de esta decisión:
+Para el desarrollo de nuestro proyecto final, hemos decidido utilizar la arquitectura cliente-servidor junto con el patrón MVC(modelo-vista-controlador) debido a sus múltiples ventajas en términos de flexibilidad, escalabilidad, mantenimiento y organización de código. A continuación, se describen las principales razones de esta decisión:
 
 1. **Modularidad y Separación de Responsabilidades**
   La separación entre frontend y backend permite organizar mejor el código y asignar responsabilidades especificas a cada equipo:
@@ -288,12 +288,16 @@ Para el desarrollo de nuestro proyecto final, hemos decidido utilizar la arquite
  **Backend (Node.js + Express)**: Responsable de la lógica de negocio, manejo de datos, y seguridad.
 **Beneficio**: Esta división permite a los equipos trabajar en paralelo sin interferencias y facilita la colaboración en futuros desarrollos.
 
+**Patrón MVC**: Además, con el patrón MVC, el backend se organiza de manera más eficiente. La Vista se encarga de mostrar la información al usuario (en este caso, los componentes de React), el Modelo gestión los datos en la base de datos (Mongo DB), y el Controlador maneja la lógica de negocio y las interacciones entre la vista y el modelo. Esta organización modular facilita el mantenimiento del código, la depuración y la escalabilidad.
+
+
 2. **Escalabilidad**
 La arquitectura cliente-servidor facilita la evolución del sistema, permitiendo:
+
 •	**Escalado horizontal**: Alojar el frontend y backend en servidores independientes.
 •	**Integraciones futuras**: Como notificaciones, autenticación externa (Google, Facebook), o sistemas de pago.
 •	**Migración progresiva**: A un modelo basado en microservicios si el sistema lo requiere en el futuro.
-**Beneficio**: A diferencia de un modelo monolítico, este enfoque es más flexible para adaptarse a las necesidades cambiantes del proyecto.
+**Beneficio**: A diferencia de un modelo monolítico, este enfoque es más flexible para adaptarse a las necesidades cambiantes del proyecto. Además, con el patrón MVC, podemos escalar más facilmente cada componente del sistema de forma independiente. Por ejemplo, si necesitamos modificar o añadir nuevas características a la lógica de negocio, podemos hacerlo sin afectar la presentación o la gestión de datos.
 
 3. **Mejor Despliegue y Mantenimiento
 Separar el frontend y backend permite optimizar su despliegue de manera independiente:
@@ -304,12 +308,16 @@ Separar el frontend y backend permite optimizar su despliegue de manera independ
 •	Facilita la implementación de CI/CD (despliegues continuos).
 •	Reducción de errores y tiempo de inactividad durante el mantenimiento
 
+**Patrón MVC**:  La separación entre los modelos, controladores y vistas facilita que los despliegues se realicen de forma más organizada y sin interferencias entre las capas. El Modelo puede evolucionar o ser actualizado sin afectar la Vista o el Controlador, lo que optimiza el tiempo de despliegue y mantenimiento.
+
 4. **Mejor Seguridad y Gestión de Datos**
 Con esta arquitectura, el backend es responsable de la lógica de seguridad y manejo de datos sensibles:
 •	**Autenticación**: Implementación de JWT (JSON Web Tokens) para sesiones seguras.
 •	**Restricciones**: Aplicación de políticas CORS para controlar el acceso a la API.
 •	**Protección de datos**: Validación y almacenamiento seguro de credenciales y datos de usuario.
 **Beneficio**: En un modelo monolítico, estas medidas serían más difíciles de gestionar debido al acoplamiento entre frontend y backend.
+
+**Patrón mvc**:En el backend, el Controlador gestionará las validaciones y la lógica de autenticación, mientras que el Modelo será responsable de almacenar de manera segura las credenciales y otros datos sensibles. Esto ayuda a centralizar y simplificar la gestión de seguridad, manteniendo una arquitectura limpia y bien organizada.
 
 5. **Optimización de la Experiencia del Usuario (UX)**
 Un frontend moderno desarrollado con React + Vite permite:
@@ -318,9 +326,11 @@ Un frontend moderno desarrollado con React + Vite permite:
 •	Interactividad avanzada, lo que resulta en una mejor experiencia para los usuarios.
 **Beneficio**: Con un frontend independiente, las mejoras en la UI pueden implementarse de forma más ágil, sin depender de cambios en el backend.
 
-**Conclusión**
-La arquitectura cliente-servidor no solo se ajusta a los objetivos actuales del proyecto ResQFood, sino que también garantiza su sostenibilidad y capacidad de expansión en el futuro. Este enfoque nos posiciona para ofrecer una plataforma confiable, eficiente y escalable para abordar el problema del desperdicio de alimentos. 
+**Patrón MVC**: El patrón MVC nos permite que las vistas sean más fácilmente reutilizables y dinámicas, ya que se encuentran separadas de la lógica del modelo y el controlador. De este modo, podemos mejorar la UX sin necesidad de modificar la lógica de negocio en el backend.
 
+
+**Conclusión**
+La arquitectura cliente-servidor junto con el patrón MVC no solo se ajusta a los objetivos actuales del proyecto ResQFood, sino que también garantiza su sostenibilidad y capacidad de expansión en el futuro. Esta combinación proporciona una estructura clara que facilita el desarrollo, mantenimiento y escalabilidad del proyecto, y permite una distribución eficiente de las responsabilidades entre los equipos.  Este enfoque nos posiciona para ofrecer una plataforma confiable, eficiente y escalable para abordar el problema del desperdicio de alimentos. 
 
 ---
 
