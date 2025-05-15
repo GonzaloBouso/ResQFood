@@ -7,10 +7,19 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependency directories
 node_modules
 dist
 dist-ssr
 *.local
+
+# Vite specific
+.vite/ # Cache directory for Vite
+
+# Environment variables
+.env # Main environment file
+.env.* # Other environment files like .env.development, .env.production
+!.env.example # Keep .env.example versioned if you have one
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +31,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Optional eslint cache
+.eslintcache
