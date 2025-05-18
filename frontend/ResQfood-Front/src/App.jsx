@@ -9,7 +9,7 @@ import HomePageUnregistered from './pages/HomePageUnregistered';
 import DashboardPage from './pages/DashboardPage'; // Placeholder por ahora
 import SignInPage from './pages/SignInPage';     // Ya deberías tenerla de la config de Clerk
 import SignUpPage from './pages/SignUpPage';     // Ya deberías tenerla de la config de Clerk
-
+import BottomNavigationBar from './components/layout/BottomNavigationBar';
 // Componente Placeholder para DashboardPage (si no lo tienes aún)
 const PlaceholderDashboardPage = () => (
   <div className="text-center py-10">
@@ -84,8 +84,7 @@ function App() {
           {/* Puedes añadir más rutas aquí */}
         </Routes>
       </main>
-      {/* Podrías añadir un Footer global aquí si lo deseas */}
-      {/* <Footer /> */}
+      <BottomNavigationBar></BottomNavigationBar>
     </div>
   );
 }
