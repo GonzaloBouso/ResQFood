@@ -9,18 +9,18 @@ const calificacionesSchema = new mongoose.Schema({
     },
     donacionId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:'Entrega',
+        ref:'Donacion',
         required: true,
         index: true,
     },
     calificadorId:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Usuario',
+        ref: 'User',
         required: true,
     },
     calificadoId:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'Usuario',
+        ref:'User',
         required:true
     },
     rolCalificado:{
@@ -44,4 +44,4 @@ const calificacionesSchema = new mongoose.Schema({
     },
 });
 
-export default mongoose.model('Calificaciones', calificacionesSchema)
+export default mongoose.model('Calificacion', calificacionesSchema)

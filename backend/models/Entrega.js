@@ -17,22 +17,29 @@ const EntregaSchema = new mongoose.Schema(
         },
         donateId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref:'Usuario',
+            ref:'User',
             required:true,
             index:true,
         },
         solicitanteId:{
             type:mongoose.Schema.Types.ObjectId,
-            ref:'Usuario',
+            ref:'User',
             required:true,
             index:true
         },
         horarioEntregaPropuestaPorDonante: {
-            type: String,
+            type: {
+                horarioInicio:{type: String,
+                    required:true},
+                    horarioFin:{type: String, required: true}
+            },
             required: true,
         },
-        fechaHorarioPropuesto:{
-            type: Date, 
+        fechaPropuesto:{
+            type:{
+                fechaInicio:{type:Date, required: true},
+                fechaFin:{type:Date, required: true},
+            },
             required: true,
         },
         horarioEntregaConfirmadoSolicitante: {

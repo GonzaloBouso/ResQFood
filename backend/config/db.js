@@ -3,18 +3,21 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const dbURI = process.env.Mongo_URI || 'mongodb://localhost:27017/test'
+const connectDB = async ()=>{
+    const dbURI = process.env.Mongo_URI;
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect(dbURI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log('Conexión exitosa!')
-    } catch (error) {
-        console.log('Error de conexión', error.message);
-        process.exit(1)
+    if (!dbURI) {
+        console.error('Nose encontró la variable de entorno Mongo_URI');
+        process.exit(1);//Finaliza el proceso si no hay URI
     }
-}
-export default connectDB
+
+    try {
+        await mongoose.connect(dbURI);
+        console.log('Conexion exitosa!');
+    } catch (error) {
+        console.error('Error de conexion:', error.message);
+        process.exit(1);//finaliza el proceso en caso de error
+    }
+};
+
+export default connectDB;

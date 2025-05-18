@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 
+const {Schema} = mongoose;
 
 const donationSchema = new Schema(
     {
         donanteId: {
             type:Schema.Types.ObjectId,
-            ref: 'Usuario',
+            ref: 'User',
             required: true,
             index: true,// FK
         },
@@ -97,7 +98,7 @@ const donationSchema = new Schema(
 );
 
 
-donationSchema.index({'UbicacionRetiro.coordenadas': '2dsphere'})
+donationSchema.index({'ubicacionRetiro.coordenadas': '2dsphere'})
 
 
 export default mongoose.model('Donacion', donationSchema);

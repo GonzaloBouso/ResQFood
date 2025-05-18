@@ -4,7 +4,7 @@ const notificacionSchema = new mongoose.Schema(
     {
         destinatarioId:{
             type:mongoose.Schema.Types.ObjectId,
-            ref:'Usuario',
+            ref:'User',
             required:true,
             index:true,
         },
@@ -25,7 +25,7 @@ const notificacionSchema = new mongoose.Schema(
         },
         tipoReferencia:{
             type:String,
-            enum:['Donacion', 'Solicitud', 'Entrega', 'Usuario'],
+            enum:['Donacion', 'Solicitud', 'Entrega', 'User'],
             default:null,
         },
         leida:{
@@ -47,4 +47,4 @@ const notificacionSchema = new mongoose.Schema(
     }
 )
 
-export default mongoose.model('Notificaciones', notificacionSchema)
+export default mongoose.model('Notificacion', notificacionSchema)

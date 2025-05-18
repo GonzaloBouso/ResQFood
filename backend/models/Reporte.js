@@ -1,16 +1,18 @@
 import mongoose from "mongoose";
 
+const {Schema} = mongoose;
+
 const ReporteSchema = new Schema(
     {
         reportadorId:{
             type: mongoose.Schema.Types.ObjectId,
-            ref:'Usuario',
+            ref:'User',
             required: true,
             index: true,
         },
         tipoElementoReportado:{
             type: String,
-            enum: ['USUARIO', 'PUBLICACION','ENTREGA'],
+            enum: ['User', 'Publicacion','Entrega'],
             required: true,
         },
         elementoReportadoId: {
@@ -38,7 +40,7 @@ const ReporteSchema = new Schema(
         },
         moderadorAsignadoId:{
             type: mongoose.Schema.Types.ObjectId,
-            ref:'Usuario',
+            ref:'User',
         },
         resolucion:{
             type:String,

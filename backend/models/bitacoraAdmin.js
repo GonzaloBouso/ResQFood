@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 
+const {Schema, Types} = mongoose;
 
 const bitacoraAccionesAdminSchema = new Schema(
   {
     actorId: {
       type: Types.ObjectId,
-      ref: 'Usuario', // Referencia a la colección de usuarios
+      ref: 'User', // Referencia a la colección de usuarios
       required: true,
       index: true,
     },
@@ -15,7 +16,7 @@ const bitacoraAccionesAdminSchema = new Schema(
     },
     tipoElementoAfectado: {
       type: String,
-      enum: ['USUARIO', 'DONACION', 'SOLICITUD', 'ENTREGA', 'REPORTE'], // Opcional pero limitado a tipos conocidos
+      enum: ['User', 'Donacion', 'Solicitud', 'Entrega', 'Reporte'], // Opcional pero limitado a tipos conocidos
       default: null,
     },
     elementoAfectadoId: {

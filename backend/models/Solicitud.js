@@ -12,15 +12,19 @@ const SolicitudSchema = new Schema(
         },
         donanteId: {
             type:Schema.Types.ObjectId,
-            ref: 'Usuario', //Referencia al modelo usuarios(denormalizados)
+            ref: 'User', //Referencia al modelo usuarios(denormalizados)
             required:true,
             index: true,
         },
         solicitanteId: {
             type:Schema.Types.ObjectId,
-            ref: 'Usuario',
+            ref: 'User',
             required: true,
             index:true,
+        },
+        mensajeSolicitante:{
+            type: String,
+            default:null,
         },
         estadoSolicitud: {
             type: String,
@@ -36,18 +40,22 @@ const SolicitudSchema = new Schema(
             required: true,
             index: true,
         },
-        motivoRechazoO: {
-        type: String,
-        default: null,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-    updateAt: {
-        type: Date,
-        default: Date.now,
-    },
+        fechaAprobacion:{
+            type:Date,
+            default:null,
+        },
+        fechaRechazo:{
+            type:Date,
+            default:null,
+        },
+        fechaCancelacion:{
+            type:Date,
+            default:null,
+        },
+        motivoRechazo:{
+            type:String,
+            default:null,
+        },
     },
     {
         timestamps: true,
