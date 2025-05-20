@@ -6,18 +6,6 @@ const ubicacionSchema = new mongoose.Schema({
     ciudad: {type:String, required: true},
     provincia: {type: String, required: true},
     pais: {type:String, required:true},
-    coordenadas: {
-        type:{
-            type: String,
-            enum: ['Point'],
-            default: 'Point',
-        },
-        coordinates: {
-            type: [Number],
-            required: true,
-
-        },
-    },
 });
 
 
@@ -80,7 +68,9 @@ const permisosSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema(
     {
     clerkUserId: {type: String, unique: true, index:true},
-    nombre: { type: String, required: true},
+    nombre: { type: String, required: function(){
+        return !!this.rol;
+    },},
     email: {type:String, unique: true, index:true},
     telefono: {
         type: String,
@@ -90,14 +80,16 @@ const userSchema = new mongoose.Schema(
     },
     ubicacion: {
         type: ubicacionSchema,
-        required:true
+        required:function (){
+            return !! this.rol;
+        }
     },
     fotoDePerfilUrl:{ type: String, default: null},
     rol: {
         type:String,
         enum: ['GENERAL', 'LOCAL', 'MODERADOR', 'ADMIN'], 
         index: true,
-        required: true
+        default: null,
     },
     activo: {type:Boolean, default: true},
     fechaSuspension: {type:Date, default: null},
@@ -121,10 +113,6 @@ const userSchema = new mongoose.Schema(
 },
 {   timestamps:true  });
 
-
-
-//Indice geoespacia para coordenadas
-userSchema.index({'ubicacion.coordenadas': '2dsphere'});
 
 //Middleware para inicializacion de subdocumentos segun rol
 
