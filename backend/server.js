@@ -9,9 +9,13 @@ import NotificacionRoutes from './routes/NotificacionRoutes.js';
 import EntregaRoutes from './routes/EntregaRoutes.js';
 import ReporteRoutes from './routes/ReporteRoutes.js';
 import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
+import webhookRoutes from './routes/webhookRoutes.js'; 
+
 
 
 const app = express();
+
+app.use('/api/webhooks', webhookRoutes);
 
 configureMiddlewares(app)
 

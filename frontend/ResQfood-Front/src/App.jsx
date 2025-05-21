@@ -9,6 +9,13 @@ import DashboardPage from './pages/DashboardPage';
 import SignInPage from './pages/SignInPage';     
 import SignUpPage from './pages/SignUpPage';     
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
+import PerfilUsuarioGeneral from './pages/PerfilUsuarioGeneral';
+import PoliticaPrivacidad from './pages/PoliticaPrivacidad';
+import FormularioContacto from './pages/FormularioContacto';
+import PoliticaUsoDatos from './pages/PoliticaUsoDatos';
+import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
+import SobreNosotros from './pages/SobreNosotros';
+import TerminosCondiciones from './pages/TerminosCondiciones';
 const PlaceholderDashboardPage = () => (
   <div className="text-center py-10">
     <h1 className="text-3xl font-bold">Dashboard (Usuario Logueado)</h1>
@@ -74,6 +81,15 @@ function App() {
              
             }
           />
+
+          <Route path="/perfilGeneral" element={<PerfilUsuarioGeneral />} />
+          <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
+          <Route path="/formularioContacto" element={<FormularioContacto />} />
+          <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
+          <Route path="/preguntasFrecuentes" element={<PreguntasFrecuentes />} />
+          <Route path="/sobreNosotros" element={<SobreNosotros />} />
+          <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
+
           
         </Routes>
       </main>
