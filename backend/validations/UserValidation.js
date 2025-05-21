@@ -11,7 +11,7 @@ const ubicacionSchema = z.object({
 //validaciones para estadisticas generales
 const estadisticasGeneralesSchema = z.object({
     totalDonacionesHechas: z.number().min(0).default(0),
-    calificacionPromedioComoDonante:z.number().nullable().min(0).max(5),
+    calificacionPromedioComoDonante: z.number().min(0).max(5).nullable(),
     numeroCalificacionesComoDonante: z.number().min(0).default(0),
     calificacionPromedioComoReceptor: z.number().nullable(),
     totalDonacionesRecibidas: z.number().min(0).default(0),
@@ -25,7 +25,9 @@ const localSchema= z.object({
     descripcionEmpresa: z.string().nonempty('La descripción de la empresa es obligatoria'),
     totalDonacionesHechas: z.number().min(0).default(0),
     calificacionPromedioComoDonante: z.number().min(0).default(0),
-});
+}).refine(data => data.tipoNegocio && data.horarioAtencion && data.descripcionEmpresa, {
+  message:'Todos los campos de datos del local son obligatorios'
+})
 
 //validaciones para permisos de ADMIN y MODERADOR
 const permisosSchema = z.object({
@@ -37,72 +39,49 @@ const permisosSchema = z.object({
 })
 
 //validación principasl del usuario
-export const userValidationSchema = z.object({
-    clerkUserId: z.string().nonempty('El ID de Clerk es obligatorio'),
-    nombre: z.string().nonempty('El nombre es obligatorio'),
-    email:z.string().email('El email es obligatorio'),
-    telefono:z.string().optional().nullable(),
-    ubicacion:ubicacionSchema.optional(),
-    fotoDePerfilUrl: z.string().url().optional().nullable(),
-    rol: z.enum(['GENERAL', 'LOCAL', 'MODERADOR', 'ADMIN']),
-    activo:z.boolean().default(true),
-    fechaSuspension: z.string().nullable().optional(),
-    motivoSuspension: z.string().nullable().optional(),
-    localData:localSchema.optional().nullable(),
-    estadisticasGenerales:estadisticasGeneralesSchema.optional().nullable(),
-    permisos: permisosSchema.optional().nullable(),
-}).superRefine((data, ctx)=>{
-
-    if (data.rol === 'LOCAL') {
-        if (!data.telefono || data.telefono.trim() === '') {
-          ctx.addIssue({
-            path: ['telefono'],
-            code: z.ZodIssueCode.custom,
-            message: 'El telefono es obligatorio para usuario LOCAL'
-          });
-        }
-        if (!data.localData) {
-            ctx.addIssue({
-                path:['localData'],
-                code: z.ZodIssueCode.custom,
-                message:'localData es obligatorio para usuario LOCAL'
-            });
-        }
-    }
-    if (!data.ubicacion) {
-        ctx.addIssue({
-            path:['ubicacion'],
-            code:z.ZodIssueCode.custom,
-            message:'La ubicacion es obligatoria',
-        });
-    }
-
-    if (data.rol === 'GENERAL' && !data.estadisticasGenerales) {
-        ctx.addIssue({
-            path: ['estadisticasGenerales'],
-            code: z.ZodIssueCode.custom,
-            message:'Las estadísticas generalems son obligatorias para usuario GENERAL'
-        });
-    }
-
-    if ((data.rol === 'ADMIN' || data.rol === 'MODERADOR') && !data.permisos) {
-        ctx.addIssue({
-            path:['permisos'],
-            code:z.ZodIssueCode.custom,
-            message:'Los permisos son obligatorios para MODERADOR Y ADMIN'
-        });
-    }
+export const createUserSchema = z.object({
+  clerkUserId: z.string().nonempty('El ID de Clerk es obligatorio'),
+  email: z.string().email('El email no es válido'),
+  rol: z.enum(['GENERAL', 'LOCAL', 'MODERADOR', 'ADMIN']).nullable().default(null),
+  activo: z.boolean().default(true),
+  estadisticasGenerales: estadisticasGeneralesSchema.optional().nullable(),
+  localData: localSchema.optional().nullable(),
+  ubicacion: ubicacionSchema.optional().nullable()
 
 });
-export const updateUserSchema = userValidationSchema
-  .partial() // Convierte todos los campos a opcionales
-  .superRefine((data, ctx) => {
+
+
+export const updateUserSchema = z.object({
+  nombre: z.string().nonempty('El nombre es obligatorio').optional(),
+
+  telefono: z.string().regex(/^\d{7,15}$/, 'El número de teléfono debe contener entre 7 y 15 dígitos').optional().nullable(),
+
+  ubicacion: ubicacionSchema.optional(),
+  rol:z.enum(['GENERAL', 'LOCAL', 'MODERADOR', 'ADMIN']).optional(),
+  localData:localSchema.optional().nullable(),
+  estadisticasGenerales: estadisticasGeneralesSchema.optional().nullable(),
+  permisos: permisosSchema.optional().nullable(),
+})
+.superRefine((data, ctx) => {
+    // Validaciones adicionales basadas en el rol
+    if (!data.rol) return;
+
     if (data.rol === 'LOCAL') {
-      if (data.localData && (!data.telefono || data.telefono.trim() === '')) {
+      const errores = [];
+      if (!data.telefono || data.telefono.trim() === '') {
+        errores.push('El teléfono es obligatorio para usuarios LOCAL.');
+      }
+      if (!data.ubicacion) {
+        errores.push('La ubicación es obligatoria para usuarios LOCAL.');
+      }
+      if (!data.localData) {
+        errores.push('Los datos del local son obligatorios.');
+      }
+      if (errores.length > 0) {
         ctx.addIssue({
-          path: ['telefono'],
+          path: ['local'],
           code: z.ZodIssueCode.custom,
-          message: 'El teléfono es obligatorio si el usuario es LOCAL',
+          message: errores.join(' '),
         });
       }
     }
@@ -111,20 +90,15 @@ export const updateUserSchema = userValidationSchema
       ctx.addIssue({
         path: ['estadisticasGenerales'],
         code: z.ZodIssueCode.custom,
-        message:
-          'Las estadísticas generales son obligatorias para usuario GENERAL',
+        message: 'Las estadísticas generales son obligatorias para usuarios GENERAL.',
       });
     }
 
-    if (
-      (data.rol === 'ADMIN' || data.rol === 'MODERADOR') &&
-      data.permisos === null
-    ) {
+    if ((data.rol === 'ADMIN' || data.rol === 'MODERADOR') && data.permisos === null) {
       ctx.addIssue({
         path: ['permisos'],
         code: z.ZodIssueCode.custom,
-        message:
-          'Los permisos son obligatorios para usuarios ADMIN o MODERADOR',
+        message: 'Los permisos son obligatorios para usuarios ADMIN o MODERADOR.',
       });
     }
   });
