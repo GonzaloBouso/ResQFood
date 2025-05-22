@@ -2,7 +2,7 @@
 node_modules/
 
 # Archivos de entorno
-.env
+#.env
 
 # Logs
 npm-debug.log

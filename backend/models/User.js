@@ -114,36 +114,60 @@ const userSchema = new mongoose.Schema(
 {   timestamps:true  });
 
 
-//Middleware para inicializacion de subdocumentos segun rol
-
-userSchema.pre('save', function (next){
-    if (this.rol === 'LOCAL' && !this.localData) {
-        this.localData = {};
-    }
-    if (this.rol === 'GENERAL' && !this.estadisticasGenerales) {
+userSchema.pre('save', function (next) {
+  // Solo ejecutar esta lógica si el documento es nuevo o si el campo 'rol' ha sido modificado.
+  if (this.isNew || this.isModified('rol')) {
+    
+    // Lógica para localData y estadisticasGenerales basada en el rol actual
+    if (this.rol === 'LOCAL') {
+      // Si el rol es LOCAL:
+      // 1. Asegúrate de que localData exista. Si no, créalo vacío.
+      //    Si localData ya fue poblado por el controlador desde req.body, esto no lo sobrescribirá
+      //    a menos que el req.body no incluyera localData y this.localData fuera null/undefined.
+      if (!this.localData) {
+        this.localData = {}; 
+      }
+      // 2. Limpia estadisticasGenerales (datos del rol GENERAL)
+      this.estadisticasGenerales = undefined; // Mongoose eliminará este campo si es undefined
+    } else if (this.rol === 'GENERAL') {
+      // Si el rol es GENERAL:
+      // 1. Asegúrate de que estadisticasGenerales exista.
+      if (!this.estadisticasGenerales) {
         this.estadisticasGenerales = {};
+      }
+      // 2. Limpia localData (datos del rol LOCAL)
+      this.localData = undefined;
+    } else {
+      // Si el rol es ADMIN, MODERADOR, o null/otro (y no es GENERAL ni LOCAL)
+      // Limpia ambos subdocumentos específicos de perfil.
+      this.localData = undefined;
+      this.estadisticasGenerales = undefined;
     }
-    if (this.rol ==='ADMIN') {
-        this.permisos = {
-            puedeSuspenderUsuarios:true,
-            puedeEliminarPublicaciones:true,
-            puedeGestionarReportes:true,
-            puedeGestionarRoles:true,
-            puedeAccederEstadisticasGlobales:true,
-        };
-    }else if (this.rol === 'MODERADOR') {
-        this.permisos = {
-            puedeSuspenderUsuarios:false,
-            puedeEliminarPublicaciones:true,
-            puedeGestionarReportes:true,
-            puedeGestionarRoles:false,
-            puedeAccederEstadisticasGlobales:false,
-        };
-    }else{
-        this.permisos = null;
+
+    // Lógica para permisos (tu lógica actual está bien aquí, pero la incluimos dentro del if)
+    if (this.rol === 'ADMIN') {
+      this.permisos = {
+        puedeSuspenderUsuarios: true,
+        puedeEliminarPublicaciones: true,
+        puedeGestionarReportes: true,
+        puedeGestionarRoles: true,
+        puedeAccederEstadisticasGlobales: true,
+      };
+    } else if (this.rol === 'MODERADOR') {
+      this.permisos = {
+        puedeSuspenderUsuarios: false,
+        puedeEliminarPublicaciones: true,
+        puedeGestionarReportes: true,
+        puedeGestionarRoles: false,
+        puedeAccederEstadisticasGlobales: false,
+      };
+    } else {
+      // Para roles como GENERAL, LOCAL, o si el rol es null/otro.
+      this.permisos = null; // O un objeto de permisos por defecto con todo en false si lo prefieres.
     }
-    next()
-})
+  }
+  next();
+});
 
 userSchema.methods.toJSON = function () {
     const obj = this.toObject();
