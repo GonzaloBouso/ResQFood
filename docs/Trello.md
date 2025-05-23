@@ -44,3 +44,7 @@ El orden de las listas del tablero es el siguiente:
 26/04/2025
 ![Diseño Home Page](img/trello/dia5Tablero.png)
 ![Diseño Home Page](img/trello/dia5Tablero2.png)
+
+15/05/2025
+![Diseño Home Page](img/trello/avance-15-5-25.png)
+![Diseño Home Page](img/trello/avance-23-05-25.png)

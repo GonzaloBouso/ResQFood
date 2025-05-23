@@ -103,3 +103,23 @@ En esta reunión, realizada en el aula de clases, el equipo presentó al profeso
 
  o El profesor aprobó los avances presentados en el prototipado y la planificación.
  o Se solicitó que para la próxima reunión, programada para el 01/05/2025, el equipo presente un primer avance del código.
+
+ ## Reunion 8: - 13/05/2025
+ Objetivo de la reunión:
+    Definir y desarrollar el modelo de datos inicial para la base de datos del sistema RestQFood, considerando las funcionalidades clave como registro de alimentos, usuarios (donantes y receptores), reservas, y localización.
+Temas tratados:
+    1.	Identificación de entidades principales
+    2.	Relaciones entre entidades
+    3.	Discusión de reglas de negocio
+
+ ## Reunion 9: - 21/05/2025
+ Temas tratados:
+    1.	Integración del formulario de registro con Clerk:
+        Se realizó la integración del sistema de autenticación Clerk con el formulario de registro de nuevos usuarios en la plataforma.
+        Clerk se utilizará para gestionar el inicio de sesión, registro, y autenticación de usuarios de forma segura y escalable.
+    2.	Uso de Webhooks:
+        Se configuraron webhooks para recibir eventos clave desde Clerk (como creación de usuario, verificación de correo, etc.).
+        Estos eventos permitirán sincronizar automáticamente la información de usuarios con la base de datos interna de ResQFood.
+    3.	Implementación de Ngrok:
+        Para facilitar el desarrollo y pruebas locales de los webhooks, se utilizó Ngrok para exponer temporalmente el servidor local a internet.
+        Esto permitió simular y recibir eventos de Clerk en tiempo real durante la sesión.

@@ -33,8 +33,7 @@ Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
     - [Espaciado y Márgenes](#espaciado-y-márgenes)  
     - [Elementos Interactivos](#elementos-interactivos)  
     - [Otros Elementos Visuales](#otros-elementos-visuales)  
-18. [Diseño de la Home Page para Usuarios No Registrados](#diseño-de-la-home-page-para-usuarios-no-registrados)  
-19. [Diseño de la Home Page para Usuarios Registrados](#diseño-de-la-home-page-para-usuarios-registrados)  
+18. [Modelado de la base de datos]
 
 
 ---
@@ -509,136 +508,15 @@ Para visualizar el prototipo interactivo del diseño de la aplicación, visita e
 
 ---
 
-### Diseño de la Home Page para Usuarios no Registrados
+18. [Modelado de la base de datos]
 
-### Secciones Clave
-1. Hero Section (Encabezado Principal)
-**Objetivo**: Captar la atención del usuario y explicar la misión de ResQFood.
-**Elementos**:
-- Fondo visual llamativo: Imagen de personas compartiendo comida o una ilustración representativa.
-- Mensaje principal: "Dale una segunda oportunidad a la comida y ayuda a quienes lo necesitan."
-- Botones de acción (CTA):
-  o	"Regístrate Gratis" (llamada a la acción principal).
-  o	"Explorar donaciones" (permite ver publicaciones sin registrarse).
+![Entidad Usuario](img/modeladoBD/USUARIO.PNG)
+![Entidad Solicitud](img/modeladoBD/SOLICITUD.PNG)
+![Entidad Reporte](img/modeladoBD/REPORTE.PNG)
+![Entidad Notificacion](img/modeladoBD/NOTIFICACION.PNG)
+![Entidad Entrega](img/modeladoBD/ENTREGA.PNG)
+![Entidad Donacion](img/modeladoBD/DONACION.PNG)
+![Entidad Calificacion](img/modeladoBD/CALIFICACION.PNG)
+![Entidad Bitacora accion admin](img/modeladoBD/BITACORA-ACCION-ADMIN.PNG)
 
-2. Beneficios de Unirte a ResQFood
-**Objetivo**: Explicar por qué vale la pena registrarse.
-Elementos:
--	**Listado de beneficios con íconos**:
-o	Accede a donaciones gratuitas.
-o	Ayuda a reducir el desperdicio de alimentos.
-o	Forma parte de una comunidad solidaria.
-o	Registra tu negocio y dona de manera fácil.
-
-3. ¿Cómo Funciona ResQFood?
-**Objetivo**: Explicar de forma simple cómo se usa la plataforma.
-**Elementos**:
--	Infografía con 4 pasos:
-1.	Regístrate como usuario general o local.
-2.	Publica o solicita donaciones cerca de tu ubicación.
-3.	Coordina la entrega de los alimentos.
-4.	¡Reduce el desperdicio y ayuda a quienes lo necesitan!
--	Botón CTA: "Empieza Ahora" (redirige a la página de registro).
-
-4. Últimas Donaciones Disponibles (Vista Limitada)
-**Objetivo**: Mostrar ejemplos de donaciones reales para incentivar el registro.
-**Elementos**:
--	Tarjetas de donaciones recientes con información parcial:
-o	Imagen del alimento (con marca de agua o difuminada).
-o	Nombre genérico (ejemplo: "Comida casera", "Frutas variadas").
-o	Ubicación aproximada (sin dirección exacta).
-o	**Mensaje**: "Regístrate para ver más detalles y solicitar donaciones."
--	**Botón CTA**: "Ver más donaciones" (redirige a registro).
-
-5. Sección para Empresas y Locales Gastronómicos
-**Objetivo**: Incentivar a negocios a registrarse y participar.
-**Elementos**:
--	**Mensaje clave**: "Si tienes un restaurante, supermercado o panadería, puedes donar tu excedente y reducir desperdicio."
--	**Botón CTA**: "Registra tu negocio".
-
-6. Footer (Pie de Página)
-**Objetivo**: Proveer información adicional.
-**Elementos**:
--	Enlaces a "Términos y Condiciones", "Política de Privacidad" y "Contacto".
--	Íconos de redes sociales para seguir a la plataforma.
-Diseño y Estilo:
--	**Responsivo**: Adaptado para móviles y computadoras.
--	Minimalista y atractivo: Uso de colores cálidos y amigables.
--	**Contenido restringido**: Algunas funcionalidades solo accesibles al registrarse.
-
-
-
-### Diseño de la Home Page para Usuarios Registrados
-
-El Home Page para usuarios generales registrados se centra en mostrar contenido personalizado, facilitar la interacción con donaciones y fomentar la actividad en la plataforma.
-
-**Secciones Clave**
-1. Barra de Navegación (Header Fijo)
-**Objetivo**: Facilitar el acceso a las secciones clave de la plataforma.
-**Elementos**:
--	Logo de ResQFood (clickeable para volver al home).
--	**Menú de navegación con enlaces a**:
-o	Inicio
-o	Explorar Donaciones
-o	Mis Publicaciones
-o	Notificaciones (con indicador de nuevos mensajes).
-o	Perfil del Usuario.
--	Botón "+ Nueva Donación" para publicar alimentos disponibles.
-
-2. Sección de Bienvenida Personalizada
-**Objetivo**: Hacer que el usuario se sienta identificado y motivado a interactuar.
-**Elementos**:
--	**Mensaje de bienvenida con su nombre**: "Hola, [Nombre del Usuario] 👋 ¿Listo para compartir y recibir alimentos hoy?"
--	**Opciones rápidas**:
-o	"Publicar una Donación" (CTA principal).
-o	"Explorar donaciones cerca de ti".
-
-3. Donaciones Cercanas (Feed Principal)
-**Objetivo**: Mostrar las donaciones disponibles en su zona.
-**Elementos**:
--	**Lista de publicaciones de donaciones en tarjetas con**:
-o	Imagen del alimento.
-o	Nombre descriptivo (ejemplo: "Pan fresco disponible", "Comida casera en buen estado").
-o	Ubicación aproximada.
-o	Tiempo restante antes de que expire la donación.
-o	Botón "Solicitar" para enviar un mensaje al donador.
--	Filtros y búsqueda avanzada:
-o	Por ubicación (mostrar solo donaciones cercanas).
-o	Por fecha de publicación.
-o	Por tipo de alimento (panadería, frutas, comida preparada, etc.).
-
-4. Mis Últimas Interacciones
-**Objetivo**: Mostrar un resumen de la actividad del usuario.
-**Elementos**:
--	Publicaciones realizadas recientemente.
--	Solicitudes de donación enviadas y su estado (pendiente, aceptada, rechazada).
--	Mensajes recientes con otros usuarios.
-
-5. Notificaciones y Recomendaciones
-**Objetivo**: Mantener al usuario informado sobre actividad relevante.
-**Elementos**:
--	**Notificaciones recientes sobre**:
-o	Nuevos mensajes de otros usuarios.
-o	Confirmación de solicitudes de donación.
-o	Nuevas donaciones cercanas disponibles.
--	**Recomendaciones personalizadas**:
-o	"Basado en tu ubicación, hay 3 donaciones disponibles ahora."
-o	"Hay un evento comunitario cerca de ti. ¿Te gustaría participar?"
-
-6. Botón Fijo de Acción Rápida
-**Objetivo**: Facilitar acciones comunes desde cualquier parte del sitio.
-**Elementos**:
--	**Botón flotante en la esquina con accesos rápidos a**:
-o	Publicar nueva donación.
-o	Explorar donaciones.
-o	Mensajes recientes.
-
-7. Footer (Pie de Página)
-**Objetivo**: Proveer información adicional y enlaces útiles.
-**Elementos**:
--	Enlaces a políticas, soporte y redes sociales.
--	Opción para invitar amigos a la plataforma.
-Diseño y Experiencia:
--	Interfaz amigable y dinámica con información relevante en primer plano.
--	Personalización según el historial y ubicación del usuario.
--	Facilidad de uso con acciones rápidas y notificaciones en tiempo real.
+![modelo entidad relacion](img/modeladoBD/MODELO-ENTIDAD-RELACION.PNG)
