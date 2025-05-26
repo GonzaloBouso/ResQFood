@@ -1,6 +1,6 @@
 import React from "react";
 
-const TermsAndConditions = () => {
+const TerminosCondiciones = () => {
   return (
     <main className="max-w-4xl mx-auto px-4 py-12 text-gray-800">
       <section className="text-center mb-12">
@@ -47,4 +47,4 @@ const TermsAndConditions = () => {
   );
 };
 
-export default TermsAndConditions;
+export default TerminosCondiciones;

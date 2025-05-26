@@ -29,8 +29,9 @@ const PerfilUsuarioGeneral = () => {
             <div className="flex text-yellow-500 text-xl">
               {'★★★★★'}
             </div>
+            <a href="/opiniones">
             <span className="text-gray-600">ver opiniones</span>
-            <span className="text-indigo-600 underline">Dar mi opinión</span>
+            </a>
           </div>
         </div>
       </div>

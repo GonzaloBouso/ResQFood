@@ -1,6 +1,6 @@
 import React from "react";
 
-const ContactForm = () => {
+const FormularioContacto = () => {
   return (
     <main className="max-w-5xl mx-auto px-4 py-12 text-gray-800">
       <h1 className="text-2xl md:text-3xl font-semibold text-center mb-10 text-green-700">
@@ -43,4 +43,4 @@ const ContactForm = () => {
   );
 };
 
-export default ContactForm;
+export default FormularioContacto;

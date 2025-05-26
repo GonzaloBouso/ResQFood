@@ -1,6 +1,6 @@
 import React from 'react';
 
-const AboutUs = () => {
+const SobreNosotros = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-16 text-gray-800">
       
@@ -90,4 +90,4 @@ const AboutUs = () => {
   );
 };
 
-export default AboutUs;
+export default SobreNosotros;

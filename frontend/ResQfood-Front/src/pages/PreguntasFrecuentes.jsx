@@ -27,7 +27,7 @@ const faqs = {
   ]
 };
 
-export default function FaqPage() {
+export default function PreguntasFrecuentes() {
   const [openIndex, setOpenIndex] = useState(null);
   const [search, setSearch] = useState("");
 
