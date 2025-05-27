@@ -1,8 +1,9 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { SignedIn, SignedOut } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignIn, SignUp } from '@clerk/clerk-react';
 
 import Header from './components/layout/Header'; 
+import Footer from './components/layout/footer';
 import HomePageUnregistered from './pages/HomePageUnregistered';
 
 import DashboardPage from './pages/DashboardPage'; 
@@ -16,6 +17,8 @@ import PoliticaUsoDatos from './pages/PoliticaUsoDatos';
 import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
+import FormularioVoluntario from './pages/FormularioVoluntario'
+
 const PlaceholderDashboardPage = () => (
   <div className="text-center py-10">
     <h1 className="text-3xl font-bold">Dashboard (Usuario Logueado)</h1>
@@ -26,7 +29,6 @@ const PlaceholderDashboardPage = () => (
 
 const PlaceholderSignInPage = () => {
   
-    const { SignIn } = require('@clerk/clerk-react');
     return (
       <div className="flex justify-center items-center py-10">
         <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
@@ -34,8 +36,7 @@ const PlaceholderSignInPage = () => {
     );
 };
 
-const PlaceholderSignUpPage = () => {
-    const { SignUp } = require('@clerk/clerk-react'); 
+const PlaceholderSignUpPage = () => { 
     return (
       <div className="flex justify-center items-center py-10">
         <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" />
@@ -89,11 +90,13 @@ function App() {
           <Route path="/preguntasFrecuentes" element={<PreguntasFrecuentes />} />
           <Route path="/sobreNosotros" element={<SobreNosotros />} />
           <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
-
+          <Route path="/buscar-alimentos" element={<Location />}/>
+          <Route path="/formulario-voluntario" element={<FormularioVoluntario />}/>
           
         </Routes>
       </main>
       <BottomNavigationBar></BottomNavigationBar>
+      <Footer/>
     </div>
   );
 }
