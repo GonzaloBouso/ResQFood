@@ -1,27 +1,41 @@
 // src/pages/CompleteProfilePage.jsx
-import React, { useState, useEffect, useContext } from 'react'; // Añadido useContext
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useAuth } from '@clerk/clerk-react';
-// No necesitas importar ProfileStatusContext aquí si solo usas la prop onProfileComplete
+import { User as UserIcon, MapPin, ChevronDown } from 'lucide-react';
 
-// <<< No necesitamos el contexto aquí si App.jsx pasa la función onProfileComplete como prop >>>
-// const ProfileStatusContext = createContext(null); // Esto ya está en App.jsx
+const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+const generarOpcionesHora = () => {
+  const opciones = [];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      opciones.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+    }
+  }
+  opciones.push("23:59");
+  return opciones;
+};
+const opcionesHora = generarOpcionesHora();
 
-// Recibe onProfileComplete como prop
-const CompleteProfilePage = ({ onProfileComplete }) => { 
+const CompleteProfilePage = ({ onProfileComplete }) => {
   const navigate = useNavigate();
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   const { getToken } = useAuth();
-  // const profileContext = useContext(ProfileStatusContext); // Ya no es necesario si usamos la prop
 
   const [rol, setRol] = useState('');
   const [formData, setFormData] = useState({
     nombre: '',
     telefono: '',
     ubicacion: { direccion: '', ciudad: '', provincia: '', pais: '' },
-    localData: { tipoNegocio: '', horarioAtencion: '', descripcionEmpresa: '' },
-    fotoDePerfilUrl: '',
+    localData: { tipoNegocio: '', descripcionEmpresa: '' }, // horarioAtencion se maneja con estados separados
+    // fotoDePerfilUrl ya no se maneja aquí
   });
+
+  const [diaInicio, setDiaInicio] = useState('LUNES');
+  const [diaFin, setDiaFin] = useState('VIERNES');
+  const [horaApertura, setHoraApertura] = useState('09:00');
+  const [horaCierre, setHoraCierre] = useState('18:00');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
@@ -31,22 +45,37 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       setFormData(prev => ({
         ...prev,
         nombre: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || '',
-        fotoDePerfilUrl: clerkUser.imageUrl || '',
+        ubicacion: prev.ubicacion || { direccion: '', ciudad: '', provincia: '', pais: '' },
+        localData: prev.localData || { tipoNegocio: '', descripcionEmpresa: '' },
       }));
     }
   }, [isClerkLoaded, clerkUser]);
 
-  const handleInputChange = (e) => { /* ... (sin cambios) ... */
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-  const handleUbicacionChange = (e) => { /* ... (sin cambios) ... */
+
+  const handleUbicacionChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, ubicacion: { ...prev.ubicacion, [name]: value }}));
+    setFormData(prev => ({
+      ...prev,
+      ubicacion: {
+        ...prev.ubicacion,
+        [name]: value,
+      },
+    }));
   };
-  const handleLocalDataChange = (e) => { /* ... (sin cambios) ... */
+  
+  const handleLocalDataChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, localData: { ...prev.localData, [name]: value }}));
+    setFormData(prev => ({
+      ...prev,
+      localData: {
+        ...prev.localData,
+        [name]: value, // Para tipoNegocio, descripcionEmpresa
+      }
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -55,10 +84,10 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
     setError(null);
     setValidationErrors({});
 
-    if (!rol) {
-      setError("Por favor, selecciona un tipo de cuenta.");
-      setLoading(false);
-      return;
+    if (!rol) { 
+        setError("Por favor, selecciona un tipo de cuenta.");
+        setLoading(false);
+        return;
     }
 
     const payload = {
@@ -66,9 +95,20 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       nombre: formData.nombre,
       telefono: formData.telefono,
       ubicacion: formData.ubicacion,
-      fotoDePerfilUrl: formData.fotoDePerfilUrl,
     };
-    if (rol === 'LOCAL') payload.localData = formData.localData;
+
+    if (rol === 'LOCAL') {
+      let horarioString = (diaInicio === diaFin) 
+        ? `${diaInicio} de ${horaApertura} a ${horaCierre}`
+        : `${diaInicio} a ${diaFin} de ${horaApertura} a ${horaCierre}`;
+      
+      payload.localData = {
+        ...formData.localData, // tipoNegocio, descripcionEmpresa
+        horarioAtencion: horarioString
+      };
+    }
+    
+    console.log("Enviando payload para completar perfil:", payload); 
 
     try {
       const token = await getToken();
@@ -82,9 +122,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       if (!response.ok) {
         if (data.errors) {
           const formattedErrors = {};
-          data.errors.forEach(err => {
-            formattedErrors[err.path.join('.')] = err.message;
-          });
+          data.errors.forEach(err => { formattedErrors[err.path.join('.')] = err.message; });
           setValidationErrors(formattedErrors);
           setError("Por favor, corrige los errores en el formulario.");
         } else {
@@ -93,25 +131,19 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         setLoading(false);
         return;
       }
-
-      console.log("(CompleteProfilePage) Perfil completado/actualizado:", data.user);
-      if (onProfileComplete) { // <<< LLAMA A LA FUNCIÓN DE PROP CUANDO EL PERFIL SE COMPLETA >>>
-        onProfileComplete();
-      }
-      navigate('/dashboard'); // O a donde quieras redirigir
-
+      if (onProfileComplete) onProfileComplete();
+      navigate('/dashboard');
     } catch (err) {
-      console.error("(CompleteProfilePage) Error en handleSubmit:", err);
+      console.error("Error en handleSubmit (CompleteProfilePage):", err);
       setError("Ocurrió un error de red o del servidor. Inténtalo de nuevo.");
       setLoading(false);
     }
   };
 
-  if (!isClerkLoaded && !clerkUser) { // Mejor condición para el estado de carga inicial
+  if (!isClerkLoaded || !clerkUser) {
     return <div className="text-center py-10">Cargando información de usuario...</div>;
   }
 
-  // El JSX del formulario (sin cambios respecto al que te di antes, con los inputs, fieldsets, etc.)
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl sm:text-3xl font-bold text-textMain mb-6 text-center">
@@ -124,12 +156,29 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         {/* Selector de Rol */}
         <div>
           <label htmlFor="rol" className="block text-sm font-medium text-textMain mb-1">Tipo de Cuenta <span className="text-red-500">*</span></label>
-          <select id="rol" name="rol" value={rol} onChange={(e) => setRol(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+          <select id="rol" name="rol" value={rol} onChange={(e) => setRol(e.target.value)} required className="mt-1 block w-full input-style">
             <option value="" disabled>Selecciona un rol...</option>
             <option value="GENERAL">Usuario General</option>
             <option value="LOCAL">Local / Negocio</option>
           </select>
           {validationErrors.rol && <p className="text-red-500 text-xs mt-1">{validationErrors.rol}</p>}
+        </div>
+
+        {/* Foto de Perfil (Informativo) */}
+        <div className="space-y-2">
+            <label className="block text-sm font-medium text-textMain">Foto de Perfil</label>
+            <div className="flex items-center space-x-4">
+                {clerkUser?.imageUrl ? (
+                    <img src={clerkUser.imageUrl} alt="Foto de perfil" className="h-20 w-20 rounded-full object-cover shadow-sm" />
+                ) : (
+                    <div className="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center text-textMuted">
+                        <UserIcon size={36} />
+                    </div>
+                )}
+                <p className="text-xs text-textMuted">
+                    Puedes cambiar tu foto de perfil desde el menú de usuario (arriba a la derecha) una vez completado tu perfil.
+                </p>
+            </div>
         </div>
 
         {/* Nombre */}
@@ -146,7 +195,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
           {validationErrors.telefono && <p className="text-red-500 text-xs mt-1">{validationErrors.telefono}</p>}
         </div>
         
-        {/* Ubicación */}
+        {/* ===== SECCIÓN DE UBICACIÓN RESTAURADA ===== */}
         <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium text-textMain px-1">Ubicación <span className="text-red-500">*</span></legend>
             <div className="space-y-4 mt-2">
@@ -173,7 +222,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
             </div>
         </fieldset>
 
-        {/* Campos LOCAL */}
+        {/* ===== CAMPOS LOCAL RESTAURADOS ===== */}
         {rol === 'LOCAL' && (
           <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium text-textMain px-1">Información del Local <span className="text-red-500">*</span></legend>
@@ -183,11 +232,39 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
                 <input type="text" name="tipoNegocio" id="tipoNegocio" value={formData.localData.tipoNegocio} onChange={handleLocalDataChange} required className="mt-1 block w-full input-style" placeholder="Ej: Restaurante"/>
                 {validationErrors['localData.tipoNegocio'] && <p className="text-red-500 text-xs mt-1">{validationErrors['localData.tipoNegocio']}</p>}
               </div>
-              <div>
-                <label htmlFor="horarioAtencion" className="block text-xs font-medium text-textMuted">Horario de Atención</label>
-                <input type="text" name="horarioAtencion" id="horarioAtencion" value={formData.localData.horarioAtencion} onChange={handleLocalDataChange} required className="mt-1 block w-full input-style" placeholder="Ej: L-V 9-18"/>
+              
+              <div className="border-t pt-4 mt-4">
+                <h4 className="text-sm font-medium text-textMain mb-2">Horario de Atención Principal <span className="text-red-500">*</span></h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="diaInicioSelect" className="block text-xs font-medium text-textMuted">Desde el día</label>
+                    <select id="diaInicioSelect" name="diaInicioSelect" value={diaInicio} onChange={(e) => setDiaInicio(e.target.value)} className="mt-1 block w-full input-style">
+                      {diasSemana.map(dia => <option key={`inicio-${dia}`} value={dia}>{dia.charAt(0).toUpperCase() + dia.slice(1).toLowerCase()}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="diaFinSelect" className="block text-xs font-medium text-textMuted">Hasta el día</label>
+                    <select id="diaFinSelect" name="diaFinSelect" value={diaFin} onChange={(e) => setDiaFin(e.target.value)} className="mt-1 block w-full input-style">
+                      {diasSemana.map(dia => <option key={`fin-${dia}`} value={dia}>{dia.charAt(0).toUpperCase() + dia.slice(1).toLowerCase()}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="horaAperturaSelect" className="block text-xs font-medium text-textMuted">Abre a las</label>
+                    <select id="horaAperturaSelect" name="horaAperturaSelect" value={horaApertura} onChange={(e) => setHoraApertura(e.target.value)} className="mt-1 block w-full input-style">
+                      {opcionesHora.map(hora => <option key={`apertura-${hora}`} value={hora}>{hora}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="horaCierreSelect" className="block text-xs font-medium text-textMuted">Cierra a las</label>
+                    <select id="horaCierreSelect" name="horaCierreSelect" value={horaCierre} onChange={(e) => setHoraCierre(e.target.value)} className="mt-1 block w-full input-style">
+                      {opcionesHora.map(hora => <option key={`cierre-${hora}`} value={hora}>{hora}</option>)}
+                    </select>
+                  </div>
+                </div>
                 {validationErrors['localData.horarioAtencion'] && <p className="text-red-500 text-xs mt-1">{validationErrors['localData.horarioAtencion']}</p>}
+                {validationErrors.horarioGeneral && <p className="text-red-500 text-xs mt-1">{validationErrors.horarioGeneral}</p>}
               </div>
+
               <div>
                 <label htmlFor="descripcionEmpresa" className="block text-xs font-medium text-textMuted">Descripción de la Empresa</label>
                 <textarea name="descripcionEmpresa" id="descripcionEmpresa" rows="3" value={formData.localData.descripcionEmpresa} onChange={handleLocalDataChange} required className="mt-1 block w-full input-style" placeholder="Breve descripción..."></textarea>
