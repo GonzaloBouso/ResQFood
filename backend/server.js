@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express'
 import { configureMiddlewares } from './middlewares/middleware.js';
 import connectDB from './config/db.js';
@@ -10,6 +12,18 @@ import EntregaRoutes from './routes/EntregaRoutes.js';
 import ReporteRoutes from './routes/ReporteRoutes.js';
 import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js'; 
+import { configureMiddlewares } from './middlewares/middleware.js';
+import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node'; // O tu importación de Clerk
+
+// Verificar si la clave está cargada (opcional, para depuración)
+if (!process.env.CLERK_SECRET_KEY) {
+    console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.error("ERROR: CLERK_SECRET_KEY no está definida en .env");
+    console.error("Por favor, añade CLERK_SECRET_KEY a tu archivo .env en la raíz del backend.");
+    console.error("Puedes obtenerla de tu dashboard de Clerk -> API Keys.");
+    console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    process.exit(1); // Detener la app si la clave no está
+}
 
 
 
