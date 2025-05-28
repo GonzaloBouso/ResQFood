@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express'
-import { configureMiddlewares } from './middlewares/middleware.js';
 import connectDB from './config/db.js';
 import UserRoutes from './routes/UserRoutes.js';
 import SolicitudRoutes from './routes/SolicitudRoutes.js';
