@@ -1,10 +1,15 @@
-// vite.config.js (CORREGIDO para Tailwind v3 estándar)
+// vite.config.js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// No necesitas importar 'tailwindcss' o '@tailwindcss/vite' aquí
-
 export default defineConfig({
   plugins: [react()],
-  // No necesitas añadir tailwindcss() aquí como plugin
+  server: { 
+    proxy: {
+      '/usuario': { 
+        target: 'http://localhost:5000',
+        changeOrigin: true, 
+      },
+    }
+  }
 });
