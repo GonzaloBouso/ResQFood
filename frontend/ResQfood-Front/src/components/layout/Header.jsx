@@ -51,7 +51,7 @@ const Header = () => {
 
           <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2"> 
             <Link 
-              to="/about"
+              to="/sobreNosotros"
               className="hidden lg:block text-sm text-textMain hover:text-primary px-3 py-2 transition-colors whitespace-nowrap"
             >
               Sobre Nosotros
