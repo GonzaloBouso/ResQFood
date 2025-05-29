@@ -1,3 +1,33 @@
+/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* --- AÑADE ESTO --- */
+@layer utilities {
+  .shadow-text {
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra negra semitransparente */
+    /* Puedes ajustar los valores: 
+       - 0px: desplazamiento horizontal
+       - 2px: desplazamiento vertical (prueba con 1px o 3px)
+       - 4px: desenfoque (blur) (prueba con 3px o 5px)
+       - rgba(0, 0, 0, 0.5): color de la sombra (negro con 50% de opacidad)
+    */
+  }
+  
+  /* Ejemplo de otra utilidad si la necesitaras */
+  /* .another-utility { ... } */
+}
+/* --- FIN DE LO AÑADIDO --- */
+
+/* 
+  Si tenías otros estilos globales personalizados aquí (como para body),
+  pueden permanecer o puedes organizarlos también con @layer si lo deseas,
+  aunque para estilos globales directos a etiquetas como body, no es estrictamente necesario.
+*/
+/*
+body {
+  background-color: #FFFFFF; 
+  color: #2E2E2E; 
+}
+*/
