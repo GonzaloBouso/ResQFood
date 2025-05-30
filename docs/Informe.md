@@ -34,6 +34,7 @@ Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
     - [Elementos Interactivos](#elementos-interactivos)  
     - [Otros Elementos Visuales](#otros-elementos-visuales)  
 18. [Modelado de la base de datos]
+19. [Prototipado]
 
 
 ---
@@ -510,13 +511,24 @@ Para visualizar el prototipo interactivo del diseño de la aplicación, visita e
 
 18. [Modelado de la base de datos]
 
-![Entidad Usuario](img/modeladoBD/USUARIO.PNG)
-![Entidad Solicitud](img/modeladoBD/SOLICITUD.PNG)
-![Entidad Reporte](img/modeladoBD/REPORTE.PNG)
-![Entidad Notificacion](img/modeladoBD/NOTIFICACION.PNG)
-![Entidad Entrega](img/modeladoBD/ENTREGA.PNG)
-![Entidad Donacion](img/modeladoBD/DONACION.PNG)
-![Entidad Calificacion](img/modeladoBD/CALIFICACION.PNG)
-![Entidad Bitacora accion admin](img/modeladoBD/BITACORA-ACCION-ADMIN.PNG)
+![Entidad Usuario](img/modeladoBD/USUARIO.png)
+![Entidad Solicitud](img/modeladoBD/SOLICITUD.png)
+![Entidad Reporte](img/modeladoBD/REPORTE.png)
+![Entidad Notificacion](img/modeladoBD/NOTIFICACION.png)
+![Entidad Entrega](img/modeladoBD/ENTREGA.png)
+![Entidad Donacion](img/modeladoBD/DONACION.png)
+![Entidad Calificacion](img/modeladoBD/CALIFICACION.png)
+![Entidad Bitacora accion admin](img/modeladoBD/BITACORA-ACCION-ADMIN.png)
 
-![modelo entidad relacion](img/modeladoBD/MODELO-ENTIDAD-RELACION.PNG)
+![modelo entidad relacion](img/modeladoBD/MODELO-ENTIDAD-RELACION.png)
+
+19. [Prototipado]
+
+![Creacion de donacion](img/prototipos/ResQFood-creardonación.png)
+![Home page](img/prototipos/ResQFood-HomePage.png)
+![Notificaciones](img/prototipos/ResQFood-notificaciones.png)
+![Perfil usuario general informacion](img/prototipos/ResQFood-Perfil-usuario-general-informacion.png)
+![Perfil usuario general recepciones](img/prototipos/ResQFood-Perfilgeneral-historial-recepciones.png)
+![Ubicacion](img/prototipos/ResQFood-ubicacion.png)
+![Ver opiniones](img/prototipos/ResQFood-ver-opiniones.png)
+![Ver informacion de donacion](img/prototipos/ResQFood-VerInfoDonación.png)

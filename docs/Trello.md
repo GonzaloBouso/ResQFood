@@ -47,4 +47,14 @@ El orden de las listas del tablero es el siguiente:
 
 15/05/2025
 ![Diseño Home Page](img/trello/avance-15-5-25.png)
-![Diseño Home Page](img/trello/avance-23-05-25.png)
+
+23/05/2025
+![Avance](img/trello/avance-23-05-25.png)
+
+24/05/2025
+![Avance](img/trello/avance-2024-05-25.png)
+
+30/05/2025
+![Avance](img/trello/avance-2030-05-25.png)
+
+
