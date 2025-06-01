@@ -1,14 +1,16 @@
 import { useLocation } from './LocationContext';
 
-// dentro del componente App, luego del <LocationMap />
-export default function ConfirmButton() {
+export default function ConfirmButton(props) {
   const { location } = useLocation();
 
   const handleConfirm = () => {
     console.log('Ubicación confirmada:', location);
-    // Aquí podrías guardar en backend o redirigir
-    // Por ejemplo:
-    // axios.post('/api/guardar-ubicacion', location);
+
+    console.log('calle', location.address.street)
+
+    if (props?.onConfirm && typeof props.onConfirm === 'function') {
+      props.onConfirm();
+    }
   };
 
   return (

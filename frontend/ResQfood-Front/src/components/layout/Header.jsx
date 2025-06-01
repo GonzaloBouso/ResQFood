@@ -4,6 +4,8 @@ import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import { MapPin, ChevronDown, Menu as MenuIcon, Search as SearchIcon } from 'lucide-react';
 import logoResQFood from '../../assets/Logo-ResQfood.png';
 
+import Location from '../map/Location';
+
 const Header = () => {
   const navigate = useNavigate();
 
@@ -21,14 +23,7 @@ const Header = () => {
                 className="h-20 sm:h-20 md:h-20 lg:w-[120px] lg:h-auto"
               />
             </Link>
-            
-            <div className="flex items-center space-x-1 cursor-pointer group truncate">
-              <MapPin size={16} sm:size={18} className="text-textMuted group-hover:text-primary flex-shrink-0" />
-              <span className="text-xs sm:text-sm text-textMain group-hover:text-primary truncate">
-                Ingrese su ubicación
-              </span>
-              <ChevronDown size={16} sm:size={18} className="text-textMuted group-hover:text-primary flex-shrink-0" />
-            </div>
+            <Location></Location>
           </div>
          
           <div className="hidden lg:flex flex-1 justify-center items-center px-4">

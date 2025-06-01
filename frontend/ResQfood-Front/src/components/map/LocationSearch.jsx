@@ -25,7 +25,7 @@ export default function LocationSearch() {
   return (
     <input
       ref={inputRef}
-      defaultValue={location.address}
+      value={location.address}
       placeholder="Escribe tu dirección"
       className="w-full p-2 border rounded"
     />
