@@ -14,7 +14,7 @@ const localSchema = new mongoose.Schema({
     horarioAtencion: { type: String, required: true },
     descripcionEmpresa: { type: String, required: true },
     totalDonacionesHechas: { type: Number, default: 0 },
-    calificacionPromedioComoDonante: { type: Number, default: null, min: 0, max: 5 }, // Añadido min/max aquí también por consistencia
+    calificacionPromedioComoDonante: { type: Number, default: null, min: 0, max: 5 },
     numeroCalificacionesComoDonante: { type: Number, default: 0 },
 });
 
@@ -22,7 +22,7 @@ const estadisticasGeneralesSchema = new mongoose.Schema({
     totalDonacionesHechas: { type: Number, default: 0 },
     calificacionPromedioComoDonante: { type: Number, default: null, min: 0, max: 5 },
     numeroCalificacionesComoDonante: { type: Number, default: 0 },
-    calificacionPromedioComoReceptor: { type: Number, default: null, min: 0, max: 5 }, // Añadido min/max
+    calificacionPromedioComoReceptor: { type: Number, default: null, min: 0, max: 5 },
     totalDonacionesRecibidas: { type: Number, default: 0 },
     numeroCalificacionesComoReceptor: { type: Number, default: 0 },
 });
@@ -38,77 +38,81 @@ const permisosSchema = new mongoose.Schema({
 // --- Esquema Principal del Usuario ---
 const userSchema = new mongoose.Schema(
     {
-        clerkUserId: { type: String, unique: true, index: true, required: true }, // Marcado como required ya que es esencial
+        clerkUserId: { type: String, unique: true, index: true, required: true },
         nombre: { 
             type: String, 
-            // El nombre puede venir de Clerk o ser establecido/actualizado después.
-            // Si se requiere solo cuando hay un rol, la lógica de 'required' es correcta.
             required: function() { return !!this.rol && this.rol !== null; } 
         },
-        email: { type: String, unique: true, index: true, required: true }, // El email de Clerk es esencial
+        email: { type: String, unique: true, index: true, required: true },
         telefono: {
             type: String,
-            required: function() { return this.rol === 'LOCAL'; } // Solo obligatorio si el rol es LOCAL
+            required: function() { return this.rol === 'LOCAL'; }
         },
         ubicacion: {
             type: ubicacionSchema,
-            // Obligatorio si el rol es GENERAL o LOCAL, y el rol ya está definido.
             required: function() { return (this.rol === 'GENERAL' || this.rol === 'LOCAL'); }
         },
         fotoDePerfilUrl: { type: String, default: null },
         rol: {
             type: String,
-            enum: ['GENERAL', 'LOCAL', 'MODERADOR', 'ADMIN', null], // Permitir null para el estado inicial
+            enum: ['GENERAL', 'LOCAL', 'MODERADOR', 'ADMIN', null],
             index: true,
             default: null,
         },
         activo: { type: Boolean, default: true },
         fechaSuspension: { type: Date, default: null },
         motivoSuspension: { type: String, default: null },
-
-        // Subdocumento para datos específicos del rol LOCAL
         localData: {
             type: localSchema,
-            default: null, // Será un objeto si el rol es LOCAL, sino null/undefined
+            default: null,
         },
-        // Subdocumento para estadísticas específicas del rol GENERAL
         estadisticasGenerales: {
             type: estadisticasGeneralesSchema,
-            default: null, // Será un objeto si el rol es GENERAL, sino null/undefined
+            default: null,
         },
-        // Subdocumento para permisos de ADMIN/MODERADOR
         permisos: {
             type: permisosSchema,
-            default: null, // Será un objeto si el rol es ADMIN/MODERADOR, sino null
+            default: null,
         },
     },
-    { timestamps: true } // Añade createdAt y updatedAt automáticamente
+    { timestamps: true }
 );
 
-// --- Middleware pre('save') Mejorado ---
+// --- Middleware pre('save') CON LOGS ADICIONALES (manteniendo los logs para depuración) ---
 userSchema.pre('save', function (next) {
-    // Solo ejecutar esta lógica si el documento es nuevo o si el campo 'rol' ha sido modificado.
+    console.log(" modèles/User.js - pre('save'): HOOK EJECUTÁNDOSE");
+    console.log(" modèles/User.js - pre('save'): Documento actual (this):", JSON.stringify(this.toObject(), null, 2));
+    console.log(` modèles/User.js - pre('save'): this.isNew = ${this.isNew}, this.isModified('rol') = ${this.isModified('rol')}`);
+
     if (this.isNew || this.isModified('rol')) {
-        
-        // Lógica para localData y estadisticasGenerales basada en el rol actual
+        console.log(" modèles/User.js - pre('save'): Condición (isNew o isModified('rol')) CUMPLIDA.");
+        console.log(" modèles/User.js - pre('save'): Rol actual antes de la lógica:", this.rol);
+
         if (this.rol === 'LOCAL') {
-            if (!this.localData) { // Si localData no existe o no fue enviado en la actualización
-                this.localData = {}; // Inicialízalo para que Mongoose aplique defaults del subesquema
+            console.log(" modèles/User.js - pre('save'): Rol es LOCAL.");
+            if (!this.localData) {
+                console.log(" modèles/User.js - pre('save'): localData no existe, inicializando a {}.");
+                this.localData = {};
             }
-            this.estadisticasGenerales = undefined; // Limpia datos del rol GENERAL
+            this.estadisticasGenerales = undefined;
+            console.log(" modèles/User.js - pre('save'): estadisticasGenerales seteado a undefined.");
         } else if (this.rol === 'GENERAL') {
+            console.log(" modèles/User.js - pre('save'): Rol es GENERAL.");
             if (!this.estadisticasGenerales) {
-                this.estadisticasGenerales = {}; // Inicialízalo
+                console.log(" modèles/User.js - pre('save'): estadisticasGenerales no existe, inicializando a {}.");
+                this.estadisticasGenerales = {};
             }
-            this.localData = undefined; // Limpia datos del rol LOCAL
+            this.localData = undefined;
+            console.log(" modèles/User.js - pre('save'): localData seteado a undefined.");
         } else {
-            // Si el rol es ADMIN, MODERADOR, o null (inicial)
+            console.log(" modèles/User.js - pre('save'): Rol es OTRO (null, ADMIN, MODERADOR).");
             this.localData = undefined;
             this.estadisticasGenerales = undefined;
+            console.log(" modèles/User.js - pre('save'): localData y estadisticasGenerales seteados a undefined.");
         }
 
-        // Lógica para permisos
         if (this.rol === 'ADMIN') {
+            console.log(" modèles/User.js - pre('save'): Rol es ADMIN, asignando permisos de ADMIN.");
             this.permisos = {
                 puedeSuspenderUsuarios: true,
                 puedeEliminarPublicaciones: true,
@@ -117,6 +121,7 @@ userSchema.pre('save', function (next) {
                 puedeAccederEstadisticasGlobales: true,
             };
         } else if (this.rol === 'MODERADOR') {
+            console.log(" modèles/User.js - pre('save'): Rol es MODERADOR, asignando permisos de MODERADOR.");
             this.permisos = {
                 puedeSuspenderUsuarios: false,
                 puedeEliminarPublicaciones: true,
@@ -125,23 +130,34 @@ userSchema.pre('save', function (next) {
                 puedeAccederEstadisticasGlobales: false,
             };
         } else {
-            // Para roles como GENERAL, LOCAL, o si el rol es null.
+            console.log(" modèles/User.js - pre('save'): Rol no es ADMIN/MODERADOR, seteando permisos a null.");
             this.permisos = null; 
         }
+        console.log(" modèles/User.js - pre('save'): Estado del documento DESPUÉS de aplicar lógica de rol:", JSON.stringify(this.toObject(), null, 2));
+    } else {
+        console.log(" modèles/User.js - pre('save'): Condición (isNew o isModified('rol')) NO CUMPLIDA. Saltando lógica de rol.");
     }
+    console.log(" modèles/User.js - pre('save'): Llamando a next().");
     next();
 });
 
 // --- Método toJSON para limpiar la respuesta ---
+// --- VERSIÓN CORREGIDA ---
 userSchema.methods.toJSON = function () {
-    const obj = this.toObject();
+    const obj = this.toObject(); // <<< ESTA LÍNEA ES CLAVE Y DEBE ESTAR PRIMERO
+    
     // Puedes decidir qué campos no quieres que se envíen al frontend por defecto
     delete obj.__v; // Común eliminar la versión de Mongoose
-    // Ya tenías estos, lo cual está bien si no quieres exponerlos siempre:
+    
+    // Elimina campos sensibles o que no quieres exponer siempre
+    // (estos ya los tenías y están bien si esa es tu intención)
     delete obj.motivoSuspension;
     delete obj.fechaSuspension;
-    // Considera si quieres eliminar 'password' si lo tuvieras, aunque Clerk lo maneja.
-    return obj;
+    
+    // Considera si quieres eliminar 'password' si lo tuvieras (aunque Clerk lo maneja).
+    // delete obj.password; 
+
+    return obj; // <<< DEVOLVER EL OBJETO MODIFICADO
 }
 
 export default mongoose.model('User', userSchema);
