@@ -1,24 +1,22 @@
 // src/pages/CompleteProfilePage.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useUser, useAuth } from '@clerk/clerk-react';
-import { User as UserIcon, MapPin, ChevronDown } from 'lucide-react';
-
-const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
-const generarOpcionesHora = () => {
-  const opciones = [];
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 30) {
-      opciones.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-    }
-  }
-  opciones.push("23:59");
-  return opciones;
-};
-const opcionesHora = generarOpcionesHora();
+import { User as UserIcon } from 'lucide-react';
 
 const CompleteProfilePage = ({ onProfileComplete }) => {
-  const navigate = useNavigate();
+  const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+  const generarOpcionesHora = () => {
+    const opciones = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        opciones.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      }
+    }
+    opciones.push("23:59");
+    return opciones;
+  };
+  const opcionesHora = generarOpcionesHora();
+
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   const { getToken } = useAuth();
 
@@ -27,8 +25,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
     nombre: '',
     telefono: '',
     ubicacion: { direccion: '', ciudad: '', provincia: '', pais: '' },
-    localData: { tipoNegocio: '', descripcionEmpresa: '' }, // horarioAtencion se maneja con estados separados
-    // fotoDePerfilUrl ya no se maneja aquí
+    localData: { tipoNegocio: '', descripcionEmpresa: '' },
   });
 
   const [diaInicio, setDiaInicio] = useState('LUNES');
@@ -38,6 +35,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
@@ -45,8 +43,8 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       setFormData(prev => ({
         ...prev,
         nombre: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || '',
-        ubicacion: prev.ubicacion || { direccion: '', ciudad: '', provincia: '', pais: '' },
-        localData: prev.localData || { tipoNegocio: '', descripcionEmpresa: '' },
+        ubicacion: prev.ubicacion.direccion ? prev.ubicacion : { direccion: '', ciudad: '', provincia: '', pais: '' },
+        localData: prev.localData.tipoNegocio ? prev.localData : { tipoNegocio: '', descripcionEmpresa: '' },
       }));
     }
   }, [isClerkLoaded, clerkUser]);
@@ -60,10 +58,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      ubicacion: {
-        ...prev.ubicacion,
-        [name]: value,
-      },
+      ubicacion: { ...prev.ubicacion, [name]: value },
     }));
   };
   
@@ -71,10 +66,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      localData: {
-        ...prev.localData,
-        [name]: value, // Para tipoNegocio, descripcionEmpresa
-      }
+      localData: { ...prev.localData, [name]: value },
     }));
   };
 
@@ -82,6 +74,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccessMessage('');
     setValidationErrors({});
 
     if (!rol) { 
@@ -103,12 +96,12 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         : `${diaInicio} a ${diaFin} de ${horaApertura} a ${horaCierre}`;
       
       payload.localData = {
-        ...formData.localData, // tipoNegocio, descripcionEmpresa
+        ...formData.localData,
         horarioAtencion: horarioString
       };
     }
     
-    console.log("Enviando payload para completar perfil:", payload); 
+    console.log("CompleteProfilePage: Enviando payload para completar perfil:", JSON.stringify(payload, null, 2)); 
 
     try {
       const token = await getToken();
@@ -120,9 +113,13 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.errors) {
+        console.error("CompleteProfilePage: Error en respuesta del PUT:", data);
+        if (data.errors && Array.isArray(data.errors)) {
           const formattedErrors = {};
-          data.errors.forEach(err => { formattedErrors[err.path.join('.')] = err.message; });
+          data.errors.forEach(err => { 
+            const pathKey = Array.isArray(err.path) ? err.path.join('.') : String(err.path);
+            formattedErrors[pathKey] = err.message; 
+          });
           setValidationErrors(formattedErrors);
           setError("Por favor, corrige los errores en el formulario.");
         } else {
@@ -131,10 +128,16 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         setLoading(false);
         return;
       }
+
+      console.log("CompleteProfilePage: PUT exitoso. Llamando a onProfileComplete.");
       if (onProfileComplete) onProfileComplete();
-      navigate('/dashboard');
+      
+      setSuccessMessage("¡Perfil guardado exitosamente! Serás redirigido en breve...");
+      console.log("CompleteProfilePage: Perfil guardado. ProtectedRoute debería manejar la redirección.");
+      // setLoading(false); // Dejar que el cambio de ruta maneje el estado de carga implícitamente
+
     } catch (err) {
-      console.error("Error en handleSubmit (CompleteProfilePage):", err);
+      console.error("CompleteProfilePage: Error en handleSubmit:", err);
       setError("Ocurrió un error de red o del servidor. Inténtalo de nuevo.");
       setLoading(false);
     }
@@ -195,7 +198,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
           {validationErrors.telefono && <p className="text-red-500 text-xs mt-1">{validationErrors.telefono}</p>}
         </div>
         
-        {/* ===== SECCIÓN DE UBICACIÓN RESTAURADA ===== */}
+        {/* SECCIÓN DE UBICACIÓN */}
         <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium text-textMain px-1">Ubicación <span className="text-red-500">*</span></legend>
             <div className="space-y-4 mt-2">
@@ -222,7 +225,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
             </div>
         </fieldset>
 
-        {/* ===== CAMPOS LOCAL RESTAURADOS ===== */}
+        {/* CAMPOS LOCAL */}
         {rol === 'LOCAL' && (
           <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium text-textMain px-1">Información del Local <span className="text-red-500">*</span></legend>
@@ -232,7 +235,6 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
                 <input type="text" name="tipoNegocio" id="tipoNegocio" value={formData.localData.tipoNegocio} onChange={handleLocalDataChange} required className="mt-1 block w-full input-style" placeholder="Ej: Restaurante"/>
                 {validationErrors['localData.tipoNegocio'] && <p className="text-red-500 text-xs mt-1">{validationErrors['localData.tipoNegocio']}</p>}
               </div>
-              
               <div className="border-t pt-4 mt-4">
                 <h4 className="text-sm font-medium text-textMain mb-2">Horario de Atención Principal <span className="text-red-500">*</span></h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -262,9 +264,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
                   </div>
                 </div>
                 {validationErrors['localData.horarioAtencion'] && <p className="text-red-500 text-xs mt-1">{validationErrors['localData.horarioAtencion']}</p>}
-                {validationErrors.horarioGeneral && <p className="text-red-500 text-xs mt-1">{validationErrors.horarioGeneral}</p>}
               </div>
-
               <div>
                 <label htmlFor="descripcionEmpresa" className="block text-xs font-medium text-textMuted">Descripción de la Empresa</label>
                 <textarea name="descripcionEmpresa" id="descripcionEmpresa" rows="3" value={formData.localData.descripcionEmpresa} onChange={handleLocalDataChange} required className="mt-1 block w-full input-style" placeholder="Breve descripción..."></textarea>
@@ -273,8 +273,8 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
             </div>
           </fieldset>
         )}
-
         {error && <p className="text-red-600 text-sm text-center mt-4">{error}</p>}
+        {successMessage && <p className="text-green-600 text-sm text-center mt-4">{successMessage}</p>}
         <button type="submit" disabled={loading || !rol} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-brandPrimaryDarker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50">
           {loading ? 'Guardando...' : 'Guardar y Continuar'}
         </button>

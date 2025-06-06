@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import { MapPin, ChevronDown, Menu as MenuIcon, Search as SearchIcon, MoreVertical } from 'lucide-react';
 import logoResQFood from '../../assets/Logo-ResQfood.png';
-import { ProfileStatusContext } from '../../App'; // Ajusta si es necesario
+import { ProfileStatusContext } from '../../context/ProfileStatusContext'; // <<< CORREGIDO // Ajusta si es necesario
 import Location from '../map/Location'; // Asegúrate que la ruta sea correcta a tu componente Location
 
 const Header = () => {

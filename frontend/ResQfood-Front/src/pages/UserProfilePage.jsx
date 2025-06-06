@@ -1,6 +1,6 @@
 // src/pages/UserProfilePage.jsx
 import React, { useContext } from 'react';
-import { ProfileStatusContext } from '../App'; // Ajusta la ruta si es necesario
+import { ProfileStatusContext } from '../context/ProfileStatusContext'; // Ajusta la ruta si es necesario
 import PerfilUsuarioGeneral from './PerfilUsuarioGeneral';
 import PerfilUsuarioEmpresa from './PerfilUsuarioEmpresa'; // Asegúrate de que esta página exista y esté correcta
 // import LoadingSpinner from '../components/common/LoadingSpinner'; // Si tienes un componente de carga
