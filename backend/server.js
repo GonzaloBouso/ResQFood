@@ -4,7 +4,6 @@ import express from 'express'
 import connectDB from './config/db.js';
 import UserRoutes from './routes/UserRoutes.js';
 import SolicitudRoutes from './routes/SolicitudRoutes.js';
-import DonacionRoutes from './routes/DonacionRoutes.js';
 import CalificacionRoutes from './routes/CalificacionRoutes.js';
 import NotificacionRoutes from './routes/NotificacionRoutes.js';
 import EntregaRoutes from './routes/EntregaRoutes.js';
@@ -13,6 +12,8 @@ import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js'; 
 import { configureMiddlewares } from './middlewares/middleware.js';
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node'; // O tu importación de Clerk
+import DonacionRoutes from './routes/DonacionRoutes.js'; 
+
 
 // Verificar si la clave está cargada (opcional, para depuración)
 if (!process.env.CLERK_SECRET_KEY) {
@@ -44,8 +45,6 @@ app.get("/", (req, res) => {
 
 app.use('/usuario', UserRoutes)
 
-app.use('/donacion', DonacionRoutes)
-
 app.use('/solicitud', SolicitudRoutes)
 
 app.use('/calificacion', CalificacionRoutes)
@@ -57,6 +56,8 @@ app.use('/entrega', EntregaRoutes)
 app.use('/reporte', ReporteRoutes)
 
 app.use('/bitacoraAdmin', BitacoraRoutes)
+
+app.use('/donacion', DonacionRoutes);
 
 app.use((req, res, next)=>{
     res.status(404).json({message: `Ruta ${req.method} ${req.url} no encontrada. `})

@@ -1,7 +1,13 @@
+// src/routes/DonacionRoutes.js
 import express from 'express';
 import { DonacionController } from '../controllers/DonacionController.js';
-const router = express.Router()
+import { requireAuth } from '../middlewares/autMiddleware.js';
+import { uploadDonacionImages } from '../middlewares/uploadMiddleware.js'; // Importa el middleware de subida
 
-router.post('/', DonacionController.createDonacion)
+const router = express.Router();
+
+// Usar el middleware uploadDonacionImages ANTES del controlador
+router.post('/', requireAuth, uploadDonacionImages, DonacionController.createDonacion);
+router.get('/cercanas', DonacionController.getDonacionesCercanas);
 
 export default router;

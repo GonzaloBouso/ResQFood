@@ -51,7 +51,7 @@ const donationSchema = new Schema(
                 type:{ type: String, enum: ['Point'], default:'Point'},
                 coordinates: {
                     type:[Number],
-                    required:true,
+                    // required:true,
                     validate: {
                         validator: function (coords) {
                             return coords.length === 2;

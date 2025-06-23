@@ -15,19 +15,9 @@
     */
   }
   
-  /* Ejemplo de otra utilidad si la necesitaras */
-  /* .another-utility { ... } */
 }
-/* --- FIN DE LO AÑADIDO --- */
-
-/* 
-  Si tenías otros estilos globales personalizados aquí (como para body),
-  pueden permanecer o puedes organizarlos también con @layer si lo deseas,
-  aunque para estilos globales directos a etiquetas como body, no es estrictamente necesario.
-*/
-/*
-body {
-  background-color: #FFFFFF; 
-  color: #2E2E2E; 
+@layer components {
+  .input-style {
+    @apply px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm;
+  }
 }
-*/

@@ -6,7 +6,8 @@ const navItems = [
   { name: 'Inicio', href: '/', icon: Home, exact: true }, 
   { name: 'Usuario', href: '/profile', icon: User },
   { name: 'Buscar', href: '/explore', icon: Search },
-  { name: 'Publicar', href: '/new-donation', icon: PlusCircle },
+  { name: 'Publicar', href: '/publicar-donacion', icon: PlusCircle }, // <<< ACTUALIZA ESTE HREF
+
 ];
 
 const BottomNavigationBar = () => {

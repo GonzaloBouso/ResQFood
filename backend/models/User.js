@@ -7,6 +7,29 @@ const ubicacionSchema = new mongoose.Schema({
     ciudad: { type: String, required: true },
     provincia: { type: String, required: true },
     pais: { type: String, required: true },
+    // ---- CAMPO DE COORDENADAS DENTRO DE ubicacionSchema ----
+    coordenadas: { // Este objeto almacenará las coordenadas GeoJSON
+        type: { // El tipo de geometría GeoJSON, siempre 'Point' para una ubicación única
+            type: String, 
+            enum: ['Point'], 
+            default: 'Point',
+            // required: true // Es buena idea requerirlo si siempre vas a tener coordenadas
+        },
+        coordinates: { // El array que contiene [longitud, latitud]
+            type: [Number], // Un array de números
+            // required: true, // ¡Importante! Si necesitas que siempre haya coordenadas
+            index: '2dsphere' // ESTO ES OPCIONAL AQUÍ, PERO ÚTIL SI QUIERES BUSCAR USUARIOS CERCANOS
+                               // El índice principal para buscar donaciones cercanas estará en el modelo Donacion.
+                               // Pero si alguna vez quieres encontrar usuarios cerca de un punto, este índice ayudaría.
+                               // Si no lo necesitas, puedes quitar este 'index'.
+            // validate: { // Opcional: validar que sean 2 números
+            //     validator: function(v) {
+            //         return Array.isArray(v) && v.length === 2 && typeof v[0] === 'number' && typeof v[1] === 'number';
+            //     },
+            //     message: props => `${props.value} no es un array válido de dos números para coordenadas!`
+            // }
+        }
+    }
 });
 
 const localSchema = new mongoose.Schema({
