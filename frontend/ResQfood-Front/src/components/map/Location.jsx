@@ -1,68 +1,158 @@
 // src/components/map/Location.jsx
-import { useState } from 'react';
-// import { LoadScript } from '@react-google-maps/api'; // <<<--- ELIMINA ESTA LÍNEA
-import { LocationProvider, useLocation } from './LocationContext'; // Asegúrate que la ruta a LocationContext sea correcta
-import LocationSearch from './LocationSearch';
-import LocationMap from './LocationMap';
-import LocationButton from './LocationButton';
-import ConfirmButton from './ConfirmButton';
-import Modal from './Modal'; // Asegúrate que la ruta a Modal sea correcta
-import { MapPin, ChevronDown } from 'lucide-react';
+import React, { useState, useCallback, useRef } from 'react';
+import { GoogleMap, Marker, Autocomplete } from '@react-google-maps/api';
+import Modal from './Modal';
+import { MapPin, ChevronDown, LocateFixed } from 'lucide-react';
 
-// const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY; // <<<--- ELIMINA ESTA LÍNEA
-// const libraries = ['places']; // <<<--- ELIMINA ESTA LÍNEA
+// --- ESTILOS Y CONFIGURACIÓN DEL MAPA ---
+const mapContainerStyle = { width: '100%', height: '250px' };
+const mapOptions = { disableDefaultUI: true, zoomControl: true };
+const initialCenter = { lat: -34.6037, lng: -58.3816 }; // Buenos Aires
 
-// Este es el componente que realmente muestra la UI para seleccionar la ubicación
-// y que probablemente se usa en el Header
-export function LocationSelectorUI({ onOpen }) { // Cambiado el nombre y exportado para claridad
-  const { location } = useLocation(); // Asumo que este hook viene de tu LocationContext
-
-  return (
-    <div
-      onClick={onOpen}
-      className="flex items-center space-x-1 cursor-pointer group truncate"
-    >
-      <MapPin size={16} className="text-textMuted group-hover:text-primary flex-shrink-0" />
-      <span className="text-xs sm:text-sm text-textMain group-hover:text-primary truncate">
-        {location?.address || 'Ingrese su ubicación'} {/* Añadido optional chaining por si location es null/undefined */}
-      </span>
-      <ChevronDown size={16} className="text-textMuted group-hover:text-primary flex-shrink-0" />
-    </div>
-  );
-}
-
-// Este componente maneja el Modal y la lógica de abrir/cerrar
-// y SÍ necesita el LocationProvider, pero NO LoadScript
-export function LocationModalWorkflow() { // Cambiado el nombre y exportado
+// --- COMPONENTE PRINCIPAL ---
+export function LocationModalWorkflow({ onLocationSelected, currentDisplayAddress }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(initialCenter);
+  const [selectedAddress, setSelectedAddress] = useState("Buenos Aires, Argentina");
+  
+  const mapRef = useRef(null);
+  const autocompleteRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  const onLoadMap = useCallback(map => (mapRef.current = map), []);
+  const onLoadAutocomplete = useCallback(ac => (autocompleteRef.current = ac), []);
+
+  const handleMapClick = useCallback((e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    const newPos = { lat, lng };
+    setSelectedLocation(newPos);
+    
+    // Reverse Geocode para obtener la dirección
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: newPos }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+            setSelectedAddress(results[0].formatted_address);
+        } else {
+            setSelectedAddress(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`);
+        }
+    });
+  }, []);
+
+ 
+  const handlePlaceChanged = useCallback(() => {
+    if (autocompleteRef.current) {
+        const place = autocompleteRef.current.getPlace();
+        if (place.geometry?.location) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            const newPos = { lat, lng };
+            
+            setSelectedLocation(newPos);
+            setSelectedAddress(place.formatted_address || "Ubicación seleccionada");
+
+            
+            if (mapRef.current) {
+                mapRef.current.panTo(newPos);
+                mapRef.current.setZoom(15);
+            }
+        }
+    }
+  }, []);
+  
+  const handleUseMyCurrentLocation = () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const newPos = { lat: latitude, lng: longitude };
+                
+                
+                if (mapRef.current) {
+                    mapRef.current.panTo(newPos);
+                    mapRef.current.setZoom(15);
+                }
+                handleMapClick({ latLng: { lat: () => latitude, lng: () => longitude } });
+            },
+            () => alert("No se pudo obtener la ubicación.")
+        );
+    }
+  };
+
+  const handleConfirm = () => {
+    if (onLocationSelected) {
+    
+        onLocationSelected({ 
+            lat: selectedLocation.lat, 
+            lng: selectedLocation.lng, 
+            address: selectedAddress 
+        });
+    }
+    setIsModalOpen(false);
+  };
 
   return (
-    <LocationProvider> {/* LocationProvider es necesario para los componentes de mapa hijos */}
-      <LocationSelectorUI onOpen={() => setIsModalOpen(true)} />
+    <>
+      {/* El botón en el Header que abre el modal */}
+      <div
+        onClick={() => setIsModalOpen(true)}
+        className="flex items-center space-x-1 cursor-pointer group truncate max-w-[200px] sm:max-w-[250px]"
+        title={currentDisplayAddress}
+      >
+        <MapPin size={16} className="text-gray-500 group-hover:text-primary flex-shrink-0" />
+        <span className="text-xs sm:text-sm text-gray-700 group-hover:text-primary truncate">
+          {currentDisplayAddress}
+        </span>
+        <ChevronDown size={16} className="text-gray-500 group-hover:text-primary flex-shrink-0" />
+      </div>
 
+      {/* El Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="space-y-4 p-1"> {/* Añadido un poco de padding al contenido del modal */}
-          <h3 className="text-lg font-medium text-textMain mb-4">Seleccionar Ubicación</h3> {/* Título para el modal */}
-          <LocationSearch />
-          <LocationButton /> {/* Botón para usar geolocalización actual */}
-          <div className="w-full h-64 sm:h-80 bg-gray-200 rounded"> {/* Contenedor con tamaño para el mapa */}
-            <LocationMap />
-          </div>
-          <ConfirmButton onConfirm={() => setIsModalOpen(false)} />
+        <div className="space-y-4 p-1">
+            <h3 className="text-lg font-medium text-gray-800 mb-4">Seleccionar Ubicación</h3>
+
+            {/* El input de búsqueda */}
+            <Autocomplete onLoad={onLoadAutocomplete} onPlaceChanged={handlePlaceChanged}>
+                <input
+                    type="text"
+                    placeholder="Escribe tu dirección"
+                    ref={searchInputRef}
+                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm"
+                />
+            </Autocomplete>
+            
+            {/* El mapa */}
+            <div className="w-full h-64 sm:h-80 bg-gray-200 rounded">
+                <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={selectedLocation}
+                    zoom={15}
+                    onLoad={onLoadMap}
+                    onClick={handleMapClick}
+                    options={mapOptions}
+                >
+                    <Marker position={selectedLocation} />
+                </GoogleMap>
+            </div>
+
+            {/* Botón de ubicación actual */}
+            <button
+                onClick={handleUseMyCurrentLocation}
+                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50"
+            >
+                <LocateFixed size={16} className="mr-2" />
+                Usar mi ubicación actual
+            </button>
+            
+            {/* Botón de confirmar */}
+            <button
+                onClick={handleConfirm}
+                className="w-full mt-2 px-4 py-2 bg-primary text-white rounded-md font-medium hover:bg-brandPrimaryDarker"
+            >
+                Confirmar Ubicación
+            </button>
         </div>
       </Modal>
-    </LocationProvider>
+    </>
   );
 }
-
-// Si tenías una PÁGINA llamada Location.jsx que solo envolvía esto,
-// y ahora la lógica de LoadScript está en App.jsx, esa página podría ya no ser necesaria
-// o simplemente renderizaría LocationModalWorkflow.
-// Por ahora, exportaremos LocationModalWorkflow para usarlo donde se necesite.
-// El export default original 'Location' ya no tiene sentido si solo envolvía LoadScript.
-
-// Si necesitas un componente exportado por defecto que use esto:
-// const LocationFeature = () => {
-//   return <LocationModalWorkflow />;
-// }
-// export default LocationFeature;
