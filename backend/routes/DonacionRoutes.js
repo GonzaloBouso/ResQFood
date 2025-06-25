@@ -9,5 +9,6 @@ const router = express.Router();
 // Usar el middleware uploadDonacionImages ANTES del controlador
 router.post('/', requireAuth, uploadDonacionImages, DonacionController.createDonacion);
 router.get('/cercanas', DonacionController.getDonacionesCercanas);
+router.get('/:id', DonacionController.getDonationById);
 
 export default router;
