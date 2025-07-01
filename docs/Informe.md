@@ -35,7 +35,7 @@ Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
     - [Otros Elementos Visuales](#otros-elementos-visuales)  
 18. [Modelado de la base de datos]
 19. [Prototipado]
-
+20. [Despliegue]
 
 ---
 
@@ -532,3 +532,8 @@ Para visualizar el prototipo interactivo del diseño de la aplicación, visita e
 ![Ubicacion](img/prototipos/ResQFood-ubicacion.png)
 ![Ver opiniones](img/prototipos/ResQFood-ver-opiniones.png)
 ![Ver informacion de donacion](img/prototipos/ResQFood-VerInfoDonación.png)
+
+20. [Despliegue]
+
+![Link](https://res-q-food.vercel.app/)
+![Qr](img/despliegue/vercel.png)

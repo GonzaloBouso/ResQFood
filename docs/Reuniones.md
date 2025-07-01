@@ -123,3 +123,11 @@ Temas tratados:
     3.	Implementación de Ngrok:
         Para facilitar el desarrollo y pruebas locales de los webhooks, se utilizó Ngrok para exponer temporalmente el servidor local a internet.
         Esto permitió simular y recibir eventos de Clerk en tiempo real durante la sesión.
+
+# Reunión - 26/06/2025
+
+Temas tratados
+
+- El cliente expresó satisfacción con el avance del proyecto (“cliente contento”).
+- Manifestó que, por el momento, desea probar la aplicación únicamente con el perfil de **administrador**, descartando el uso de un perfil de moderador.
+- La intención es evaluar si realmente necesita incorporar el rol de moderador más adelante, en función de la experiencia de uso.
