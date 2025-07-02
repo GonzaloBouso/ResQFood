@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom'; // Para el enlace de opiniones
 import HistorialDonacion from '../components/layout/HistorialDonacion';
 import HistorialRecepcion from '../components/layout/HistorialRecepcion';
+import BotonPublicar from '../components/layout/BotonPublicar'
 
 // Componente interno para mostrar la información del usuario de forma dinámica
 const InfoUsuarioGeneralDinamico = ({ userData }) => {
@@ -107,7 +108,9 @@ const PerfilUsuarioGeneral = ({ userData }) => {
           */}
         </div>
       </div>
-
+      <div className="flex justify-center mb-6">
+        <BotonPublicar></BotonPublicar>
+      </div>
       {/* Tabs de Navegación */}
       <div className="mb-8">
         <div className="flex justify-center border-b border-gray-200">

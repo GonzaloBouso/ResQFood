@@ -128,6 +128,23 @@ export class DonacionController {
         }
     }
 
+    static async getDonacionesByUsuario(req, res) {
+        try {
+            const userId = req.params.id;
+
+            const donaciones = await Donacion.find({ donanteId: userId })
+            .sort({ createdAt: -1 }); // las más recientes primero
+
+            res.status(200).json({ donaciones });
+        } catch (error) {
+            console.error('Error al obtener las donaciones del usuario:', error);
+            res.status(500).json({
+            message: 'Error interno al obtener las donaciones del usuario',
+            errorDetails: error.message,
+            });
+        }
+        }
+
     /**
      * Obtener una donación específica por su ID
      */
@@ -243,6 +260,7 @@ export class DonacionController {
             res.status(500).json({ message: 'Error interno al actualizar la donación', errorDetails: error.message });
         }
     }
+
 
     /**
      * Eliminar una donación

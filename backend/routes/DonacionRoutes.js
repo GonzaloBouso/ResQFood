@@ -10,5 +10,7 @@ const router = express.Router();
 router.post('/', requireAuth, uploadDonacionImages, DonacionController.createDonacion);
 router.get('/cercanas', DonacionController.getDonacionesCercanas);
 router.get('/:id', DonacionController.getDonationById);
+router.get('/usuario/:id', DonacionController.getDonacionesByUsuario);
+
 
 export default router;

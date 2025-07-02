@@ -1,8 +1,10 @@
 // src/pages/DashboardPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
+import { Link } from "react-router-dom"; 
 import CardDonacion from '../components/layout/CardDonacion';
 import { useAuth } from '@clerk/clerk-react';
 import { ProfileStatusContext } from '../context/ProfileStatusContext'; 
+import BotonPublicar from '../components/layout/BotonPublicar'
 
 const DashboardPage = () => {
   const { getToken } = useAuth();
@@ -105,9 +107,12 @@ const DashboardPage = () => {
 
   return (
     <div className="py-8">
-     ¿
       <h1 className="text-3xl font-bold text-gray-800 mb-4">Panel Principal</h1>
       <p className="text-gray-600 mb-8 text-sm italic">{mensajeUbicacion}</p>
+
+      <div className="flex justify-center mb-6">
+        <BotonPublicar></BotonPublicar>
+      </div>
       
       <section className="mt-8">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Donaciones Cercanas</h2>
