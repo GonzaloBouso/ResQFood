@@ -1,33 +1,19 @@
-// src/models/User.js
 import mongoose from 'mongoose';
 
-// --- Subesquemas Definidos ---
 const ubicacionSchema = new mongoose.Schema({
     direccion: { type: String, required: true },
     ciudad: { type: String, required: true },
     provincia: { type: String, required: true },
     pais: { type: String, required: true },
-    // ---- CAMPO DE COORDENADAS DENTRO DE ubicacionSchema ----
-    coordenadas: { // Este objeto almacenará las coordenadas GeoJSON
-        type: { // El tipo de geometría GeoJSON, siempre 'Point' para una ubicación única
-            type: String, 
-            enum: ['Point'], 
+    coordenadas: {
+        type: {
+            type: String,
+            enum: ['Point'],
             default: 'Point',
-            // required: true // Es buena idea requerirlo si siempre vas a tener coordenadas
         },
-        coordinates: { // El array que contiene [longitud, latitud]
-            type: [Number], // Un array de números
-            // required: true, // ¡Importante! Si necesitas que siempre haya coordenadas
-            index: '2dsphere' // ESTO ES OPCIONAL AQUÍ, PERO ÚTIL SI QUIERES BUSCAR USUARIOS CERCANOS
-                               // El índice principal para buscar donaciones cercanas estará en el modelo Donacion.
-                               // Pero si alguna vez quieres encontrar usuarios cerca de un punto, este índice ayudaría.
-                               // Si no lo necesitas, puedes quitar este 'index'.
-            // validate: { // Opcional: validar que sean 2 números
-            //     validator: function(v) {
-            //         return Array.isArray(v) && v.length === 2 && typeof v[0] === 'number' && typeof v[1] === 'number';
-            //     },
-            //     message: props => `${props.value} no es un array válido de dos números para coordenadas!`
-            // }
+        coordinates: {
+            type: [Number],
+            required: true,
         }
     }
 });
@@ -58,13 +44,12 @@ const permisosSchema = new mongoose.Schema({
     puedeAccederEstadisticasGlobales: { type: Boolean, default: false },
 });
 
-// --- Esquema Principal del Usuario ---
 const userSchema = new mongoose.Schema(
     {
         clerkUserId: { type: String, unique: true, index: true, required: true },
-        nombre: { 
-            type: String, 
-            required: function() { return !!this.rol && this.rol !== null; } 
+        nombre: {
+            type: String,
+            required: function() { return !!this.rol; }
         },
         email: { type: String, unique: true, index: true, required: true },
         telefono: {
@@ -73,7 +58,7 @@ const userSchema = new mongoose.Schema(
         },
         ubicacion: {
             type: ubicacionSchema,
-            required: function() { return (this.rol === 'GENERAL' || this.rol === 'LOCAL'); }
+            required: function() { return this.rol === 'GENERAL' || this.rol === 'LOCAL'; }
         },
         fotoDePerfilUrl: { type: String, default: null },
         rol: {
@@ -101,41 +86,20 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// --- Middleware pre('save') CON LOGS ADICIONALES (manteniendo los logs para depuración) ---
-userSchema.pre('save', function (next) {
-    console.log(" modèles/User.js - pre('save'): HOOK EJECUTÁNDOSE");
-    console.log(" modèles/User.js - pre('save'): Documento actual (this):", JSON.stringify(this.toObject(), null, 2));
-    console.log(` modèles/User.js - pre('save'): this.isNew = ${this.isNew}, this.isModified('rol') = ${this.isModified('rol')}`);
-
+userSchema.pre('save', function(next) {
     if (this.isNew || this.isModified('rol')) {
-        console.log(" modèles/User.js - pre('save'): Condición (isNew o isModified('rol')) CUMPLIDA.");
-        console.log(" modèles/User.js - pre('save'): Rol actual antes de la lógica:", this.rol);
-
         if (this.rol === 'LOCAL') {
-            console.log(" modèles/User.js - pre('save'): Rol es LOCAL.");
-            if (!this.localData) {
-                console.log(" modèles/User.js - pre('save'): localData no existe, inicializando a {}.");
-                this.localData = {};
-            }
+            if (!this.localData) this.localData = {};
             this.estadisticasGenerales = undefined;
-            console.log(" modèles/User.js - pre('save'): estadisticasGenerales seteado a undefined.");
         } else if (this.rol === 'GENERAL') {
-            console.log(" modèles/User.js - pre('save'): Rol es GENERAL.");
-            if (!this.estadisticasGenerales) {
-                console.log(" modèles/User.js - pre('save'): estadisticasGenerales no existe, inicializando a {}.");
-                this.estadisticasGenerales = {};
-            }
+            if (!this.estadisticasGenerales) this.estadisticasGenerales = {};
             this.localData = undefined;
-            console.log(" modèles/User.js - pre('save'): localData seteado a undefined.");
         } else {
-            console.log(" modèles/User.js - pre('save'): Rol es OTRO (null, ADMIN, MODERADOR).");
             this.localData = undefined;
             this.estadisticasGenerales = undefined;
-            console.log(" modèles/User.js - pre('save'): localData y estadisticasGenerales seteados a undefined.");
         }
 
         if (this.rol === 'ADMIN') {
-            console.log(" modèles/User.js - pre('save'): Rol es ADMIN, asignando permisos de ADMIN.");
             this.permisos = {
                 puedeSuspenderUsuarios: true,
                 puedeEliminarPublicaciones: true,
@@ -144,7 +108,6 @@ userSchema.pre('save', function (next) {
                 puedeAccederEstadisticasGlobales: true,
             };
         } else if (this.rol === 'MODERADOR') {
-            console.log(" modèles/User.js - pre('save'): Rol es MODERADOR, asignando permisos de MODERADOR.");
             this.permisos = {
                 puedeSuspenderUsuarios: false,
                 puedeEliminarPublicaciones: true,
@@ -153,34 +116,18 @@ userSchema.pre('save', function (next) {
                 puedeAccederEstadisticasGlobales: false,
             };
         } else {
-            console.log(" modèles/User.js - pre('save'): Rol no es ADMIN/MODERADOR, seteando permisos a null.");
-            this.permisos = null; 
+            this.permisos = null;
         }
-        console.log(" modèles/User.js - pre('save'): Estado del documento DESPUÉS de aplicar lógica de rol:", JSON.stringify(this.toObject(), null, 2));
-    } else {
-        console.log(" modèles/User.js - pre('save'): Condición (isNew o isModified('rol')) NO CUMPLIDA. Saltando lógica de rol.");
     }
-    console.log(" modèles/User.js - pre('save'): Llamando a next().");
     next();
 });
 
-// --- Método toJSON para limpiar la respuesta ---
-// --- VERSIÓN CORREGIDA ---
-userSchema.methods.toJSON = function () {
-    const obj = this.toObject(); // <<< ESTA LÍNEA ES CLAVE Y DEBE ESTAR PRIMERO
-    
-    // Puedes decidir qué campos no quieres que se envíen al frontend por defecto
-    delete obj.__v; // Común eliminar la versión de Mongoose
-    
-    // Elimina campos sensibles o que no quieres exponer siempre
-    // (estos ya los tenías y están bien si esa es tu intención)
+userSchema.methods.toJSON = function() {
+    const obj = this.toObject();
+    delete obj.__v;
     delete obj.motivoSuspension;
     delete obj.fechaSuspension;
-    
-    // Considera si quieres eliminar 'password' si lo tuvieras (aunque Clerk lo maneja).
-    // delete obj.password; 
-
-    return obj; // <<< DEVOLVER EL OBJETO MODIFICADO
+    return obj;
 }
 
 export default mongoose.model('User', userSchema);
