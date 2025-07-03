@@ -38,9 +38,8 @@ connectDB();
 const PORT = process.env.PORT || 5000;
 
 
-// Ruta de prueba
-app.get("/", (req, res) => {
-    res.send("API funcionando");
+app.get('/healthz', (req, res) => {
+  res.status(200).send('OK');
 });
 
 app.use('/usuario', UserRoutes)
