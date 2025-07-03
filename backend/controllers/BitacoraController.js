@@ -1,4 +1,4 @@
-import Bitacora from '../models/BitacoraAdmin.js';
+import Bitacora from '../models/bitacoraAdmin.js';
 
 export class BitacoraController {
     static async createCambio (req, res){
