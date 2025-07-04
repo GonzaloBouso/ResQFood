@@ -1,7 +1,7 @@
 // src/components/layout/HistorialDonacion.jsx
-
 import React, { useEffect, useState } from 'react';
 import CardVerInformacion from './CardVerInformacion';
+import API_BASE_URL from '../../api/config';
 
 const HistorialDonacion = ({ userId }) => {
   const [donaciones, setDonaciones] = useState([]);
@@ -10,7 +10,7 @@ const HistorialDonacion = ({ userId }) => {
   useEffect(() => {
     const fetchDonaciones = async () => {
       try {
-        const res = await fetch(`/donacion/usuario/${userId}`);
+        const res = await fetch(`${API_BASE_URL}/donacion/usuario/${userId}`);
         const data = await res.json();
         setDonaciones(data.donaciones || []);
       } catch (error) {
@@ -48,4 +48,3 @@ const HistorialDonacion = ({ userId }) => {
 };
 
 export default HistorialDonacion;
-

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { User as UserIcon } from 'lucide-react';
+import API_BASE_URL from '../api/config.js';
 
 const CompleteProfilePage = ({ onProfileComplete }) => {
   const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
@@ -101,11 +102,9 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       };
     }
     
-    console.log("CompleteProfilePage: Enviando payload para completar perfil:", JSON.stringify(payload, null, 2)); 
-
     try {
       const token = await getToken();
-      const response = await fetch(`/usuario/${clerkUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}/usuario/${clerkUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
         body: JSON.stringify(payload),
@@ -129,12 +128,9 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         return;
       }
 
-      console.log("CompleteProfilePage: PUT exitoso. Llamando a onProfileComplete.");
       if (onProfileComplete) onProfileComplete();
       
       setSuccessMessage("¡Perfil guardado exitosamente! Serás redirigido en breve...");
-      console.log("CompleteProfilePage: Perfil guardado. ProtectedRoute debería manejar la redirección.");
-      // setLoading(false); // Dejar que el cambio de ruta maneje el estado de carga implícitamente
 
     } catch (err) {
       console.error("CompleteProfilePage: Error en handleSubmit:", err);
@@ -156,7 +152,6 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         ¡Casi listo! Solo necesitamos unos detalles más para personalizar tu experiencia.
       </p>
       <form onSubmit={handleSubmit} className="max-w-lg mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-xl space-y-6">
-        {/* Selector de Rol */}
         <div>
           <label htmlFor="rol" className="block text-sm font-medium text-textMain mb-1">Tipo de Cuenta <span className="text-red-500">*</span></label>
           <select id="rol" name="rol" value={rol} onChange={(e) => setRol(e.target.value)} required className="mt-1 block w-full input-style">
@@ -167,7 +162,6 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
           {validationErrors.rol && <p className="text-red-500 text-xs mt-1">{validationErrors.rol}</p>}
         </div>
 
-        {/* Foto de Perfil (Informativo) */}
         <div className="space-y-2">
             <label className="block text-sm font-medium text-textMain">Foto de Perfil</label>
             <div className="flex items-center space-x-4">
@@ -184,21 +178,18 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
             </div>
         </div>
 
-        {/* Nombre */}
         <div>
           <label htmlFor="nombre" className="block text-sm font-medium text-textMain">Nombre Completo o del Local <span className="text-red-500">*</span></label>
           <input type="text" name="nombre" id="nombre" value={formData.nombre} onChange={handleInputChange} required className="mt-1 block w-full input-style"/>
           {validationErrors.nombre && <p className="text-red-500 text-xs mt-1">{validationErrors.nombre}</p>}
         </div>
 
-        {/* Teléfono */}
         <div>
           <label htmlFor="telefono" className={`block text-sm font-medium text-textMain ${rol === 'LOCAL' ? '' : 'opacity-70'}`}>Teléfono {rol === 'LOCAL' && <span className="text-red-500">*</span>}</label>
           <input type="tel" name="telefono" id="telefono" value={formData.telefono} onChange={handleInputChange} required={rol === 'LOCAL'} className="mt-1 block w-full input-style" placeholder="Ej: 1122334455"/>
           {validationErrors.telefono && <p className="text-red-500 text-xs mt-1">{validationErrors.telefono}</p>}
         </div>
         
-        {/* SECCIÓN DE UBICACIÓN */}
         <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium text-textMain px-1">Ubicación <span className="text-red-500">*</span></legend>
             <div className="space-y-4 mt-2">
@@ -225,7 +216,6 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
             </div>
         </fieldset>
 
-        {/* CAMPOS LOCAL */}
         {rol === 'LOCAL' && (
           <fieldset className="border p-4 rounded-md">
             <legend className="text-sm font-medium text-textMain px-1">Información del Local <span className="text-red-500">*</span></legend>

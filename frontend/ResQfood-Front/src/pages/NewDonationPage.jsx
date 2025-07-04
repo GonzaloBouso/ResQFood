@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { X } from 'lucide-react'; 
 import { GoogleMap, Marker, Autocomplete } from '@react-google-maps/api'; 
+// import API_BASE_URL from './api/apiConfig.js';
+import API_BASE_URL from '../api/config.js'
 
-// Estilos y configuraciones del mapa
+
 const mapContainerStyle = {
   width: '100%',
   height: '300px',
@@ -47,14 +49,13 @@ const NewDonationPage = ({ onDonationCreated }) => {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(''); // <-- ESTADO PARA MENSAJE DE ÉXITO
+  const [successMessage, setSuccessMessage] = useState('');
 
   const [map, setMap] = useState(null);
   const [markerPosition, setMarkerPosition] = useState(null);
   const autocompleteInputRef = useRef(null);
   const [autocomplete, setAutocomplete] = useState(null);
 
-  // --- MANEJADORES DE INPUTS ---
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -76,7 +77,6 @@ const NewDonationPage = ({ onDonationCreated }) => {
     }));
   };
 
-  // --- MANEJO DE ARCHIVOS ---
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     const MAX_FILES = 5;
@@ -109,7 +109,6 @@ const NewDonationPage = ({ onDonationCreated }) => {
     return () => imagePreviews.forEach(url => URL.revokeObjectURL(url));
   }, [imagePreviews]);
 
-  // --- LÓGICA DEL MAPA Y AUTOCOMPLETE ---
   const onLoadMap = useCallback((mapInstance) => setMap(mapInstance), []);
   const onUnmountMap = useCallback(() => setMap(null), []);
 
@@ -127,7 +126,7 @@ const NewDonationPage = ({ onDonationCreated }) => {
     reverseGeocode({ lat, lng });
   }, []);
 
-  const reverseGeocode = useCallback(({ lat, lng }) => { // useCallback para estabilidad si se pasa a dependencias
+  const reverseGeocode = useCallback(({ lat, lng }) => {
     if (window.google && window.google.maps && window.google.maps.Geocoder) {
       const geocoder = new window.google.maps.Geocoder();
       geocoder.geocode({ location: { lat, lng } }, (results, status) => {
@@ -166,7 +165,6 @@ const NewDonationPage = ({ onDonationCreated }) => {
     }
   };
 
-  // --- ENVÍO DEL FORMULARIO ---
   const handleSubmit = async (e) => {
     e.preventDefault(); setLoading(true); setError(null); setSuccessMessage('');
     if (selectedFiles.length === 0) { setError("Sube al menos una imagen."); setLoading(false); return; }
@@ -189,24 +187,21 @@ const NewDonationPage = ({ onDonationCreated }) => {
       }
     });
     selectedFiles.forEach((file) => formDataPayload.append('imagenesDonacion', file));
-    console.log("NewDonationPage: Enviando FormData al backend...");
-
+    
     try {
       const token = await getToken();
-      const response = await fetch('/donacion', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`}, body: formDataPayload });
+      const response = await fetch(`${API_BASE_URL}/donacion`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`}, body: formDataPayload });
       const responseData = await response.json();
       if (!response.ok) {
         console.error("NewDonationPage: Error del backend:", responseData);
         setError(responseData.message || `Error: ${response.status}`);
         setLoading(false); return;
       }
-      console.log("NewDonationPage: Donación creada:", responseData.donacion);
-      setSuccessMessage("¡Donación publicada exitosamente! Redirigiendo..."); // Mensaje de éxito
+      setSuccessMessage("¡Donación publicada exitosamente! Redirigiendo...");
       if (onDonationCreated) {
-          console.log("NewDonationPage: Llamando a onDonationCreated.");
           onDonationCreated();
       }
-      setTimeout(() => navigate('/dashboard'), 1500); // Redirigir después de un breve delay
+      setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err) {
       console.error("NewDonationPage: Error en handleSubmit:", err);
       setError("Error de red o servidor.");
@@ -214,22 +209,18 @@ const NewDonationPage = ({ onDonationCreated }) => {
     }
   };
 
-  // JSX del formulario
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-textMain mb-6 text-center">Publicar Nueva Donación</h1>
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6 bg-white p-6 sm:p-8 rounded-lg shadow-xl">
-        {/* Título */}
         <div>
           <label htmlFor="titulo" className="block text-sm font-medium text-gray-700">Título <span className="text-red-500">*</span></label>
           <input type="text" name="titulo" id="titulo" value={formData.titulo} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"/>
         </div>
-        {/* Descripción */}
         <div>
           <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">Descripción <span className="text-red-500">*</span></label>
           <textarea name="descripcion" id="descripcion" rows="3" value={formData.descripcion} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"></textarea>
         </div>
-        {/* Categoría */}
         <div>
           <label htmlFor="categoria" className="block text-sm font-medium text-gray-700">Categoría <span className="text-red-500">*</span></label>
           <select name="categoria" id="categoria" value={formData.categoria} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
@@ -243,7 +234,6 @@ const NewDonationPage = ({ onDonationCreated }) => {
             <option value="Otros">Otros</option>
           </select>
         </div>
-        {/* Estado del Alimento */}
         <div>
           <label htmlFor="estadoAlimento" className="block text-sm font-medium text-gray-700">Estado del Alimento <span className="text-red-500">*</span></label>
           <select name="estadoAlimento" id="estadoAlimento" value={formData.estadoAlimento} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
@@ -253,13 +243,10 @@ const NewDonationPage = ({ onDonationCreated }) => {
             <option value="NO_PERECEDERO">No Perecedero</option>
           </select>
         </div>
-        {/* Fecha de Expiración de la Publicación */}
         <div>
           <label htmlFor="fechaExpiracionPublicacion" className="block text-sm font-medium text-gray-700">Publicación Válida Hasta <span className="text-red-500">*</span></label>
           <input type="datetime-local" name="fechaExpiracionPublicacion" id="fechaExpiracionPublicacion" value={formData.fechaExpiracionPublicacion} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"/>
         </div>
-
-        {/* SECCIÓN DE UBICACIÓN CON MAPA */}
         <fieldset className="border p-4 rounded-md">
           <legend className="text-sm font-medium text-gray-700 px-1">Ubicación de Retiro <span className="text-red-500">*</span></legend>
           <div className="space-y-4 mt-2">
@@ -274,7 +261,6 @@ const NewDonationPage = ({ onDonationCreated }) => {
                 {markerPosition && (<Marker position={markerPosition} draggable={true} onDragEnd={onMarkerDragEnd} />)}
               </GoogleMap>
             </div>
-            {/* Campos de dirección (se autocompletan con el mapa/autocomplete pero pueden editarse) */}
             <div>
               <label htmlFor="ubicacion_direccion_form" className="block text-xs font-medium text-gray-600">Dirección (Calle y Número)</label>
               <input type="text" name="direccion" id="ubicacion_direccion_form" value={formData.ubicacionRetiro.direccion} onChange={handleUbicacionTextoChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm" />
@@ -297,8 +283,6 @@ const NewDonationPage = ({ onDonationCreated }) => {
             </div>
           </div>
         </fieldset>
-
-        {/* Otros Campos */}
         <div>
           <label htmlFor="fechaVencimientoProducto" className="block text-sm font-medium text-gray-700">Fecha de Vencimiento del Producto (Opcional)</label>
           <input type="date" name="fechaVencimientoProducto" id="fechaVencimientoProducto" value={formData.fechaVencimientoProducto} onChange={handleInputChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"/>
@@ -324,7 +308,6 @@ const NewDonationPage = ({ onDonationCreated }) => {
           <label htmlFor="condicionesEspeciales" className="block text-sm font-medium text-gray-700">Condiciones Especiales</label>
           <textarea name="condicionesEspeciales" id="condicionesEspeciales" rows="2" value={formData.condicionesEspeciales} onChange={handleInputChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"></textarea>
         </div>
-        {/* Imágenes */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Imágenes (hasta 5, máx 5MB c/u) <span className="text-red-500">*</span></label>
           <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" multiple onChange={handleFileChange} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"/>
@@ -341,10 +324,8 @@ const NewDonationPage = ({ onDonationCreated }) => {
             </div>
           )}
         </div>
-
         {error && <p className="text-red-600 text-sm text-center py-2">{error}</p>}
         {successMessage && <p className="text-green-600 text-sm text-center py-2">{successMessage}</p>}
-        
         <button type="submit" disabled={loading || selectedFiles.length === 0} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-brandPrimaryDarker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50">
           {loading ? 'Publicando...' : 'Publicar Donación'}
         </button>

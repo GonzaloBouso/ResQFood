@@ -1,5 +1,7 @@
+// src/components/layout/DetallesCardDonacion.jsx
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import API_BASE_URL from '../../api/config.js';
 
 const FALLBACK_IMAGE = 'https://via.placeholder.com/300x300.png?text=Sin+Imagen';
 
@@ -15,7 +17,7 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
     const fetchDonacion = async () => {
       try {
         const token = await getToken();
-        const res = await fetch(`/donacion/${donacionId}`, {
+        const res = await fetch(`${API_BASE_URL}/donacion/${donacionId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -46,12 +48,11 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white border border-gray-300 rounded-xl w-full max-w-xl shadow-lg overflow-hidden relative">
-        {/* Botón cerrar */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-2xl font-bold"
         >
-          &times;
+          ×
         </button>
 
         {cargando ? (
@@ -60,10 +61,8 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
           <div className="p-6 text-red-600 text-center">{error}</div>
         ) : (
           <div className="p-6 space-y-5">
-            {/* Título */}
             <h2 className="text-xl font-semibold text-center text-gray-800">{donacion.titulo}</h2>
 
-            {/* Imagen */}
             <div className="mx-auto w-full max-w-[240px] aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shadow-sm">
               <img
                 src={donacion.imagenesUrl?.[0] || FALLBACK_IMAGE}
@@ -73,7 +72,6 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
             </div>
             <div className="border-b border-gray-200 w-full" />
 
-            {/* Información */}
             <div className="space-y-4 text-sm text-gray-700">
               <div>
                 <p className="text-xs uppercase tracking-wide text-primary mb-1">Descripción</p>
@@ -115,12 +113,10 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
               )}
             </div>
 
-            {/* Botón Solicitar */}
             <div className="pt-4 border-t border-gray-200">
               <button
                 onClick={() => {
                   console.log("Solicitud enviada para:", donacion._id);
-                  // Podés integrar lógica real más adelante
                 }}
                 className="w-full px-4 py-2 mt-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-brandPrimaryDarker transition-colors"
               >

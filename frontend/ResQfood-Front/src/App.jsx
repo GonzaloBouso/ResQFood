@@ -1,11 +1,11 @@
 // src/App.jsx
-import React, { useState, useEffect, useContext, useMemo } from 'react'; // <-- AÑADE useMemo
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SignedIn, SignedOut, useUser, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
 
-// ... (resto de tus imports)
-import Header from './components/layout/Header';
+// import Header from './src/components/layout/Header';
+import Header from './components/layout/Header'
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
 import Footer from './components/layout/Footer';
 import HomePageUnregistered from './pages/HomePageUnregistered';
@@ -23,13 +23,12 @@ import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
 import NewDonationPage from './pages/NewDonationPage';
 import { ProfileStatusContext } from './context/ProfileStatusContext';
+import API_BASE_URL from './api/config.js';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
-// (El hook useUserProfileStatus y el componente ProtectedRoute se quedan como están)
 const useUserProfileStatus = () => {
-    // ... tu lógica del hook sin cambios ...
     const { user: clerkUser, isLoaded: isClerkLoaded, isSignedIn } = useUser();
     const { getToken } = useAuth();
     
@@ -46,7 +45,7 @@ const useUserProfileStatus = () => {
       setProfileStatus(prev => ({ ...prev, isLoading: true, clerkUserId: clerkUser.id }));
       try {
         const token = await getToken();
-        const response = await fetch(`/usuario/me`, { 
+        const response = await fetch(`${API_BASE_URL}/usuario/me`, { 
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         });
         if (!response.ok) {
@@ -103,14 +102,11 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
-// Componente AppContent (envuelve la lógica principal de la app)
 const AppContent = () => {
   const userProfileHookData = useUserProfileStatus();
   const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(null);
   const [activeSearchLocation, setActiveSearchLocation] = useState(null);
 
-  // CORRECCIÓN: Usamos useMemo para estabilizar el valor del contexto.
-  // Este objeto solo se creará de nuevo si una de sus dependencias cambia.
   const contextValueForProvider = useMemo(() => ({
     isLoadingUserProfile: userProfileHookData.isLoading,
     isProfileComplete: userProfileHookData.isComplete,
@@ -132,7 +128,6 @@ const AppContent = () => {
 
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
-        {/* ... El resto de tu JSX de AppContent sin cambios ... */}
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
@@ -181,9 +176,8 @@ const AppContent = () => {
   );
 };
 
-// Componente App principal (sin cambios)
 function App() {
-  if (!GOOGLE_MAPS_API_KEY && process.env.NODE_ENV === 'development') {
+  if (!GOOGLE_MAPS_API_KEY) {
     console.error("ADVERTENCIA: VITE_GOOGLE_MAPS_API_KEY no está definida.");
   }
 

@@ -1,10 +1,11 @@
 // src/pages/DashboardPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from "react-router-dom"; 
-import CardDonacion from '../components/layout/CardDonacion';
+import CardDonacion from '../components/layout/CardDonacion.jsx';
 import { useAuth } from '@clerk/clerk-react';
-import { ProfileStatusContext } from '../context/ProfileStatusContext'; 
-import BotonPublicar from '../components/layout/BotonPublicar'
+import { ProfileStatusContext } from '../context/ProfileStatusContext.js'; 
+import BotonPublicar from '../components/layout/BotonPublicar.jsx';
+import API_BASE_URL from '../api/config.js';
 
 const DashboardPage = () => {
   const { getToken } = useAuth();
@@ -23,14 +24,11 @@ const DashboardPage = () => {
   const [errorDonaciones, setErrorDonaciones] = useState(null);
   const [mensajeUbicacion, setMensajeUbicacion] = useState('Determinando tu ubicación...');
 
-  // CORRECCIÓN: Efecto 1 - Establecer la ubicación de búsqueda INICIAL
   useEffect(() => {
-    // Si ya estamos cargando el perfil o si ya tenemos una ubicación activa, no hacemos nada.
     if (isLoadingUserProfile || activeSearchLocation) return;
     
     let initialLocationSet = false;
 
-    // Prioridad 1: Ubicación del perfil de usuario
     if (userDataFromDB?.ubicacion?.coordenadas?.coordinates?.length === 2) {
       const [lon, lat] = userDataFromDB.ubicacion.coordenadas.coordinates;
       if (lat !== 0 || lon !== 0) {
@@ -39,7 +37,6 @@ const DashboardPage = () => {
       }
     }
     
-    // Prioridad 2: Geolocalización del navegador (solo si no se encontró en el perfil)
     if (!initialLocationSet && navigator.geolocation && setActiveSearchLocation) {
       setMensajeUbicacion('Solicitando tu ubicación actual...');
       navigator.geolocation.getCurrentPosition(
@@ -58,7 +55,6 @@ const DashboardPage = () => {
     
   }, [isLoadingUserProfile, userDataFromDB, activeSearchLocation, setActiveSearchLocation]);
 
-  // Efecto 2: Actualizar el mensaje de UI 
   useEffect(() => {
     if (activeSearchLocation?.address) {
       setMensajeUbicacion(`Mostrando donaciones cerca de: ${activeSearchLocation.address}`);
@@ -67,7 +63,6 @@ const DashboardPage = () => {
     }
   }, [activeSearchLocation, isLoadingUserProfile]);
 
-  // Efecto 3: Hacer fetch de las donaciones (sin cambios, ya estaba bien)
   useEffect(() => {
     if (!activeSearchLocation || typeof activeSearchLocation.lat !== 'number' || typeof activeSearchLocation.lng !== 'number') {
       setDonaciones([]);
@@ -83,7 +78,7 @@ const DashboardPage = () => {
         const { lat, lng } = activeSearchLocation;
         const distanciaMaxKm = 50;
 
-        const apiUrl = `/donacion/cercanas?lat=${lat}&lon=${lng}&distanciaMaxKm=${distanciaMaxKm}`;
+        const apiUrl = `${API_BASE_URL}/donacion/cercanas?lat=${lat}&lon=${lng}&distanciaMaxKm=${distanciaMaxKm}`;
         
         const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
         
