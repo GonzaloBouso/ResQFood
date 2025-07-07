@@ -524,14 +524,8 @@ Para visualizar el prototipo interactivo del diseño de la aplicación, visita e
 
 19. [Prototipado]
 
-![Creacion de donacion](img/prototipos/ResQFood-creardonación.png)
-![Home page](img/prototipos/ResQFood-HomePage.png)
-![Notificaciones](img/prototipos/ResQFood-notificaciones.png)
-![Perfil usuario general informacion](img/prototipos/ResQFood-Perfil-usuario-general-informacion.png)
-![Perfil usuario general recepciones](img/prototipos/ResQFood-Perfilgeneral-historial-recepciones.png)
-![Ubicacion](img/prototipos/ResQFood-ubicacion.png)
-![Ver opiniones](img/prototipos/ResQFood-ver-opiniones.png)
-![Ver informacion de donacion](img/prototipos/ResQFood-VerInfoDonación.png)
+![Link de figma](https://www.figma.com/design/3JPAqtqi6R1U7tjWSTbVaU/ResQfood?node-id=0-1&p=f&t=5zFT8Z7vVygKhVSb-0)
+![Qr figma](img/prototipos/qr_resqfood_figma.png)
 
 20. [Despliegue]
 
