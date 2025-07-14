@@ -42,21 +42,21 @@ app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
 });
 
-app.use('/usuario', UserRoutes)
+app.use('/api/usuario', UserRoutes)
 
-app.use('/solicitud', SolicitudRoutes)
+//app.use('/api/solicitud', SolicitudRoutes)
 
-app.use('/calificacion', CalificacionRoutes)
+//app.use('/api/calificacion', CalificacionRoutes)
 
-app.use('/notificacion', NotificacionRoutes)
+//app.use('/api/notificacion', NotificacionRoutes)
 
-app.use('/entrega', EntregaRoutes)
+//app.use('/api/entrega', EntregaRoutes)
 
-app.use('/reporte', ReporteRoutes)
+//app.use('/api/reporte', ReporteRoutes)
 
-app.use('/bitacoraAdmin', BitacoraRoutes)
+//app.use('/api/bitacoraAdmin', BitacoraRoutes)
 
-app.use('/donacion', DonacionRoutes);
+app.use('/api/donacion', DonacionRoutes);
 
 app.use((req, res, next)=>{
     res.status(404).json({message: `Ruta ${req.method} ${req.url} no encontrada. `})

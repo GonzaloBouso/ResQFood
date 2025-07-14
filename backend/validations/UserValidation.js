@@ -7,6 +7,10 @@ const ubicacionSchemaObligatoria = z.object({
     ciudad: z.string().min(1, 'La ciudad es obligatoria'),
     provincia: z.string().min(1, 'La provincia es obligatoria'),
     pais: z.string().min(1, 'El país es obligatorio'),
+    coordenadas: z.object({
+        type: z.literal('Point').optional(), // El tipo es 'Point'
+        coordinates: z.array(z.number()).length(2, "El array de coordenadas debe tener 2 números (longitud, latitud)")
+    })
 });
 
 // --- Esquema para Datos de Local (cuando son obligatorios) ---
