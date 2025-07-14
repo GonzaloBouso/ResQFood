@@ -1,5 +1,6 @@
 // src/pages/DashboardPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
+import { Link } from "react-router-dom"; 
 import CardDonacion from '../components/layout/CardDonacion.jsx';
 import { useAuth } from '@clerk/clerk-react';
 import { ProfileStatusContext } from '../context/ProfileStatusContext.js'; 
