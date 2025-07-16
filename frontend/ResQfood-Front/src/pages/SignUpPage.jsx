@@ -5,13 +5,14 @@ export default function SignUpPage() {
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-15rem)]">
       {/* 
-        CORRECCIÓN FINAL:
-        La propiedad 'afterSignUpUrl' está obsoleta (deprecated) en las nuevas versiones de Clerk.
-        La propiedad recomendada ahora es 'fallbackRedirectUrl' para redirigir después de un registro exitoso.
+        LA SOLUCIÓN FINAL:
+        Cambiamos la estrategia de enrutamiento de "path" a "virtual".
+        Esto evita que Clerk cambie la URL del navegador a rutas que Vercel no encuentra,
+        resolviendo el error 404. Todos los pasos del registro ocurrirán en la misma URL /sign-up.
       */}
       <SignUp 
-        path="/sign-up" 
-        routing="path" 
+        routing="virtual" 
+        path="/sign-up"
         signInUrl="/sign-in" 
         fallbackRedirectUrl="/complete-profile" 
       />
