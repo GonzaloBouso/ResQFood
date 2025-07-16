@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/frontend/ResQfood-Front/index.html"
+      "destination": "/index.html"
     }
   ]
 }
