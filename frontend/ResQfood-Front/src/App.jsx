@@ -65,7 +65,7 @@ const useUserProfileStatus = () => {
 
           setProfileStatus({ 
             isLoading: false, 
-            isComplete: !!userFromOurDB?.rol, // El perfil está completo si el usuario tiene un rol en nuestra DB
+            isComplete: !!userFromOurDB?.rol,
             clerkUserId: clerkUser.id, 
             userRole: userFromOurDB?.rol || null, 
             userDataFromDB: userFromOurDB 
@@ -87,7 +87,6 @@ const useUserProfileStatus = () => {
 
 
 // --- Componente para Proteger Rutas ---
-// Este componente asegura que el usuario no solo esté logueado, sino que haya completado su perfil.
 const ProtectedRoute = ({ children }) => {
     const { isLoading, isComplete } = useContext(ProfileStatusContext);
     const location = useLocation();
@@ -97,7 +96,7 @@ const ProtectedRoute = ({ children }) => {
     }
   
     if (!isComplete) {
-      // Si el perfil no está completo, redirige forzosamente a la página para completarlo.
+      // Si el perfil no está completo, redirige a la página para completarlo.
       return <Navigate to="/complete-profile" state={{ from: location }} replace />;
     }
   
@@ -110,7 +109,6 @@ const AppContent = () => {
   const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(null);
   const [activeSearchLocation, setActiveSearchLocation] = useState(null);
 
-  // useMemo optimiza el rendimiento, evitando que el contexto se recree en cada render.
   const contextValueForProvider = useMemo(() => ({
     isLoadingUserProfile: userProfileHookData.isLoading,
     isProfileComplete: userProfileHookData.isComplete,
@@ -129,27 +127,25 @@ const AppContent = () => {
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             
-            {/* ClerkLoaded asegura que no se muestre nada hasta que Clerk esté listo, evitando parpadeos */}
             <ClerkLoaded>
                 <Routes>
                     {/* --- Rutas Públicas y de Autenticación --- */}
-
-                    {/* La página de inicio muestra un contenido si estás logueado y otro si no. */}
                     <Route path="/" element={<><SignedIn><Navigate to="/dashboard" /></SignedIn><SignedOut><HomePageUnregistered /></SignedOut></>} />
-
-                    {/* LA CLAVE: El "/*" al final de la ruta le dice a React Router que Clerk
-                        manejará cualquier sub-ruta que necesite (como /sign-up/verify-email-address).
-                        Esto es lo que hace que la solución `vercel.json` funcione. */}
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
                     
                     {/* --- Rutas Protegidas (Requieren Login Y Perfil Completo) --- */}
-
                     <Route path="/dashboard" element={<SignedIn><ProtectedRoute><DashboardPage /></ProtectedRoute></SignedIn>} />
                     <Route path="/perfil" element={<SignedIn><ProtectedRoute><UserProfilePage /></ProtectedRoute></SignedIn>} />
                     <Route path="/publicar-donacion" element={<SignedIn><ProtectedRoute><NewDonationPage onDonationCreated={() => setDonationCreationTimestamp(Date.now())} /></ProtectedRoute></SignedIn>} />
 
-                    {/* --- Ruta especial para completar el perfil (Requiere Login pero NO perfil completo) --- */}
+                    {/*
+                      LA SOLUCIÓN:
+                      Hemos eliminado el componente <ProtectedRoute> que envolvía esta ruta.
+                      La página para completar el perfil DEBE ser accesible para usuarios con perfiles incompletos.
+                      Protegerla con la misma lógica que redirige a ella crea un bucle infinito.
+                      <SignedIn> ya es suficiente protección para asegurar que solo usuarios logueados lleguen aquí.
+                    */}
                     <Route
                         path="/complete-profile"
                         element={
@@ -184,7 +180,6 @@ function App() {
   }
 
   return (
-    // La carga del script de Google Maps envuelve toda la aplicación
     <LoadScript
         googleMapsApiKey={GOOGLE_MAPS_API_KEY}
         libraries={libraries}
