@@ -29,64 +29,74 @@ import API_BASE_URL from './api/config.js';
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
-// --- Hook Personalizado para gestionar el estado del perfil del usuario ---
+// --- Hook Personalizado para gestionar el estado del perfil del usuario (CORREGIDO) ---
 const useUserProfileStatus = () => {
-    const { user: clerkUser, isLoaded: isClerkLoaded, isSignedIn } = useUser();
-    const { getToken } = useAuth();
+    // Usamos el hook useAuth para obtener el estado de carga de Clerk
+    const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId: clerkUserId } = useAuth();
     
     const [profileStatus, setProfileStatus] = useState({
-      isLoading: true, isComplete: false, clerkUserId: null, userRole: null, userDataFromDB: null,
+      isLoading: true, // Empieza cargando por defecto
+      isComplete: false,
+      userRole: null,
+      userDataFromDB: null,
     });
     const [fetchTrigger, setFetchTrigger] = useState(0);
-  
+
     useEffect(() => {
-      const fetchUserProfileFunction = async () => {
-        if (!isClerkLoaded) return;
-        if (!isSignedIn || !clerkUser) {
-          setProfileStatus({ isLoading: false, isComplete: false, clerkUserId: null, userRole: null, userDataFromDB: null });
+        // LA SOLUCIÓN: No hacemos NADA hasta que el SDK de Clerk esté 100% cargado.
+        if (!isAuthLoaded) {
           return;
         }
-  
-        setProfileStatus(prev => ({ ...prev, isLoading: true, clerkUserId: clerkUser.id }));
-        try {
-          const token = await getToken();
-          const response = await fetch(`${API_BASE_URL}/api/usuario/me`, { 
-            headers: { 'Authorization': `Bearer ${token}` },
-          });
-          
-          if (response.status === 404) {
-            setProfileStatus({ isLoading: false, isComplete: false, clerkUserId: clerkUser.id, userRole: null, userDataFromDB: null });
-            return;
-          }
-          if (!response.ok) throw new Error("Error fetching user profile");
-          
-          const data = await response.json();
-          const userFromOurDB = data.user || data;
 
-          setProfileStatus({ 
-            isLoading: false, 
-            isComplete: !!userFromOurDB?.rol,
-            clerkUserId: clerkUser.id, 
-            userRole: userFromOurDB?.rol || null, 
-            userDataFromDB: userFromOurDB 
-          });
+        const fetchUserProfileFunction = async () => {
+            // Si el usuario no está logueado, establecemos el estado final y terminamos.
+            if (!isSignedIn) {
+                setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
+                return;
+            }
 
-        } catch (error) {
-          console.error("Error en fetchUserProfileFunction:", error);
-          setProfileStatus({ isLoading: false, isComplete: false, clerkUserId: clerkUser?.id, userRole: null, userDataFromDB: null });
-        }
-      };
+            // Si está logueado, mostramos que estamos cargando su perfil de nuestra base de datos.
+            setProfileStatus(prev => ({ ...prev, isLoading: true }));
+            try {
+                const token = await getToken();
+                const response = await fetch(`${API_BASE_URL}/api/usuario/me`, { 
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                
+                if (response.status === 404) {
+                    // El usuario existe en Clerk pero no en nuestra DB, su perfil no está completo.
+                    setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
+                    return;
+                }
+                if (!response.ok) throw new Error("Error fetching user profile");
+                
+                const data = await response.json();
+                const userFromOurDB = data.user || data;
+
+                setProfileStatus({ 
+                    isLoading: false, 
+                    isComplete: !!userFromOurDB?.rol, // El perfil está completo si tiene un rol.
+                    userRole: userFromOurDB?.rol || null, 
+                    userDataFromDB: userFromOurDB 
+                });
+
+            } catch (error) {
+                console.error("Error en fetchUserProfileFunction:", error);
+                setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
+            }
+        };
       
-      fetchUserProfileFunction();
-    }, [isClerkLoaded, clerkUser, isSignedIn, fetchTrigger, getToken]);
+        fetchUserProfileFunction();
+    // La dependencia clave ahora es isAuthLoaded.
+    }, [isAuthLoaded, isSignedIn, fetchTrigger, getToken]);
   
     const refreshProfile = () => setFetchTrigger(prev => prev + 1);
   
-    return { ...profileStatus, refreshProfile };
+    // Pasamos el clerkUserId directamente desde useAuth
+    return { ...profileStatus, refreshProfile, currentClerkUserId: clerkUserId };
 };
 
-
-// --- Componente para Proteger Rutas ---
+// --- Componente para Proteger Rutas (Sin cambios, ya era correcto) ---
 const ProtectedRoute = ({ children }) => {
     const { isLoading, isComplete } = useContext(ProfileStatusContext);
     const location = useLocation();
@@ -96,7 +106,6 @@ const ProtectedRoute = ({ children }) => {
     }
   
     if (!isComplete) {
-      // Si el perfil no está completo, redirige a la página para completarlo.
       return <Navigate to="/complete-profile" state={{ from: location }} replace />;
     }
   
@@ -114,7 +123,7 @@ const AppContent = () => {
     isProfileComplete: userProfileHookData.isComplete,
     currentUserRole: userProfileHookData.userRole,
     currentUserDataFromDB: userProfileHookData.userDataFromDB,
-    currentClerkUserId: userProfileHookData.clerkUserId,
+    currentClerkUserId: userProfileHookData.currentClerkUserId,
     refreshUserProfile: userProfileHookData.refreshProfile,
     donationCreationTimestamp,
     activeSearchLocation,
@@ -127,6 +136,7 @@ const AppContent = () => {
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             
+            {/* ClerkLoaded ahora es redundante porque nuestra lógica ya espera, pero no hace daño dejarlo. */}
             <ClerkLoaded>
                 <Routes>
                     {/* --- Rutas Públicas y de Autenticación --- */}
@@ -134,18 +144,12 @@ const AppContent = () => {
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
                     
-                    {/* --- Rutas Protegidas (Requieren Login Y Perfil Completo) --- */}
+                    {/* --- Rutas Protegidas --- */}
                     <Route path="/dashboard" element={<SignedIn><ProtectedRoute><DashboardPage /></ProtectedRoute></SignedIn>} />
                     <Route path="/perfil" element={<SignedIn><ProtectedRoute><UserProfilePage /></ProtectedRoute></SignedIn>} />
                     <Route path="/publicar-donacion" element={<SignedIn><ProtectedRoute><NewDonationPage onDonationCreated={() => setDonationCreationTimestamp(Date.now())} /></ProtectedRoute></SignedIn>} />
 
-                    {/*
-                      LA SOLUCIÓN:
-                      Hemos eliminado el componente <ProtectedRoute> que envolvía esta ruta.
-                      La página para completar el perfil DEBE ser accesible para usuarios con perfiles incompletos.
-                      Protegerla con la misma lógica que redirige a ella crea un bucle infinito.
-                      <SignedIn> ya es suficiente protección para asegurar que solo usuarios logueados lleguen aquí.
-                    */}
+                    {/* --- Ruta para Completar Perfil --- */}
                     <Route
                         path="/complete-profile"
                         element={
@@ -155,7 +159,7 @@ const AppContent = () => {
                         }
                     />
 
-                    {/* --- Rutas de Contenido Estático --- */}
+                    {/* --- Rutas Estáticas --- */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
