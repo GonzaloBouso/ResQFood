@@ -1,40 +1,52 @@
-import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
-import connectDB from './config/db.js';
-
-import userRoutes from './routes/userRoutes.js';
-import donacionRoutes from './routes/donacionRoutes.js';
-import webhookRoutes from './routes/webhookRoutes.js';
-
 dotenv.config();
+import express from 'express';
+import path from 'path'; // <--- 1. Importa el módulo 'path'
+import { fileURLToPath } from 'url'; // <--- 2. Importa el módulo 'url'
+
+// --- Lógica para construir rutas absolutas ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// --- Tus importaciones originales (ahora usando rutas absolutas) ---
+import connectDB from './config/db.js';
+// LA SOLUCIÓN: Usamos path.join para crear una ruta absoluta al archivo de rutas
+import UserRoutes from path.join(__dirname, 'routes', 'UserRoutes.js');
+import DonacionRoutes from path.join(__dirname, 'routes', 'DonacionRoutes.js');
+import webhookRoutes from path.join(__dirname, 'routes', 'webhookRoutes.js');
+// ...Si tienes más rutas, impórtalas de la misma manera...
+
+import { configureMiddlewares } from './middlewares/middleware.js';
+
+// --- El resto de tu código (sin cambios) ---
+
+if (!process.env.CLERK_SECRET_KEY) {
+    console.error("ERROR: CLERK_SECRET_KEY no está definida.");
+    process.exit(1);
+}
 
 const app = express();
 
-// Middlewares
-app.use(cors());
-app.use(express.json()); // Necesario para recibir los webhooks en JSON
+configureMiddlewares(app);
+app.use('/api/webhooks', webhookRoutes);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Rutas
-app.use('/usuario', userRoutes);
-app.use('/donacion', donacionRoutes);
-app.use('/webhooks', webhookRoutes); // ← Webhook en esta ruta
+connectDB();
 
-// Vercel health check o default route opcional
-app.get('/', (req, res) => {
-  res.send('API funcionando correctamente');
+const PORT = process.env.PORT || 5000;
+
+app.get('/healthz', (req, res) => {
+    res.status(200).send('OK');
 });
 
-// Conexión a la base de datos y arranque del servidor
-const PORT = process.env.PORT || 5000;
-connectDB()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Servidor corriendo en el puerto ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error('Error al conectar con la base de datos:', err);
-  });
+app.use('/api/usuario', UserRoutes);
+app.use('/api/donacion', DonacionRoutes);
 
-export default app; // ← Necesario para Vercel (API handler)
+app.use((req, res, next) => {
+    res.status(404).json({ message: `Ruta ${req.method} ${req.url} no encontrada.` });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Servidor listo y escuchando en el puerto ${PORT}`);
+});
