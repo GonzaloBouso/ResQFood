@@ -2,19 +2,17 @@
   "version": 2,
   "builds": [
     {
-      "src": "frontend/ResQfood-Front/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "src": "server.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "handle": "filesystem"
+      "src": "/webhooks/clerk",
+      "dest": "server.js"
     },
     {
-      "src": "/(.*)",
+      "src": "/.*",
       "dest": "/index.html"
     }
   ]

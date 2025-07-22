@@ -1,60 +1,40 @@
-import dotenv from 'dotenv';
-dotenv.config();
 import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 import connectDB from './config/db.js';
-import UserRoutes from './routes/UserRoutes.js';
-import SolicitudRoutes from './routes/SolicitudRoutes.js';
-import CalificacionRoutes from './routes/CalificacionRoutes.js';
-import NotificacionRoutes from './routes/NotificacionRoutes.js';
-import EntregaRoutes from './routes/EntregaRoutes.js';
-import ReporteRoutes from './routes/ReporteRoutes.js';
-import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
+
+import userRoutes from './routes/userRoutes.js';
+import donacionRoutes from './routes/donacionRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
-import { configureMiddlewares } from './middlewares/middleware.js';
-import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
-import DonacionRoutes from './routes/DonacionRoutes.js';
 
-
-// Verificar si la clave de Clerk está cargada
-if (!process.env.CLERK_SECRET_KEY) {
-    console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    console.error("ERROR: CLERK_SECRET_KEY no está definida.");
-    process.exit(1);
-}
+dotenv.config();
 
 const app = express();
 
-// --- CONFIGURACIÓN DE MIDDLEWARES (ORDEN CORRECTO) ---
-configureMiddlewares(app);
-app.use('/api/webhooks', webhookRoutes);
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middlewares
+app.use(cors());
+app.use(express.json()); // Necesario para recibir los webhooks en JSON
 
-// Conectar a la base de datos
-connectDB();
+// Rutas
+app.use('/usuario', userRoutes);
+app.use('/donacion', donacionRoutes);
+app.use('/webhooks', webhookRoutes); // ← Webhook en esta ruta
 
-// LA LÍNEA MÁS IMPORTANTE: Usar el puerto de Render o 5000 como fallback.
+// Vercel health check o default route opcional
+app.get('/', (req, res) => {
+  res.send('API funcionando correctamente');
+});
+
+// Conexión a la base de datos y arranque del servidor
 const PORT = process.env.PORT || 5000;
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Servidor corriendo en el puerto ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Error al conectar con la base de datos:', err);
+  });
 
-// Ruta para chequeos de salud
-app.get('/healthz', (req, res) => {
-    res.status(200).send('OK');
-});
-
-// --- REGISTRO DE RUTAS DE LA API ---
-app.use('/api/usuario', UserRoutes);
-app.use('/api/donacion', DonacionRoutes);
-// Descomenta las demás rutas cuando las necesites
-// ...
-
-// Middleware para manejar rutas no encontradas (404)
-app.use((req, res, next) => {
-    res.status(404).json({ message: `Ruta ${req.method} ${req.url} no encontrada.` });
-});
-
-// --- INICIAR EL SERVIDOR (CORREGIDO) ---
-// El servidor debe escuchar en '0.0.0.0' para ser accesible en contenedores como los de Render
-// y el log ahora mostrará el puerto real que está usando.
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ Servidor listo y escuchando en el puerto ${PORT}`);
-});
+export default app; // ← Necesario para Vercel (API handler)
