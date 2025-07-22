@@ -1,7 +1,8 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
+  "description": "Backend server for ResQFood application",
   "type": "module",
   "scripts": {
     "start": "node server.js",
@@ -11,10 +12,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
-    "backend": "file:",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
