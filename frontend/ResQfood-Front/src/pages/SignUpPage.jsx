@@ -14,7 +14,7 @@ export default function SignUpPage() {
       <SignUp 
         routing="virtual" 
         signInUrl="/sign-in" 
-        fallbackRedirectUrl="/complete-profile" 
+        fallbackRedirectUrl="/dashboard" 
       />
     </div>
   );
