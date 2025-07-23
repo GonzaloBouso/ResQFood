@@ -104,7 +104,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
     
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/usuario/${clerkUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/usuario/me/${clerkUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
         body: JSON.stringify(payload),
