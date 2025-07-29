@@ -1,10 +1,11 @@
-// src/pages/CompleteProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { User as UserIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // <--- 1. Importa useNavigate
 import API_BASE_URL from '../api/config.js';
 
 const CompleteProfilePage = ({ onProfileComplete }) => {
+  const navigate = useNavigate(); // <--- 2. Inicializa el hook
   const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
   const generarOpcionesHora = () => {
     const opciones = [];
@@ -104,7 +105,13 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
     
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/usuario/me/${clerkUser.id}`, {
+      
+      // ==================================================================
+      // LA CORRECCIÓN CLAVE ESTÁ EN ESTA LÍNEA
+      // ==================================================================
+      // Usamos el endpoint `/api/usuario/me` que actualiza al usuario autenticado.
+      // Ya no pasamos el ID de Clerk por la URL.
+      const response = await fetch(`${API_BASE_URL}/api/usuario/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
         body: JSON.stringify(payload),
@@ -127,10 +134,18 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         setLoading(false);
         return;
       }
-
-      if (onProfileComplete) onProfileComplete();
       
       setSuccessMessage("¡Perfil guardado exitosamente! Serás redirigido en breve...");
+      
+      // Llama a la función del contexto para refrescar el estado del perfil en toda la app.
+      if (onProfileComplete) {
+        onProfileComplete();
+      }
+
+      // Espera 2 segundos para que el usuario vea el mensaje y luego redirige al dashboard.
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
 
     } catch (err) {
       console.error("CompleteProfilePage: Error en handleSubmit:", err);
@@ -152,6 +167,7 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         ¡Casi listo! Solo necesitamos unos detalles más para personalizar tu experiencia.
       </p>
       <form onSubmit={handleSubmit} className="max-w-lg mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-xl space-y-6">
+        {/* ...el resto de tu formulario JSX no necesita cambios... */}
         <div>
           <label htmlFor="rol" className="block text-sm font-medium text-textMain mb-1">Tipo de Cuenta <span className="text-red-500">*</span></label>
           <select id="rol" name="rol" value={rol} onChange={(e) => setRol(e.target.value)} required className="mt-1 block w-full input-style">
