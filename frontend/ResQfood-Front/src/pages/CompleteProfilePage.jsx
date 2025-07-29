@@ -83,15 +83,13 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       rol: rol,
       nombre: formData.nombre,
       telefono: formData.telefono,
-       ubicacion: {
-    ...formData.ubicacion,
-    // Añadimos las coordenadas por defecto para pasar la validación.
-    // El backend puede geocodificar la dirección más tarde si es necesario.
-    coordenadas: {
-      type: 'Point',
-      coordinates: [0, 0] // Coordenadas por defecto
-    }
-  },
+      ubicacion: {
+        ...formData.ubicacion,
+        coordenadas: {
+          type: 'Point',
+          coordinates: [0, 0] 
+        }
+      },
     };
 
     if (rol === 'LOCAL') {
@@ -104,10 +102,8 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
     
     try {
       const token = await getToken();
-      
-      // LA SOLUCIÓN: Usamos POST a la nueva ruta /create-profile para CREAR el perfil.
       const response = await fetch(`${API_BASE_URL}/api/usuario/create-profile`, {
-        method: 'POST', // <-- CAMBIO A POST
+        method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
         body: JSON.stringify(payload),
       });
@@ -115,15 +111,21 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw data; // Lanza el error para que sea capturado por el bloque catch
+        throw data;
       }
       
       setSuccessMessage("¡Perfil guardado exitosamente! Serás redirigido en breve...");
       
+      // ==================================================================
+      // LA SOLUCIÓN:
+      // Le pasamos los datos del usuario recién creado a la función del App.jsx.
+      // Esto actualiza el estado global de la aplicación instantáneamente.
+      // ==================================================================
       if (onProfileComplete) {
-        onProfileComplete();
+        onProfileComplete(data.user);
       }
 
+      // Esperamos 2 segundos para que el usuario lea el mensaje y luego navegamos.
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);

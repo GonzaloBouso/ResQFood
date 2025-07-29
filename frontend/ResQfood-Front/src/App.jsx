@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SignedIn, SignedOut, useUser, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
+
+// --- Tus importaciones de Componentes y Páginas ---
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
 import Footer from './components/layout/Footer';
@@ -18,7 +20,7 @@ import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
-import NewDonationPage from './pages/NewDonationPage'; // <-- ESTA ERA UNA DE LAS LÍNEAS QUE FALTABA
+import NewDonationPage from './pages/NewDonationPage';
 
 // --- Contexto y Configuración ---
 import { ProfileStatusContext } from './context/ProfileStatusContext';
@@ -27,14 +29,27 @@ import API_BASE_URL from './api/config.js';
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
-// --- Hook de Perfil (Con la lógica de sincronización correcta) ---
+// ==================================================================
+// LA SOLUCIÓN FINAL ESTÁ AQUÍ
+// ==================================================================
 const useUserProfileStatus = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     const [profileStatus, setProfileStatus] = useState({ isLoading: true, isComplete: false, userRole: null, userDataFromDB: null });
     const [fetchTrigger, setFetchTrigger] = useState(0);
 
+    // 1. Creamos una función para actualizar el estado directamente.
+    //    Esto evita la necesidad de un re-fetch después de completar el perfil, eliminando la race condition.
+    const updateProfileState = (userData) => {
+        setProfileStatus({
+            isLoading: false,
+            isComplete: !!userData?.rol,
+            userRole: userData?.rol || null,
+            userDataFromDB: userData
+        });
+    };
+  
     useEffect(() => {
-        if (!isAuthLoaded) { return; }
+        if (!isAuthLoaded) return;
 
         const fetchUserProfileFunction = async () => {
             if (!isSignedIn) {
@@ -51,13 +66,7 @@ const useUserProfileStatus = () => {
                 }
                 if (!response.ok) throw new Error("Error fetching user profile");
                 const data = await response.json();
-                const userFromOurDB = data.user || data;
-                setProfileStatus({ 
-                    isLoading: false, 
-                    isComplete: !!userFromOurDB?.rol,
-                    userRole: userFromOurDB?.rol || null, 
-                    userDataFromDB: userFromOurDB 
-                });
+                updateProfileState(data.user); // Usamos la nueva función para establecer el estado
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error);
                 setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
@@ -65,12 +74,15 @@ const useUserProfileStatus = () => {
         };
         fetchUserProfileFunction();
     }, [isAuthLoaded, isSignedIn, fetchTrigger, getToken]);
-
+  
     const refreshProfile = () => setFetchTrigger(prev => prev + 1);
-    return { ...profileStatus, refreshProfile, currentClerkUserId: userId };
+  
+    // 2. Pasamos la nueva función al return del hook.
+    return { ...profileStatus, refreshProfile, updateProfileState, currentClerkUserId: userId };
 };
 
-// --- Componente de Ruta Protegida (lógica original) ---
+
+// --- Componente de Ruta Protegida (Tu lógica original, que es correcta) ---
 const ProtectedRoute = ({ children }) => {
     const { isLoading, isComplete } = useContext(ProfileStatusContext);
     const location = useLocation();
@@ -84,7 +96,8 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
-// --- Contenido Principal de la App (estructura de rutas original) ---
+
+// --- Contenido Principal de la App ---
 const AppContent = () => {
   const userProfileHookData = useUserProfileStatus();
   const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(null);
@@ -97,6 +110,7 @@ const AppContent = () => {
     currentUserDataFromDB: userProfileHookData.userDataFromDB,
     currentClerkUserId: userProfileHookData.currentClerkUserId,
     refreshUserProfile: userProfileHookData.refreshProfile,
+    updateProfileState: userProfileHookData.updateProfileState, // 3. Pasamos la nueva función al contexto.
     donationCreationTimestamp,
     activeSearchLocation,
     setActiveSearchLocation,
@@ -109,6 +123,7 @@ const AppContent = () => {
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             <ClerkLoaded>
                 <Routes>
+                    {/* --- Tu estructura de rutas original, que es correcta --- */}
                     <Route path="/" element={<><SignedIn><Navigate to="/dashboard" /></SignedIn><SignedOut><HomePageUnregistered /></SignedOut></>} />
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
@@ -117,7 +132,15 @@ const AppContent = () => {
                     <Route path="/perfil" element={<SignedIn><ProtectedRoute><UserProfilePage /></ProtectedRoute></SignedIn>} />
                     <Route path="/publicar-donacion" element={<SignedIn><ProtectedRoute><NewDonationPage onDonationCreated={() => setDonationCreationTimestamp(Date.now())} /></ProtectedRoute></SignedIn>} />
 
-                    <Route path="/complete-profile" element={<SignedIn><CompleteProfilePage onProfileComplete={userProfileHookData.refreshProfile} /></SignedIn>} />
+                    <Route
+                        path="/complete-profile"
+                        element={
+                        <SignedIn>
+                            {/* 4. Le pasamos la nueva función `updateProfileState` como prop a CompleteProfilePage. */}
+                            <CompleteProfilePage onProfileComplete={userProfileHookData.updateProfileState} />
+                        </SignedIn>
+                        }
+                    />
 
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
@@ -136,7 +159,8 @@ const AppContent = () => {
   );
 };
 
-// --- Componente Raíz de la App ---
+
+// --- Componente Raíz de la App (Sin cambios) ---
 function App() {
   if (!GOOGLE_MAPS_API_KEY) {
     console.error("ADVERTENCIA: VITE_GOOGLE_MAPS_API_KEY no está definida.");
