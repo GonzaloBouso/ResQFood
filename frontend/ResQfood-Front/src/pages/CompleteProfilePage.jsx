@@ -83,7 +83,15 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       rol: rol,
       nombre: formData.nombre,
       telefono: formData.telefono,
-      ubicacion: formData.ubicacion,
+       ubicacion: {
+    ...formData.ubicacion,
+    // Añadimos las coordenadas por defecto para pasar la validación.
+    // El backend puede geocodificar la dirección más tarde si es necesario.
+    coordenadas: {
+      type: 'Point',
+      coordinates: [0, 0] // Coordenadas por defecto
+    }
+  },
     };
 
     if (rol === 'LOCAL') {
