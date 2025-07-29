@@ -4,18 +4,19 @@ import { requireAuth } from '../middlewares/autMiddleware.js';
 
 const router = express.Router();
 
-// Ruta para crear un usuario (si es necesaria)
-router.post('/', UserController.createUser);
-
-// Obtener el perfil del usuario actual (GET)
+// Obtener el perfil del usuario actual (GET /me)
 router.get('/me', requireAuth, UserController.getCurrentUserProfile);
 
-// --- LA SOLUCIÓN: RUTA PARA ACTUALIZAR EL PERFIL DEL USUARIO ACTUAL (PUT) ---
-// Esta es la ruta que tu frontend está intentando llamar.
+// Actualizar el perfil del usuario actual (PUT /me)
 router.put('/me', requireAuth, UserController.updateCurrentUserProfile);
 
-// Ruta para actualizar un usuario por su ID (si es necesaria para un admin en el futuro)
-// La mantenemos por si acaso, pero no la usaremos para el formulario de completar perfil.
+// --- LA SOLUCIÓN: Nueva ruta para que el frontend cree el perfil ---
+router.post('/create-profile', requireAuth, UserController.createProfileFromFrontend);
+
+// (Opcional) Ruta para actualizar un usuario específico por su ID (para admins)
 router.put('/:clerkUserId', requireAuth, UserController.updateUser);
+
+// (Opcional) Ruta para crear un usuario manualmente (si es necesario)
+router.post('/', UserController.createUser);
 
 export default router;

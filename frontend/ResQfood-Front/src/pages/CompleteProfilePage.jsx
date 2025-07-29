@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { User as UserIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // <--- 1. Importa useNavigate
+import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../api/config.js';
 
 const CompleteProfilePage = ({ onProfileComplete }) => {
-  const navigate = useNavigate(); // <--- 2. Inicializa el hook
+  const navigate = useNavigate();
   const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
   const generarOpcionesHora = () => {
     const opciones = [];
@@ -58,18 +58,12 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
 
   const handleUbicacionChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      ubicacion: { ...prev.ubicacion, [name]: value },
-    }));
+    setFormData(prev => ({ ...prev, ubicacion: { ...prev.ubicacion, [name]: value } }));
   };
   
   const handleLocalDataChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      localData: { ...prev.localData, [name]: value },
-    }));
+    setFormData(prev => ({ ...prev, localData: { ...prev.localData, [name]: value } }));
   };
 
   const handleSubmit = async (e) => {
@@ -97,59 +91,48 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         ? `${diaInicio} de ${horaApertura} a ${horaCierre}`
         : `${diaInicio} a ${diaFin} de ${horaApertura} a ${horaCierre}`;
       
-      payload.localData = {
-        ...formData.localData,
-        horarioAtencion: horarioString
-      };
+      payload.localData = { ...formData.localData, horarioAtencion: horarioString };
     }
     
     try {
       const token = await getToken();
       
-      // ==================================================================
-      // LA CORRECCIÓN CLAVE ESTÁ EN ESTA LÍNEA
-      // ==================================================================
-      // Usamos el endpoint `/api/usuario/me` que actualiza al usuario autenticado.
-      // Ya no pasamos el ID de Clerk por la URL.
-      const response = await fetch(`${API_BASE_URL}/api/usuario/me`, {
-        method: 'PUT',
+      // LA SOLUCIÓN: Usamos POST a la nueva ruta /create-profile para CREAR el perfil.
+      const response = await fetch(`${API_BASE_URL}/api/usuario/create-profile`, {
+        method: 'POST', // <-- CAMBIO A POST
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
         body: JSON.stringify(payload),
       });
+
       const data = await response.json();
 
       if (!response.ok) {
-        console.error("CompleteProfilePage: Error en respuesta del PUT:", data);
-        if (data.errors && Array.isArray(data.errors)) {
-          const formattedErrors = {};
-          data.errors.forEach(err => { 
-            const pathKey = Array.isArray(err.path) ? err.path.join('.') : String(err.path);
-            formattedErrors[pathKey] = err.message; 
-          });
-          setValidationErrors(formattedErrors);
-          setError("Por favor, corrige los errores en el formulario.");
-        } else {
-          setError(data.message || "Ocurrió un error al actualizar el perfil.");
-        }
-        setLoading(false);
-        return;
+        throw data; // Lanza el error para que sea capturado por el bloque catch
       }
       
       setSuccessMessage("¡Perfil guardado exitosamente! Serás redirigido en breve...");
       
-      // Llama a la función del contexto para refrescar el estado del perfil en toda la app.
       if (onProfileComplete) {
         onProfileComplete();
       }
 
-      // Espera 2 segundos para que el usuario vea el mensaje y luego redirige al dashboard.
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
 
     } catch (err) {
       console.error("CompleteProfilePage: Error en handleSubmit:", err);
-      setError("Ocurrió un error de red o del servidor. Inténtalo de nuevo.");
+      if (err.errors) {
+        const formattedErrors = {};
+        err.errors.forEach(e => { 
+          const pathKey = Array.isArray(e.path) ? e.path.join('.') : String(e.path);
+          formattedErrors[pathKey] = e.message; 
+        });
+        setValidationErrors(formattedErrors);
+        setError("Por favor, corrige los errores en el formulario.");
+      } else {
+        setError(err.message || "Ocurrió un error de red o del servidor. Inténtalo de nuevo.");
+      }
       setLoading(false);
     }
   };
@@ -167,7 +150,6 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         ¡Casi listo! Solo necesitamos unos detalles más para personalizar tu experiencia.
       </p>
       <form onSubmit={handleSubmit} className="max-w-lg mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-xl space-y-6">
-        {/* ...el resto de tu formulario JSX no necesita cambios... */}
         <div>
           <label htmlFor="rol" className="block text-sm font-medium text-textMain mb-1">Tipo de Cuenta <span className="text-red-500">*</span></label>
           <select id="rol" name="rol" value={rol} onChange={(e) => setRol(e.target.value)} required className="mt-1 block w-full input-style">

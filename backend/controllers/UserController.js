@@ -1,64 +1,126 @@
 import User from '../models/User.js';
 import { updateUserSchema, completeInitialProfileSchema, createUserSchema } from '../validations/UserValidation.js';
 import { z } from 'zod';
+import clerk from '@clerk/clerk-sdk-node'; // Importa el SDK de Clerk para obtener datos del usuario
 
 export class UserController {
-    // ... tu método createUser (sin cambios) ...
-    static async createUser(req, res) {
-      // ...
-    }
-
 
     // ==================================================================
-    // LA SOLUCIÓN: Nuevo método para actualizar el perfil del usuario autenticado
+    // LA SOLUCIÓN: Nuevo método para CREAR el perfil desde el frontend
+    // Este método es llamado por el formulario "CompleteProfilePage".
+    // Elimina la dependencia del webhook y los problemas de sincronización.
     // ==================================================================
-    static async updateCurrentUserProfile(req, res) {
+    static async createProfileFromFrontend(req, res) {
         // Obtenemos el ID del usuario directamente del token verificado por el middleware.
         const clerkUserId = req.auth?.userId;
-
         if (!clerkUserId) {
             return res.status(401).json({ message: 'No autenticado.' });
         }
 
         try {
-            const userToUpdate = await User.findOne({ clerkUserId });
-            if (!userToUpdate) {
-                return res.status(404).json({ message: 'Usuario no encontrado en la base de datos.' });
+            // 1. Verifica si ya existe un perfil para este usuario para evitar duplicados.
+            const existingUser = await User.findOne({ clerkUserId });
+            if (existingUser) {
+                return res.status(409).json({ message: 'El perfil para este usuario ya ha sido creado.' });
             }
 
-            // Determina qué esquema de validación usar
-            const isCompletingProfile = !userToUpdate.rol;
-            const validationSchema = isCompletingProfile ? completeInitialProfileSchema : updateUserSchema;
-            const validatedData = validationSchema.parse(req.body);
+            // 2. Valida los datos que vienen del formulario.
+            const validatedData = completeInitialProfileSchema.parse(req.body);
             
-            // Lógica para manejar coordenadas inválidas
-            if (validatedData.ubicacion && !validatedData.ubicacion.coordenadas?.coordinates?.length) {
-                validatedData.ubicacion.coordenadas = { type: 'Point', coordinates: [0, 0] };
+            // 3. Obtiene los datos restantes (email, imagen) directamente desde la API de Clerk.
+            const clerkUser = await clerk.users.getUser(clerkUserId);
+            const primaryEmail = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress;
+
+            if (!primaryEmail) {
+              return res.status(400).json({ message: 'No se pudo encontrar un email principal para este usuario en Clerk.' });
             }
 
-            // Asigna los nuevos datos al documento del usuario
-            Object.assign(userToUpdate, validatedData);
-            
-            await userToUpdate.save();
+            // 4. Combina todos los datos y crea el nuevo usuario.
+            const newUser = new User({
+                ...validatedData, // Datos del formulario (rol, nombre, ubicación, etc.)
+                clerkUserId: clerkUserId,
+                email: primaryEmail,
+                fotoDePerfilUrl: clerkUser.imageUrl,
+            });
 
-            return res.status(200).json({ message: 'Perfil actualizado exitosamente', user: userToUpdate.toJSON() });
+            // 5. Guarda el nuevo usuario en la base de datos.
+            await newUser.save();
+            return res.status(201).json({ message: 'Perfil creado exitosamente', user: newUser.toJSON() });
 
         } catch (error) {
             if (error instanceof z.ZodError) {
-                return res.status(400).json({ message: 'Error de validación al actualizar el perfil.', errors: error.errors });
+                return res.status(400).json({ message: 'Error de validación al crear el perfil.', errors: error.errors });
             }
-            console.error('Error al actualizar el perfil del usuario actual:', error);
+            console.error('Error al crear el perfil desde el frontend:', error);
             return res.status(500).json({ message: 'Error interno del servidor.', errorDetails: error.message });
         }
     }
 
-    // Mantenemos tu método updateUser original por si lo necesitas para otras funcionalidades (ej. un panel de admin)
-    static async updateUser(req, res) {
-        // ... tu código original de updateUser ...
+    // --- MÉTODOS EXISTENTES (se mantienen para otras funcionalidades) ---
+
+    // Método para obtener el perfil del usuario actual (usado por App.jsx)
+    static async getCurrentUserProfile(req, res) {
+        try {
+            const clerkUserId = req.auth?.userId;
+            if (!clerkUserId) {
+                return res.status(401).json({ message: "No autenticado." });
+            }
+            const userProfile = await User.findOne({ clerkUserId });
+            if (!userProfile) {
+                // Esto es normal para un usuario nuevo que aún no ha completado su perfil.
+                return res.status(404).json({ message: "Perfil de usuario no encontrado en nuestra base de datos." });
+            }
+            return res.status(200).json({ user: userProfile.toJSON() });
+        } catch (error) {
+            console.error('Error al obtener el perfil del usuario actual:', error);
+            return res.status(500).json({ message: 'Error interno del servidor.' });
+        }
     }
     
-    // ... tu método getCurrentUserProfile (sin cambios) ...
-    static async getCurrentUserProfile(req, res) {
-      // ...
+    // Método para ACTUALIZAR el perfil de un usuario que YA EXISTE
+    static async updateCurrentUserProfile(req, res) {
+        const clerkUserId = req.auth?.userId;
+        if (!clerkUserId) {
+            return res.status(401).json({ message: 'No autenticado.' });
+        }
+        try {
+            const userToUpdate = await User.findOne({ clerkUserId });
+            if (!userToUpdate) {
+                return res.status(404).json({ message: 'Usuario no encontrado.' });
+            }
+            const validatedData = updateUserSchema.parse(req.body);
+            Object.assign(userToUpdate, validatedData);
+            await userToUpdate.save();
+            return res.status(200).json({ message: 'Perfil actualizado exitosamente', user: userToUpdate.toJSON() });
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                return res.status(400).json({ message: 'Error de validación.', errors: error.errors });
+            }
+            return res.status(500).json({ message: 'Error interno del servidor.' });
+        }
+    }
+
+    // (Opcional) Método para que un admin actualice a cualquier usuario
+    static async updateUser(req, res) {
+        const { clerkUserId } = req.params;
+        const loggedInUserId = req.auth?.userId;
+
+        // Aquí podrías añadir lógica para un rol de 'admin'
+        if (!loggedInUserId || clerkUserId !== loggedInUserId) {
+            return res.status(403).json({ message: 'No tiene permiso para modificar este usuario.' });
+        }
+        // ...resto de la lógica de actualización
+    }
+
+    // (Opcional) Método para crear un usuario manualmente (vía webhook u otro sistema)
+    static async createUser(req, res) {
+        try {
+            const validatedData = createUserSchema.parse(req.body);
+            const newUser = new User(validatedData);
+            await newUser.save();
+            res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser.toJSON() });
+        } catch (error) {
+            // ...manejo de errores
+        }
     }
 }
