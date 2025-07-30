@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { User as UserIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+// Ya no se necesita 'useNavigate' en este componente
 import API_BASE_URL from '../api/config.js';
 
 const CompleteProfilePage = ({ onProfileComplete }) => {
-  const navigate = useNavigate();
+  // Se elimina la inicialización de 'navigate'
   const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
   const generarOpcionesHora = () => {
     const opciones = [];
@@ -114,21 +114,20 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
         throw data;
       }
       
-      setSuccessMessage("¡Perfil guardado exitosamente! Serás redirigido en breve...");
+      setSuccessMessage("¡Perfil guardado exitosamente!");
       
       // ==================================================================
-      // LA SOLUCIÓN:
-      // Le pasamos los datos del usuario recién creado a la función del App.jsx.
-      // Esto actualiza el estado global de la aplicación instantáneamente.
+      // LA SOLUCIÓN FINAL:
+      // Se actualiza el estado global a través de la prop onProfileComplete.
+      // La lógica de enrutamiento en App.jsx se encargará de mostrar el Dashboard
+      // automáticamente cuando el estado 'isComplete' cambie a true.
+      // Ya no necesitamos una redirección manual aquí.
       // ==================================================================
       if (onProfileComplete) {
         onProfileComplete(data.user);
       }
 
-      // Esperamos 2 segundos para que el usuario lea el mensaje y luego navegamos.
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+      // Se ha eliminado el bloque setTimeout y la llamada a navigate('/dashboard').
 
     } catch (err) {
       console.error("CompleteProfilePage: Error en handleSubmit:", err);
