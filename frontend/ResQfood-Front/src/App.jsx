@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { SignedIn, SignedOut, useUser, ClerkLoaded, useAuth } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
 
-// --- Tus importaciones de Componentes y Páginas ---
+// --- Tus importaciones de Componentes y Páginas (completas) ---
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
 import Footer from './components/layout/Footer';
@@ -37,8 +37,8 @@ const useUserProfileStatus = () => {
     const [profileStatus, setProfileStatus] = useState({ isLoading: true, isComplete: false, userRole: null, userDataFromDB: null });
     const [fetchTrigger, setFetchTrigger] = useState(0);
 
-    // 1. Creamos una función para actualizar el estado directamente.
-    //    Esto evita la necesidad de un re-fetch después de completar el perfil, eliminando la race condition.
+    // 1. Creamos una función para actualizar el estado directamente desde otros componentes.
+    //    Esto evita la necesidad de un re-fetch después de completar el perfil, eliminando la "race condition".
     const updateProfileState = (userData) => {
         setProfileStatus({
             isLoading: false,
@@ -49,6 +49,7 @@ const useUserProfileStatus = () => {
     };
   
     useEffect(() => {
+        // No hacemos nada hasta que el SDK de Clerk esté 100% cargado.
         if (!isAuthLoaded) return;
 
         const fetchUserProfileFunction = async () => {
@@ -56,6 +57,12 @@ const useUserProfileStatus = () => {
                 setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
                 return;
             }
+            // Evita un re-fetch si el perfil ya está completo (optimización)
+            if (profileStatus.isComplete) {
+                setProfileStatus(prev => ({ ...prev, isLoading: false }));
+                return;
+            }
+
             setProfileStatus(prev => ({ ...prev, isLoading: true }));
             try {
                 const token = await getToken();
