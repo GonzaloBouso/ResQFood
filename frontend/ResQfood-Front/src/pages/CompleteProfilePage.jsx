@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { User as UserIcon } from 'lucide-react';
-// Ya no se necesita 'useNavigate' en este componente, se ha eliminado.
 import API_BASE_URL from '../api/config.js';
 
 const CompleteProfilePage = ({ onProfileComplete }) => {
-  // Se elimina la inicialización de 'navigate'
   const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
   const generarOpcionesHora = () => {
     const opciones = [];
@@ -116,19 +114,10 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       
       setSuccessMessage("¡Perfil guardado exitosamente!");
       
-      // ==================================================================
-      // LA SOLUCIÓN FINAL:
-      // 1. Se actualiza el estado global a través de la prop onProfileComplete.
-      // 2. Se elimina la navegación manual desde aquí. La lógica de enrutamiento
-      //    en App.jsx se encargará de mostrar el Dashboard automáticamente
-      //    cuando el estado 'isComplete' cambie a true.
-      // ==================================================================
       if (onProfileComplete) {
         onProfileComplete(data.user);
       }
       
-      // Se ha eliminado el bloque setTimeout y la llamada a navigate('/dashboard').
-
     } catch (err) {
       console.error("CompleteProfilePage: Error en handleSubmit:", err);
       if (err.errors) {
@@ -142,8 +131,6 @@ const CompleteProfilePage = ({ onProfileComplete }) => {
       } else {
         setError(err.message || "Ocurrió un error de red o del servidor. Inténtalo de nuevo.");
       }
-      // Mantenemos el setLoading(false) aquí para que el botón se reactive si hay un error.
-      // Si hay éxito, el componente se desmontará y no importará.
       setLoading(false);
     }
   };
