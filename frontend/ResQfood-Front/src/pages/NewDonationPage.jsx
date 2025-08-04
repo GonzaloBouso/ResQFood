@@ -4,9 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { X } from 'lucide-react'; 
 import { GoogleMap, Marker, Autocomplete } from '@react-google-maps/api'; 
-// import API_BASE_URL from './api/apiConfig.js';
-import API_BASE_URL from '../api/config.js'
-
+import API_BASE_URL from '../api/config.js';
 
 const mapContainerStyle = {
   width: '100%',
@@ -190,7 +188,7 @@ const NewDonationPage = ({ onDonationCreated }) => {
     
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/donacion`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`}, body: formDataPayload });
+      const response = await fetch(`${API_BASE_URL}/api/donacion`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`}, body: formDataPayload });
       const responseData = await response.json();
       if (!response.ok) {
         console.error("NewDonationPage: Error del backend:", responseData);
@@ -213,7 +211,9 @@ const NewDonationPage = ({ onDonationCreated }) => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-textMain mb-6 text-center">Publicar Nueva Donación</h1>
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6 bg-white p-6 sm:p-8 rounded-lg shadow-xl">
-        <div>
+        {/* El resto de tu JSX del formulario va aquí y no necesita cambios */}
+        {/* ... */}
+         <div>
           <label htmlFor="titulo" className="block text-sm font-medium text-gray-700">Título <span className="text-red-500">*</span></label>
           <input type="text" name="titulo" id="titulo" value={formData.titulo} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"/>
         </div>
@@ -329,6 +329,7 @@ const NewDonationPage = ({ onDonationCreated }) => {
         <button type="submit" disabled={loading || selectedFiles.length === 0} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-brandPrimaryDarker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50">
           {loading ? 'Publicando...' : 'Publicar Donación'}
         </button>
+        {/* ... */}
       </form>
     </div>
   );

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
-import { MapPin, ChevronDown, Menu as MenuIcon, Search as SearchIcon, MoreVertical } from 'lucide-react';
+import { Menu as MenuIcon, Search as SearchIcon, MoreVertical } from 'lucide-react';
 import logoResQFood from '../../assets/Logo-ResQfood.png';
 import { ProfileStatusContext } from '../../context/ProfileStatusContext';
 import { LocationModalWorkflow } from '../map/Location';
@@ -11,14 +11,13 @@ const Header = () => {
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
-  const profileCtx = useContext(ProfileStatusContext);
-
+  
   const { 
-    isLoadingUserProfile, 
-    isProfileComplete, 
+    isLoading, 
+    isComplete, 
     activeSearchLocation,
     setActiveSearchLocation 
-  } = profileCtx || {};
+  } = useContext(ProfileStatusContext) || {};
   
   const authButtonBaseClasses = "text-xs sm:text-sm font-medium py-1.5 px-2 sm:px-3 rounded-md transition-colors duration-150 ease-in-out whitespace-nowrap";
 
@@ -63,7 +62,6 @@ const Header = () => {
             </div>
           </div>
           
-          {/* CORRECCIÓN: Restauramos la barra de búsqueda central */}
           <div className="hidden lg:flex flex-1 justify-center items-center px-4">
             <div className="w-full max-w-lg xl:max-w-xl">
               <div className="relative flex items-center bg-gray-100 rounded-full shadow-sm h-10">
@@ -102,7 +100,8 @@ const Header = () => {
             <SignedIn>
               <div className="relative flex items-center" ref={menuRef}>
                 <UserButton afterSignOutUrl="/" />
-                {!isLoadingUserProfile && isProfileComplete && (
+                
+                {!isLoading && isComplete && (
                   <button
                     onClick={toggleProfileMenu}
                     className="p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -111,7 +110,8 @@ const Header = () => {
                     <MoreVertical size={22} />
                   </button>
                 )}
-                {isProfileMenuOpen && !isLoadingUserProfile && isProfileComplete && (
+                
+                {isProfileMenuOpen && !isLoading && isComplete && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">
                       <Link
