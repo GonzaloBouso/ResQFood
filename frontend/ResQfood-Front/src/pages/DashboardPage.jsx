@@ -1,22 +1,18 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 
-// --- Tus Componentes ---
 import CardDonacion from '../components/layout/CardDonacion.jsx';
 import WelcomeCard from '../components/layout/WelcomeCard.jsx'; 
 import HeroSlider from '../components/home_unregistered/HeroSlider.jsx';
 
-// --- Contexto y Configuración ---
 import { ProfileStatusContext } from '../context/ProfileStatusContext.js'; 
 import API_BASE_URL from '../api/config.js';
 
-// Asumo que tienes un componente Slider, si no, puedes reemplazarlo
-// import ImageSlider from '../components/layout/ImageSlider.jsx';
-
 const DashboardPage = () => {
   const { getToken } = useAuth();
+  
   const { 
-    isLoading: isLoadingUserProfile, 
+    isLoadingUserProfile, 
     currentUserDataFromDB, 
     activeSearchLocation, 
     setActiveSearchLocation,
@@ -28,7 +24,6 @@ const DashboardPage = () => {
   const [errorDonaciones, setErrorDonaciones] = useState(null);
   const [mensajeUbicacion, setMensajeUbicacion] = useState('Determinando tu ubicación...');
 
-  // --- Lógica para establecer la ubicación inicial (sin cambios) ---
   useEffect(() => {
     if (isLoadingUserProfile || activeSearchLocation) return;
 
@@ -57,7 +52,6 @@ const DashboardPage = () => {
     }
   }, [isLoadingUserProfile, currentUserDataFromDB, activeSearchLocation, setActiveSearchLocation]);
 
-  // --- Lógica para actualizar el mensaje de ubicación (sin cambios) ---
   useEffect(() => {
     if (activeSearchLocation?.address) {
       setMensajeUbicacion(`Mostrando donaciones cerca de: ${activeSearchLocation.address}`);
@@ -66,7 +60,6 @@ const DashboardPage = () => {
     }
   }, [activeSearchLocation, isLoadingUserProfile]);
 
-  // --- Lógica para cargar las donaciones cercanas (sin cambios) ---
   useEffect(() => {
     if (!activeSearchLocation?.lat || !activeSearchLocation?.lng) {
       setDonaciones([]);
@@ -100,9 +93,7 @@ const DashboardPage = () => {
     fetchDonacionesCercanas();
   }, [activeSearchLocation, donationCreationTimestamp, getToken]);
   
-  // --- Obtenemos el nombre del usuario para el saludo ---
   const userName = currentUserDataFromDB?.nombre?.split(' ')[0] || 'Usuario';
-
 
   if (isLoadingUserProfile) {
       return <div className="text-center py-20">Cargando tu dashboard...</div>
@@ -110,17 +101,8 @@ const DashboardPage = () => {
 
   return (
     <div className="space-y-12 md:space-y-16">
-      {/* Sección 1: Slider de Imágenes */}
-      <section>
-        <HeroSlider />
-      </section>
-
-      {/* Sección 2: Tarjeta de Bienvenida */}
-      <section>
-        <WelcomeCard userName={userName} />
-      </section>
-      
-      {/* Sección 3: Donaciones Cercanas */}
+      <section><HeroSlider /></section>
+      <section><WelcomeCard userName={userName} /></section>
       <section id="donaciones-cercanas" className="scroll-mt-24">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gray-800">Donaciones Cercanas</h2>
@@ -128,26 +110,15 @@ const DashboardPage = () => {
         </div>
         
         {isLoadingDonaciones && <p className="text-center py-10 text-primary">Buscando donaciones...</p>}
-        
-        {errorDonaciones && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center" role="alert">
-            <strong className="font-bold">Error:</strong> {errorDonaciones}
-          </div>
-        )}
-
+        {errorDonaciones && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center" role="alert"><strong className="font-bold">Error:</strong> {errorDonaciones}</div>}
         {!isLoadingDonaciones && !errorDonaciones && donaciones.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {donaciones.map(d => (
-              <CardDonacion key={d._id} donacion={d} />
-            ))}
+            {donaciones.map(d => <CardDonacion key={d._id} donacion={d} />)}
           </div>
         )}
-        
         {!isLoadingDonaciones && !errorDonaciones && donaciones.length === 0 && (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">
-              {activeSearchLocation ? 'No se encontraron donaciones cerca de ti en este momento.' : 'Por favor, selecciona una ubicación para empezar.'}
-            </p>
+            <p className="text-gray-500">{activeSearchLocation ? 'No se encontraron donaciones cerca de ti en este momento.' : 'Por favor, selecciona una ubicación para empezar.'}</p>
           </div>
         )}
       </section>

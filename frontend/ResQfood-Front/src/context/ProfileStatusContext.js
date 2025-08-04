@@ -1,8 +1,8 @@
 import { createContext } from 'react';
 
 const initialState = {
-  isLoading: true,
-  isComplete: false,
+  isLoadingUserProfile: true, 
+  isProfileComplete: false,
   currentUserRole: null,
   currentUserDataFromDB: null,
   currentClerkUserId: null,
@@ -10,7 +10,6 @@ const initialState = {
   updateProfileState: () => {},
   setActiveSearchLocation: () => {},
   donationCreationTimestamp: null,
-  triggerDonationReFetch: () => {},
 };
 
 export const ProfileStatusContext = createContext(initialState);
