@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
 
+// --- Tus componentes y páginas ---
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
 import Footer from './components/layout/Footer';
@@ -21,12 +22,35 @@ import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
 
+// --- Contexto y Configuración ---
 import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
+// ==================================================================
+// LA SOLUCIÓN: Componente para gestionar la ruta raíz de forma segura
+// ==================================================================
+const RootRedirector = () => {
+  const { isSignedIn, isLoaded } = useAuth();
+  
+  // Muestra un indicador de carga mientras Clerk determina el estado de la sesión.
+  // Esto evita renderizar la página incorrecta momentáneamente.
+  if (!isLoaded) {
+    return <div className="text-center py-20">Cargando...</div>;
+  }
+
+  // Una vez que Clerk está listo, redirige a la página correcta.
+  if (isSignedIn) {
+    return <Navigate to="/dashboard" replace />;
+  } else {
+    return <HomePageUnregistered />;
+  }
+};
+
+
+// --- Tu hook personalizado (ya es correcto y robusto) ---
 const useUserProfileAndLocation = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     const [profileStatus, setProfileStatus] = useState({ isLoading: true, isComplete: false, userRole: null, userDataFromDB: null });
@@ -89,6 +113,7 @@ const useUserProfileAndLocation = () => {
     };
 };
 
+// --- Tu layout protegido (ya es correcto y robusto) ---
 const ProtectedLayout = () => {
     const { isLoading, isComplete, updateProfileState } = useContext(ProfileStatusContext);
     if (isLoading) return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
@@ -123,24 +148,28 @@ const AppContent = () => {
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             <ClerkLoaded>
                 <Routes>
-                    <Route path="/" element={<SignedOut><HomePageUnregistered /></SignedOut>} />
+                    {/* LA SOLUCIÓN: Usamos el nuevo componente para manejar la ruta raíz */}
+                    <Route path="/" element={<RootRedirector />} />
+                    
+                    {/* Rutas de Autenticación */}
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
 
+                    {/* Grupo de Rutas Protegidas */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/perfil" element={<UserProfilePage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
-                        <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
-                        <Route path="/formularioContacto" element={<FormularioContacto />} />
-                        <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
-                        <Route path="/preguntasFrecuentes" element={<PreguntasFrecuentes />} />
-                        <Route path="/sobreNosotros" element={<SobreNosotros />} />
-                        <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
-                        <Route path="/formularioVoluntario" element={<FormularioVoluntario />} />
-                        
-                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     </Route>
+
+                    {/* Rutas Públicas de Contenido Estático */}
+                    <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
+                    <Route path="/formularioContacto" element={<FormularioContacto />} />
+                    <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
+                    <Route path="/preguntasFrecuentes" element={<PreguntasFrecuentes />} />
+                    <Route path="/sobreNosotros" element={<SobreNosotros />} />
+                    <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
+                    <Route path="/formularioVoluntario" element={<FormularioVoluntario />} />
                 </Routes>
             </ClerkLoaded>
             </main>
