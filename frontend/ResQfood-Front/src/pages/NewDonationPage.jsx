@@ -164,12 +164,48 @@ const NewDonationPage = ({ onDonationCreated }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setLoading(true); setError(null); setSuccessMessage('');
-    if (selectedFiles.length === 0) { setError("Sube al menos una imagen."); setLoading(false); return; }
-    if (!formData.fechaExpiracionPublicacion) { setError("Fecha de expiración de publicación es obligatoria."); setLoading(false); return; }
-    if (!formData.ubicacionRetiro.coordenadas?.coordinates || formData.ubicacionRetiro.coordenadas.coordinates.length !== 2) { 
-        setError("Selecciona una ubicación válida en el mapa o busca una dirección."); setLoading(false); return; 
+    e.preventDefault(); 
+    setLoading(true); 
+    setError(null); 
+    setSuccessMessage('');
+
+    // --- INICIO DE LAS VALIDACIONES ---
+
+    // 1. Validaciones existentes (obligatorias)
+    if (selectedFiles.length === 0) { 
+        setError("Sube al menos una imagen."); 
+        setLoading(false); 
+        return; 
     }
+    if (!formData.fechaExpiracionPublicacion) { 
+        setError("La fecha en que la publicación expira es obligatoria."); 
+        setLoading(false); 
+        return; 
+    }
+    if (!formData.ubicacionRetiro.coordenadas?.coordinates || formData.ubicacionRetiro.coordenadas.coordinates.length !== 2) { 
+        setError("Selecciona una ubicación válida en el mapa o busca una dirección."); 
+        setLoading(false); 
+        return; 
+    }
+
+    // 2. --- NUEVA VALIDACIÓN DE FECHAS ---
+    // Solo se ejecuta si el usuario ha introducido una fecha de vencimiento del producto.
+    if (formData.fechaVencimientoProducto) {
+      const fechaExpiracionPub = new Date(formData.fechaExpiracionPublicacion);
+      const fechaVencimientoProd = new Date(formData.fechaVencimientoProducto);
+
+      // El input 'date' no tiene hora, así que para una comparación justa,
+      // ajustamos la fecha de vencimiento al final de ese día.
+      fechaVencimientoProd.setHours(23, 59, 59, 999);
+
+      if (fechaVencimientoProd < fechaExpiracionPub) {
+        setError("Error de lógica: La fecha de vencimiento del producto no puede ser anterior a la fecha en que expira la publicación.");
+        setLoading(false);
+        return; // Detiene el envío del formulario
+      }
+    }
+
+    // --- FIN DE LAS VALIDACIONES ---
 
     const formDataPayload = new FormData();
     Object.keys(formData).forEach(key => {
@@ -211,9 +247,7 @@ const NewDonationPage = ({ onDonationCreated }) => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-textMain mb-6 text-center">Publicar Nueva Donación</h1>
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6 bg-white p-6 sm:p-8 rounded-lg shadow-xl">
-        {/* El resto de tu JSX del formulario va aquí y no necesita cambios */}
-        {/* ... */}
-         <div>
+        <div>
           <label htmlFor="titulo" className="block text-sm font-medium text-gray-700">Título <span className="text-red-500">*</span></label>
           <input type="text" name="titulo" id="titulo" value={formData.titulo} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"/>
         </div>
@@ -329,7 +363,6 @@ const NewDonationPage = ({ onDonationCreated }) => {
         <button type="submit" disabled={loading || selectedFiles.length === 0} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-brandPrimaryDarker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50">
           {loading ? 'Publicando...' : 'Publicar Donación'}
         </button>
-        {/* ... */}
       </form>
     </div>
   );
