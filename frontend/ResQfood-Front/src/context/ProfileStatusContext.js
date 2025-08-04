@@ -1,4 +1,16 @@
-// src/context/ProfileStatusContext.js
 import { createContext } from 'react';
 
-export const ProfileStatusContext = createContext(null);
+const initialState = {
+  isLoading: true,
+  isComplete: false,
+  currentUserRole: null,
+  currentUserDataFromDB: null,
+  currentClerkUserId: null,
+  activeSearchLocation: null,
+  updateProfileState: () => {},
+  setActiveSearchLocation: () => {},
+  donationCreationTimestamp: null,
+  triggerDonationReFetch: () => {},
+};
+
+export const ProfileStatusContext = createContext(initialState);
