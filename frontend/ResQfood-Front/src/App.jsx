@@ -21,6 +21,7 @@ import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
+import UserProfilePage from './pages/UserProfilePage';
 
 // --- Contexto y Configuración ---
 import { ProfileStatusContext } from './context/ProfileStatusContext';
@@ -158,7 +159,7 @@ const AppContent = () => {
                     {/* Grupo de Rutas Protegidas */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/perfil" element={<UserProfilePage />} />
+                        <Route path="/perfil/:id" element={<SignedIn><UserProfilePage /></SignedIn>} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
                     </Route>
 
