@@ -18,8 +18,30 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
     if (!donacionId) return;
 
     const fetchDonacion = async () => {
-      // ... tu lógica de fetch (sin cambios) ...
-    };
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_BASE_URL}/api/donacion/${donacionId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Respuesta cruda del backend:", text);
+      throw new Error(`Error al obtener los detalles (${res.status})`);
+    }
+
+    const data = await res.json();
+    setDonacion(data.donacion);
+  } catch (err) {
+    console.error(err);
+    setError('No se pudieron obtener los detalles.');
+  } finally {
+    setCargando(false);
+  }
+};
 
     fetchDonacion();
   }, [donacionId, getToken]);
