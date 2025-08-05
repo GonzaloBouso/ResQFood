@@ -17,7 +17,7 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
     const fetchDonacion = async () => {
       try {
         const token = await getToken();
-        const res = await fetch(`${API_BASE_URL}/donacion/${donacionId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/donacion/${donacionId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
