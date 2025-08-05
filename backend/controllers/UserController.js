@@ -2,14 +2,10 @@ import User from '../models/User.js';
 import { updateUserSchema, completeInitialProfileSchema, createUserSchema } from '../validations/UserValidation.js';
 import { z } from 'zod';
 import clerk from '@clerk/clerk-sdk-node'; // Importa el SDK de Clerk para obtener datos del usuario
+import mongoose from 'mongoose';
 
 export class UserController {
 
-    // ==================================================================
-    // LA SOLUCIÓN: Nuevo método para CREAR el perfil desde el frontend
-    // Este método es llamado por el formulario "CompleteProfilePage".
-    // Elimina la dependencia del webhook y los problemas de sincronización.
-    // ==================================================================
     static async createProfileFromFrontend(req, res) {
         // Obtenemos el ID del usuario directamente del token verificado por el middleware.
         const clerkUserId = req.auth?.userId;
@@ -121,6 +117,33 @@ export class UserController {
             res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser.toJSON() });
         } catch (error) {
             // ...manejo de errores
+        }
+    }
+
+    static async getUserProfileById(req, res) {
+        try {
+            const { id } = req.params;
+
+            // Verificación de seguridad para asegurar que el ID es válido
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                return res.status(400).json({ message: "ID de usuario inválido." });
+            }
+
+            // Buscamos al usuario por su _id de MongoDB
+            // Seleccionamos solo los campos que queremos que sean públicos
+            const userProfile = await User.findById(id).select(
+                'nombre fotoDePerfilUrl rol ubicacion.ciudad ubicacion.provincia estadisticasGenerales'
+            );
+
+            if (!userProfile) {
+                return res.status(404).json({ message: "Perfil de usuario no encontrado." });
+            }
+
+            return res.status(200).json({ user: userProfile.toJSON() });
+
+        } catch (error) {
+            console.error('Error al obtener el perfil del usuario por ID:', error);
+            return res.status(500).json({ message: 'Error interno del servidor.' });
         }
     }
 }

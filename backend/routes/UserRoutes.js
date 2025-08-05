@@ -19,4 +19,7 @@ router.put('/:clerkUserId', requireAuth, UserController.updateUser);
 // (Opcional) Ruta para crear un usuario manualmente (si es necesario)
 router.post('/', UserController.createUser);
 
+router.get('/:id', requireAuth, UserController.getUserProfileById);
+
+
 export default router;

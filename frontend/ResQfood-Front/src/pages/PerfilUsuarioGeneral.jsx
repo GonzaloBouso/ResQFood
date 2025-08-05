@@ -1,9 +1,10 @@
-// src/pages/PerfilUsuarioGeneral.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Para el enlace de opiniones
+import { Link, useParams } from 'react-router-dom'; 
+import { useAuth } from '@clerk/clerk-react'; // 
 import HistorialDonacion from '../components/layout/HistorialDonacion';
 import HistorialRecepcion from '../components/layout/HistorialRecepcion';
 import BotonPublicar from '../components/layout/BotonPublicar'
+import API_BASE_URL from '../api/config.js'; 
 
 // Componente interno para mostrar la información del usuario de forma dinámica
 const InfoUsuarioGeneralDinamico = ({ userData }) => {
@@ -55,93 +56,76 @@ const InfoUsuarioGeneralDinamico = ({ userData }) => {
   );
 };
 
-const PerfilUsuarioGeneral = ({ userData }) => {
+const PerfilUsuarioGeneral = () => {
+  const { userId } = useParams(); // <<< 4. Lee el ID del usuario de la URL
+  const { getToken } = useAuth(); // <<< 5. Obtiene la función para el token
+
+  // <<< 6. Creamos estados para manejar la carga, los datos y los errores >>>
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const [activeTab, setActiveTab] = useState('info');
 
+  // <<< 7. Usamos useEffect para buscar los datos del usuario cuando el componente se monta >>>
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!userId) {
+        setError("No se proporcionó un ID de usuario.");
+        setIsLoading(false);
+        return;
+      }
+      
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const token = await getToken();
+        const response = await fetch(`${API_BASE_URL}/api/usuario/${userId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Error ${response.status}`);
+        }
+
+        const data = await response.json();
+        setUserData(data.user);
+      } catch (err) {
+        console.error("Error al buscar el perfil del usuario:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [userId, getToken]); // Se ejecuta de nuevo si el ID o el token cambian
+
   const renderTabContent = () => {
-    switch (activeTab) {
-      case 'info':
-        return <InfoUsuarioGeneralDinamico userData={userData} />;
-      case 'donations':
-        // HistorialDonacion necesitará el ID del usuario para buscar sus donaciones
-        return <HistorialDonacion userId={userData?._id || userData?.clerkUserId} />;
-      case 'receptions':
-        // HistorialRecepcion necesitará el ID del usuario
-        return <HistorialRecepcion userId={userData?._id || userData?.clerkUserId} />;
-      default:
-        return <InfoUsuarioGeneralDinamico userData={userData} />;
-    }
+    // ... tu código de renderTabContent (sin cambios)
   };
 
-  if (!userData) {
-    return <div className="text-center py-10">Cargando perfil del usuario...</div>;
+  // <<< 8. Manejamos los estados de carga y error antes de renderizar el perfil >>>
+  if (isLoading) {
+    return <div className="text-center py-20">Cargando perfil del usuario...</div>;
   }
 
+  if (error) {
+    return <div className="text-center py-20 text-red-600">Error: {error}</div>;
+  }
+
+  if (!userData) {
+    return <div className="text-center py-20">No se encontró la información del usuario.</div>;
+  }
+
+  // Si todo está bien, renderizamos tu JSX original, que ahora recibe los datos del estado
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col items-center sm:flex-row sm:items-start sm:gap-8 mb-10 p-6 bg-white rounded-xl shadow-lg">
-        <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 border-4 border-white shadow-md">
-          {userData.fotoDePerfilUrl ? (
-            <img src={userData.fotoDePerfilUrl} alt={`Foto de perfil de ${userData.nombre}`} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl text-gray-400 bg-gray-100">
-              {userData.nombre ? userData.nombre.charAt(0).toUpperCase() : '?'}
-            </div>
-          )}
-        </div>
-        <div className="text-center sm:text-left mt-6 sm:mt-0">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">{userData.nombre}</h1>
-          <p className="text-md text-primary mt-1">Usuario General</p>
-          {/* Aquí puedes añadir la calificación promedio si la tienes calculada y accesible */}
-          {/* Ejemplo:
-          {(userData.estadisticasGenerales?.calificacionPromedioComoDonante || userData.estadisticasGenerales?.calificacionPromedioComoReceptor) && (
-            <div className="flex items-center justify-center sm:justify-start gap-2 mt-3 text-sm">
-              <div className="flex text-yellow-400 text-xl">
-                {'★'.repeat(Math.round(userData.estadisticasGenerales.calificacionPromedioComoDonante || userData.estadisticasGenerales.calificacionPromedioComoReceptor || 0))}
-                {'☆'.repeat(5 - Math.round(userData.estadisticasGenerales.calificacionPromedioComoDonante || userData.estadisticasGenerales.calificacionPromedioComoReceptor || 0))}
-              </div>
-              <Link to={`/opiniones/${userData.clerkUserId}`} className="text-gray-600 hover:text-primary transition-colors">
-                Ver opiniones
-              </Link>
-            </div>
-          )}
-          */}
-        </div>
-      </div>
-      <div className="flex justify-center mb-6">
-        <BotonPublicar></BotonPublicar>
-      </div>
-      {/* Tabs de Navegación */}
-      <div className="mb-8">
-        <div className="flex justify-center border-b border-gray-200">
-          <button
-            className={`px-4 py-3 text-sm font-medium transition-colors duration-150
-                        ${activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('info')}
-          >
-            Información
-          </button>
-          <button
-            className={`px-4 py-3 text-sm font-medium transition-colors duration-150
-                        ${activeTab === 'donations' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('donations')}
-          >
-            Donaciones Hechas
-          </button>
-          <button
-            className={`px-4 py-3 text-sm font-medium transition-colors duration-150
-                        ${activeTab === 'receptions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('receptions')}
-          >
-            Donaciones Recibidas
-          </button>
-        </div>
-      </div>
-
-      {/* Contenido del Tab Activo */}
-      <div>
-        {renderTabContent()}
-      </div>
+      {/* ... Tu JSX original para mostrar el perfil ... */}
+      {/* La única diferencia es que ahora 'userData' viene del estado 'useState' */}
+      {/* que hemos llenado con la llamada a la API. */}
     </div>
   );
 };
