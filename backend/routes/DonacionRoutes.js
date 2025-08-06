@@ -5,6 +5,7 @@ import { requireAuth } from '../middlewares/autMiddleware.js';
 import { uploadDonacionImages } from '../middlewares/uploadMiddleware.js'; // Importa el middleware de subida
 
 const router = express.Router();
+router.get('/publicas', DonacionController.getPublicDonations);
 
 // Usar el middleware uploadDonacionImages ANTES del controlador
 router.post('/', requireAuth, uploadDonacionImages, DonacionController.createDonacion);

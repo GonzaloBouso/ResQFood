@@ -1,34 +1,84 @@
-// src/components/home_unregistered/LatestDonationsSection.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // <<< 1. Importa useState y useEffect
 import { useNavigate } from 'react-router-dom';
-import DonationCardLimited from './DonationCardLimited'; // Importa la tarjeta
+import DonationCardLimited from './DonationCardLimited';
+import API_BASE_URL from '../../api/config.js'; // <<< 2. Importa la URL de tu API
 
-// Import Swiper React components & styles (si aún no están importados globalmente)
+// --- Swiper ---
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { Navigation, Pagination } from 'swiper/modules'; // Solo Navigation y Pagination aquí
-
-// Datos de donaciones de ejemplo (deberían venir de una API en el futuro)
-const sampleDonations = [
-  { id: 1, titulo: 'Hamburguesa Completa', cantidad: '1 unidad', descripcionCorta: 'Deliciosa hamburguesa con queso cheddar, lechuga fresca, tomate y pan artesanal. ¡Lista para disfrutar!', imageUrl: 'https://plus.unsplash.com/premium_photo-1664648005519-3d1708d8ded6?q=80&w=800&auto=format&fit=crop', donanteNombre: 'Juan P.' },
-  { id: 2, titulo: 'Pan Casero Fresco', cantidad: '2 hogazas', descripcionCorta: 'Pan recién horneado, ideal para acompañar tus comidas o para un rico desayuno. Sin conservantes.', imageUrl: 'https://images.unsplash.com/photo-1509440159596-0ca480e54e6c?q=80&w=800&auto=format&fit=crop', donanteNombre: 'Ana G.' },
-  { id: 3, titulo: 'Frutas de Estación', cantidad: '1 bolsa (aprox 1kg)', descripcionCorta: 'Variedad de frutas frescas de temporada: manzanas, bananas y naranjas. Perfectas para un snack saludable.', imageUrl: 'https://images.unsplash.com/photo-1593280464608-3a3e06934218?q=80&w=800&auto=format&fit=crop', donanteNombre: 'Carlos S.' },
-  { id: 4, titulo: 'Porción de Lasaña', cantidad: '1 porción grande', descripcionCorta: 'Lasaña casera de carne y verduras, abundante y sabrosa. Calentar y listo.', imageUrl: 'https://images.unsplash.com/photo-1574894709920-31b297c1c4e0?q=80&w=800&auto=format&fit=crop', donanteNombre: 'Lucía M.' },
-  // Añade más donaciones de ejemplo si quieres
-];
+import { Navigation, Pagination } from 'swiper/modules';
 
 const LatestDonationsSection = () => {
   const navigate = useNavigate();
+  
+  // <<< 3. Creamos estados para manejar las donaciones, la carga y los errores >>>
+  const [donations, setDonations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // <<< 4. Usamos useEffect para buscar los datos cuando el componente se monta >>>
+  useEffect(() => {
+    const fetchPublicDonations = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/donacion/publicas`);
+        if (!response.ok) {
+          throw new Error('No se pudieron cargar las donaciones.');
+        }
+        const data = await response.json();
+        setDonations(data.donaciones || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPublicDonations();
+  }, []); // El array vacío asegura que se ejecute solo una vez
 
   const handleViewMoreClick = () => {
-    // Redirigir a la página de registro/login
-    navigate('/sign-up'); // O a /sign-in, o mostrar un modal
+    navigate('/sign-up');
+  };
+
+  // <<< 5. Creamos una función para renderizar el contenido del carrusel >>>
+  const renderSwiperContent = () => {
+    if (isLoading) {
+      return <p className="text-center text-gray-500">Cargando donaciones...</p>;
+    }
+    if (error) {
+      return <p className="text-center text-red-500">Error: {error}</p>;
+    }
+    if (donations.length === 0) {
+      return <p className="text-center text-gray-500">No hay donaciones disponibles en este momento.</p>;
+    }
+    return (
+      <Swiper
+        modules={[Navigation, Pagination]}
+        spaceBetween={20}
+        slidesPerView={1}
+        navigation
+        pagination={{ clickable: true }}
+        breakpoints={{
+          640: { slidesPerView: 2, spaceBetween: 20 },
+          1024: { slidesPerView: 3, spaceBetween: 30 },
+        }}
+        className="pb-12"
+      >
+        {donations.map((donation) => (
+          <SwiperSlide key={donation._id}>
+            <DonationCardLimited donation={donation} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    );
   };
 
   return (
-    <section className="py-16 sm:py-20 bg-white"> {/* O bg-gray-50 si quieres un fondo diferente */}
+    <section className="py-16 sm:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-textMain">
@@ -39,39 +89,15 @@ const LatestDonationsSection = () => {
           </p>
         </div>
 
-        <Swiper
-          modules={[Navigation, Pagination]}
-          spaceBetween={20} // Espacio entre slides
-          slidesPerView={1} // Slides visibles por defecto (móvil)
-          navigation
-          pagination={{ clickable: true }}
-          breakpoints={{
-            // Cuando el ancho de la ventana es >= 640px (sm)
-            640: {
-              slidesPerView: 2,
-              spaceBetween: 20,
-            },
-            // Cuando el ancho de la ventana es >= 1024px (lg)
-            1024: {
-              slidesPerView: 3,
-              spaceBetween: 30,
-            },
-          }}
-          className="pb-12" // Padding inferior para que la paginación no se pegue al botón de abajo
-        >
-          {sampleDonations.map((donation) => (
-            <SwiperSlide key={donation.id} className="pb-4"> {/* pb-4 en el slide para espacio si la sombra es grande */}
-              <DonationCardLimited donation={donation} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        {/* <<< 6. Renderizamos el contenido del carrusel >>> */}
+        {renderSwiperContent()}
 
         <div className="text-center mt-10">
           <button
             onClick={handleViewMoreClick}
             className="bg-primary hover:bg-brandPrimaryDarker text-white font-semibold py-3 px-10 rounded-lg shadow-md transform transition-transform hover:scale-105 text-lg"
           >
-            Ver más Donaciones
+            Ver más y Registrarse
           </button>
         </div>
       </div>

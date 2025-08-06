@@ -81,7 +81,23 @@ export class DonacionController {
         }
     }
 
-    // FUNCIÓN AÑADIDA POR TU COMPAÑERO - INTEGRADA
+    static async getPublicDonations(req, res) {
+        try {
+            // Buscamos las últimas 10 donaciones que estén DISPONIBLES
+            const donaciones = await Donacion.find({ estadoPublicacion: 'DISPONIBLE' })
+                .sort({ createdAt: -1 }) // Ordena para mostrar las más recientes primero
+                .limit(10) // Limita el resultado a las últimas 10 para no sobrecargar la homepage
+                // Selecciona solo los campos necesarios para la tarjeta de vista limitada
+                .select('titulo imagenesUrl categoria donanteId') 
+                .populate('donanteId', 'nombre fotoDePerfilUrl'); // Obtiene nombre y foto del donante
+
+            res.status(200).json({ donaciones });
+        } catch (error) {
+            console.error('Error al obtener donaciones públicas:', error);
+            res.status(500).json({ message: 'Error interno al obtener las donaciones' });
+        }
+    }
+
     static async getDonacionesByUsuario(req, res) {
         try {
             const userId = req.params.id;
