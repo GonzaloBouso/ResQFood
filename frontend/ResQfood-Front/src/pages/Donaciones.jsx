@@ -33,7 +33,7 @@ const Donaciones = () => {
       try {
         const token = await getToken();
         console.log("🔵 TOKEN ENVIADO:", token);
-        const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones`, {
+        const response = await fetch(`${API_BASE_URL}/api/donacion/misdonaciones`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
