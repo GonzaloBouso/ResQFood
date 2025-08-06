@@ -240,31 +240,29 @@ export class DonacionController {
 
     static async getMisDonaciones(req, res) {
   try {
-    const { userId } = getAuth(req); // ✅ esto reemplaza req.auth.userId
-    console.log("🟡 Clerk userId:", userId);
+    const { userId } = getAuth(req);
+    console.log("🟡 userId:", userId);
 
     if (!userId) {
-      return res.status(401).json({ message: 'Token inválido o usuario no autenticado.' });
+      return res.status(401).json({ message: 'No autorizado: no se pudo obtener el userId del token.' });
     }
 
     const user = await User.findOne({ clerkUserId: userId });
-    console.log("🟢 Usuario encontrado:", user?.nombre);
+    console.log("🟢 Usuario encontrado:", user);
 
     if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado.' });
+      return res.status(404).json({ message: 'Usuario no encontrado en la base de datos.' });
     }
 
     const donaciones = await Donacion.find({
       donanteId: user._id,
       estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
-    })
-      .populate('donanteId', 'nombre fotoDePerfilUrl ubicacion.ciudad')
-      .sort({ createdAt: -1 });
+    });
 
     res.status(200).json({ donaciones });
   } catch (error) {
-    console.error('🔴 Error al obtener mis donaciones:', error);
-    res.status(500).json({ message: 'Error interno al obtener tus donaciones' });
+    console.error("🔴 Error en getMisDonaciones:", error);
+    res.status(500).json({ message: 'Error interno en getMisDonaciones' });
   }
 }
 
