@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import { createDonacionSchema } from '../validations/DonacionValidation.js';
 import { z } from 'zod';
 import multer from 'multer';
+import { getAuth } from '@clerk/express';
 
 export class DonacionController {
 
@@ -239,25 +240,25 @@ export class DonacionController {
 
     static async getMisDonaciones(req, res) {
         try {
-            const clerkUserId = req.auth?.userId;
+            const { userId } = getAuth(req);
 
-            const user = await User.findOne({ clerkUserId });
+            const user = await User.findOne({ clerkUserId: userId });
             if (!user) {
-                return res.status(404).json({ message: 'Usuario no encontrado.' });
+            return res.status(404).json({ message: 'Usuario no encontrado.' });
             }
 
             const donaciones = await Donacion.find({
-                donanteId: user._id,
-                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
+            donanteId: user._id,
+            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
             })
-            .populate('solicitudes.usuario', 'nombre')
-            .populate('solicitudAceptada.usuario', 'nombre direccion');
+            .populate('donanteId', 'nombre fotoDePerfilUrl ubicacion.ciudad')
+            .sort({ createdAt: -1 });
 
             res.status(200).json({ donaciones });
-        } catch (error) {
-            console.error('Error al obtener mis donaciones:', error);
-            res.status(500).json({ message: 'Error interno al obtener tus donaciones' });
+            } catch (error) {
+                console.error('Error al obtener donaciones del usuario:', error);
+                res.status(500).json({ message: 'Error interno al obtener donaciones del usuario', errorDetails: error.message });
+            }
         }
-    }
 
 }
