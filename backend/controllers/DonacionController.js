@@ -4,7 +4,6 @@ import User from '../models/User.js';
 import { createDonacionSchema } from '../validations/DonacionValidation.js';
 import { z } from 'zod';
 import multer from 'multer';
-import { getAuth } from '@clerk/express';
 
 export class DonacionController {
 
@@ -237,31 +236,4 @@ export class DonacionController {
             res.status(500).json({ message: 'Error interno al eliminar la donación', errorDetails: error.message });
         }
     }
-
-    static async getMisDonaciones(req, res) {
-        try {
-            const clerkUserId = req.auth?.userId;
-
-            if (!clerkUserId) {
-            return res.status(401).json({ message: 'No autorizado: no se encontró el userId.' });
-            }
-
-            const user = await User.findOne({ clerkUserId: clerkUserId });
-            if (!user) {
-            return res.status(404).json({ message: 'Usuario no encontrado en la base de datos.' });
-            }
-
-            const donaciones = await Donacion.find({
-            donanteId: user._id,
-            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
-            });
-
-            res.status(200).json({ donaciones });
-        } catch (error) {
-            console.error("🔴 Error en getMisDonaciones:", error);
-            res.status(500).json({ message: 'Error del servidor' });
-        }
-        }
-
-
 }
