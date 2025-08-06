@@ -49,6 +49,18 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(ClerkExpressWithAuth());
 
+
+
+// --- CONEXIÓN A LA BASE DE DATOS ---
+connectDB();
+
+const PORT = process.env.PORT || 5000;
+
+// --- RUTAS DE LA APLICACIÓN ---
+app.get('/healthz', (req, res) => {
+    res.status(200).send('OK');
+});
+
 //prueba
 import { getAuth } from '@clerk/express'; // ya está disponible porque usás ClerkExpressWithAuth
 
@@ -65,16 +77,6 @@ app.get('/api/debug/clerk', (req, res) => {
         userId: auth.userId,
         fullAuth: auth
     });
-});
-
-// --- CONEXIÓN A LA BASE DE DATOS ---
-connectDB();
-
-const PORT = process.env.PORT || 5000;
-
-// --- RUTAS DE LA APLICACIÓN ---
-app.get('/healthz', (req, res) => {
-    res.status(200).send('OK');
 });
 
 // Rutas principales de la API
