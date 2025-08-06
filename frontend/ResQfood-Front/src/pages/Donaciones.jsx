@@ -15,7 +15,7 @@ const Donaciones = () => {
       const token = await getToken();
       console.log("🔵 TOKEN PARA TEST:", token);
 
-      const response = await fetch(`${API_BASE_URL}/debug/clerk`, {
+      const response = await fetch(`${API_BASE_URL}/api/debug/clerk`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
