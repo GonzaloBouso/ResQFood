@@ -5,6 +5,7 @@ import cors from 'cors';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { initSockets } from './socket.js';
+import { ClerkExpressWithAuth } from '@clerk/express';
 
 import connectDB from './config/db.js';
 import UserRoutes from './routes/UserRoutes.js';
@@ -41,6 +42,8 @@ app.use(cors());
 app.use('/api/webhooks', webhookRoutes);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(ClerkExpressWithAuth());
 
 // --- CONEXIÓN A LA BASE DE DATOS ---
 connectDB();
