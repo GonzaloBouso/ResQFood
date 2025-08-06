@@ -21,6 +21,9 @@ import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
+import MisDonaciones from './pages/Donaciones.jsx';
+import MisSolicitudes from './pages/Solicitudes';
+
 
 // --- Contexto y Configuración ---
 import { ProfileStatusContext } from './context/ProfileStatusContext';
@@ -160,6 +163,8 @@ const AppContent = () => {
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/perfil/:id" element={<SignedIn><UserProfilePage /></SignedIn>} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
+                        <Route path="/misdonaciones" element={<MisDonaciones />} />
+                        <Route path="/missolicitudes" element={<MisSolicitudes />} />
                     </Route>
 
                     {/* Rutas Públicas de Contenido Estático */}
