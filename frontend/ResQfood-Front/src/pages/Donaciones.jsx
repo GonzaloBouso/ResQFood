@@ -5,38 +5,68 @@ import API_BASE_URL from '../api/config';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const Donaciones = () => {
-  const [donaciones, setDonaciones] = useState([]);
   const { getToken } = useAuth();
-  const { currentClerkUserId } = useContext(ProfileStatusContext);
+  const { currentUserDataFromDB } = useContext(ProfileStatusContext);
+  
+  const [donaciones, setDonaciones] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDonaciones = async () => {
+      if (!currentUserDataFromDB?._id) {
+        setError('No se encontró el ID del usuario.');
+        setIsLoading(false);
+        return;
+      }
+
       try {
+        setIsLoading(true);
+        setError(null);
+
         const token = await getToken();
-        console.log("🔵 TOKEN ENVIADO:", token);
-        const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones`, {
+        const res = await fetch(`${API_BASE_URL}/api/donacion/usuario/${currentUserDataFromDB._id}`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // opcional pero recomendable
           },
         });
 
-        if (!response.ok) throw new Error('Error al obtener las donaciones');
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.message || 'Error al obtener las donaciones');
+        }
 
-        const data = await response.json();
+        const data = await res.json();
 
-        // Filtrar estados desde frontend (alternativamente, podrías hacerlo desde el backend)
-        const donacionesFiltradas = data.donaciones.filter((d) =>
+        // Filtrar solo las que estén DISPONIBLE o PENDIENTE-ENTREGA
+        const activas = data.donaciones.filter(d =>
           ['DISPONIBLE', 'PENDIENTE-ENTREGA'].includes(d.estadoPublicacion)
         );
 
-        setDonaciones(donacionesFiltradas);
-      } catch (error) {
-        console.error('Error al obtener las donaciones:', error);
+        setDonaciones(activas);
+      } catch (err) {
+        console.error('Error al obtener las donaciones:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchDonaciones();
-  }, [getToken, currentClerkUserId]);
+  }, [getToken, currentUserDataFromDB]);
+
+  // 📦 Renderizado condicional
+  if (isLoading) {
+    return <div className="text-center py-20">Cargando tus donaciones...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
+  }
+
+  if (donaciones.length === 0) {
+    return <div className="text-center py-20 text-gray-600">No tenés donaciones activas.</div>;
+  }
 
   return (
     <div className="p-6">
