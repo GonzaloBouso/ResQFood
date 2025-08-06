@@ -236,4 +236,28 @@ export class DonacionController {
             res.status(500).json({ message: 'Error interno al eliminar la donación', errorDetails: error.message });
         }
     }
+
+    static async getMisDonaciones(req, res) {
+        try {
+            const clerkUserId = req.auth?.userId;
+
+            const user = await User.findOne({ clerkUserId });
+            if (!user) {
+                return res.status(404).json({ message: 'Usuario no encontrado.' });
+            }
+
+            const donaciones = await Donacion.find({
+                donanteId: user._id,
+                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
+            })
+            .populate('solicitudes.usuario', 'nombre')
+            .populate('solicitudAceptada.usuario', 'nombre direccion');
+
+            res.status(200).json({ donaciones });
+        } catch (error) {
+            console.error('Error al obtener mis donaciones:', error);
+            res.status(500).json({ message: 'Error interno al obtener tus donaciones' });
+        }
+    }
+
 }

@@ -1,41 +1,41 @@
+import { useEffect, useState, useContext } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import ListaDonaciones from '../components/donaciones/ListaDonaciones';
+import API_BASE_URL from '../api/config';
+import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const Donaciones = () => {
-  const donaciones = [
-    {
-      _id: "1",
-      producto: "Hamburguesa clásica",
-      cantidadDisponible: 5,
-      imagenUrl: "https://i.imgur.com/5xkYw2K.png",
-      solicitudes: [
-        { usuario: "Milagros", cantidad: 1 },
-        { usuario: "Julián", cantidad: 2 },
-      ],
-      solicitudAceptada: {
-        usuario: "Camila",
-        direccion: "Av. Siempre Viva 742",
-        codigo: "A1B2C3",
-      },
-    },
-    {
-      _id: "2",
-      producto: "Hamburguesa con cheddar",
-      cantidadDisponible: 3,
-      imagenUrl: "https://i.imgur.com/HtGJGQf.png",
-      solicitudes: [
-        { usuario: "Pedro", cantidad: 1 },
-      ],
-      solicitudAceptada: null,
-    },
-    {
-      _id: "3",
-      producto: "Hamburguesa veggie",
-      cantidadDisponible: 2,
-      imagenUrl: "https://i.imgur.com/3pHcZaS.png",
-      solicitudes: [],
-      solicitudAceptada: null,
-    },
-  ];
+  const [donaciones, setDonaciones] = useState([]);
+  const { getToken } = useAuth();
+  const { currentClerkUserId } = useContext(ProfileStatusContext);
+
+  useEffect(() => {
+    const fetchDonaciones = async () => {
+      try {
+        const token = await getToken();
+        const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error('Error al obtener las donaciones');
+
+        const data = await response.json();
+
+        // Filtrar estados desde frontend (alternativamente, podrías hacerlo desde el backend)
+        const donacionesFiltradas = data.donaciones.filter((d) =>
+          ['DISPONIBLE', 'PENDIENTE-ENTREGA'].includes(d.estadoPublicacion)
+        );
+
+        setDonaciones(donacionesFiltradas);
+      } catch (error) {
+        console.error('Error al obtener las donaciones:', error);
+      }
+    };
+
+    fetchDonaciones();
+  }, [getToken, currentClerkUserId]);
 
   return (
     <div className="p-6">
@@ -46,4 +46,3 @@ const Donaciones = () => {
 };
 
 export default Donaciones;
-
