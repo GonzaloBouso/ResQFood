@@ -7,6 +7,10 @@ import { Server as SocketIOServer } from 'socket.io';
 import { initSockets } from './socket.js';
 import { ClerkExpressWithAuth } from '@clerk/express';
 
+
+
+
+
 import connectDB from './config/db.js';
 import UserRoutes from './routes/UserRoutes.js';
 import DonacionRoutes from './routes/DonacionRoutes.js';
@@ -44,6 +48,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(ClerkExpressWithAuth());
+
+//prueba
+import { getAuth } from '@clerk/express'; // ya está disponible porque usás ClerkExpressWithAuth
+
+app.get('/api/debug/clerk', (req, res) => {
+    const auth = getAuth(req);
+    console.log("🔍 DEBUG Clerk userId:", auth?.userId);
+
+    if (!auth?.userId) {
+        return res.status(401).json({ message: 'No autorizado. Token inválido o ausente.', auth });
+    }
+
+    res.status(200).json({
+        message: 'Token válido',
+        userId: auth.userId,
+        fullAuth: auth
+    });
+});
 
 // --- CONEXIÓN A LA BASE DE DATOS ---
 connectDB();
