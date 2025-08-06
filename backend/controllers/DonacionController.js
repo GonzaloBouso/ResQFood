@@ -239,31 +239,29 @@ export class DonacionController {
     }
 
     static async getMisDonaciones(req, res) {
-  try {
-    const { userId } = getAuth(req);
-    console.log("🟡 userId:", userId);
+        try {
+            const clerkUserId = req.auth?.userId;
 
-    if (!userId) {
-      return res.status(401).json({ message: 'No autorizado: no se pudo obtener el userId del token.' });
-    }
+            if (!clerkUserId) {
+            return res.status(401).json({ message: 'No autorizado: no se encontró el userId.' });
+            }
 
-    const user = await User.findOne({ clerkUserId: userId });
-    console.log("🟢 Usuario encontrado:", user);
+            const user = await User.findOne({ clerkUserId: clerkUserId });
+            if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado en la base de datos.' });
+            }
 
-    if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado en la base de datos.' });
-    }
+            const donaciones = await Donacion.find({
+            donanteId: user._id,
+            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
+            });
 
-    const donaciones = await Donacion.find({
-      donanteId: user._id,
-      estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
-    });
+            res.status(200).json({ donaciones });
+        } catch (error) {
+            console.error("🔴 Error en getMisDonaciones:", error);
+            res.status(500).json({ message: 'Error del servidor' });
+        }
+        }
 
-    res.status(200).json({ donaciones });
-  } catch (error) {
-    console.error("🔴 Error en getMisDonaciones:", error);
-    res.status(500).json({ message: 'Error interno en getMisDonaciones' });
-  }
-}
 
 }
