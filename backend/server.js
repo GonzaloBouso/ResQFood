@@ -7,6 +7,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { initSockets } from './socket.js';
 import { ClerkExpressWithAuth } from '@clerk/express';
 
+import { getAuth } from '@clerk/express'; // ya está disponible porque usás ClerkExpressWithAuth
 
 
 
@@ -62,7 +63,7 @@ app.get('/healthz', (req, res) => {
 });
 
 //prueba
-import { getAuth } from '@clerk/express'; // ya está disponible porque usás ClerkExpressWithAuth
+
 
 app.get('/api/debug/clerk', (req, res) => {
     const auth = getAuth(req);
