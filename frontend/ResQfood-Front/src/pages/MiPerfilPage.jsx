@@ -58,7 +58,7 @@ const MiPerfilPage = () => {
            - onUploadSuccess: para que el modal pueda notificar a esta página cuando la subida fue exitosa.
       */}
       {isModalOpen && (
-        <CambiarFotoPerfilModal 
+        <ChangePhotoProfileModal 
           onClose={() => setIsModalOpen(false)} 
           onUploadSuccess={handleUploadSuccess}
         />
