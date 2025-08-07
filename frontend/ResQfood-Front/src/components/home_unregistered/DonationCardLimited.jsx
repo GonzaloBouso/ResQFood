@@ -1,21 +1,26 @@
-// src/components/home_unregistered/DonationCardLimited.jsx
 import React from 'react';
-import { MoreVertical, Info, Send } from 'lucide-react'; // Iconos para opciones, info y solicitar
+import { MoreVertical, Info, Send } from 'lucide-react';
 
-// Asumimos que los datos de la donación vienen como props
+const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200/E0E0E0/BDBDBD?text=Alimento';
+const FALLBACK_AVATAR_URL = 'https://via.placeholder.com/40x40/A8D5BA/FFFFFF?text=A';
+
 const DonationCardLimited = ({ donation }) => {
+  if (!donation) return null; // Guarda de seguridad
+
   const {
-    imageUrl = "https://via.placeholder.com/300x200/E0E0E0/BDBDBD?text=Alimento", // Placeholder si no hay imagen
-    donanteNombre = "Donante Anónimo",
-    donanteAvatar = "https://via.placeholder.com/40x40/A8D5BA/FFFFFF?Text=A", // Placeholder para avatar
     titulo = "Título del Alimento",
-    cantidad = "Cantidad no especificada",
-    descripcionCorta = "Descripción breve del alimento para atraer interés...",
-  } = donation || {};
+    categoria = "Categoría no especificada",
+    imagenesUrl,
+    donanteId,
+  } = donation;
+
+
+  const imageUrl = imagenesUrl && imagenesUrl.length > 0 ? imagenesUrl[0] : FALLBACK_IMAGE_URL;
+  const donanteNombre = donanteId?.nombre || "Donante Anónimo";
+  const donanteAvatar = donanteId?.fotoDePerfilUrl || FALLBACK_AVATAR_URL;
 
   const handleActionClick = (e) => {
-    e.preventDefault(); // Prevenir cualquier acción por defecto del enlace/botón
-    // Idealmente, aquí se mostraría un modal o se redirigiría a la página de registro/login
+    e.preventDefault();
     alert("Por favor, regístrate o inicia sesión para ver más detalles o solicitar esta donación.");
   };
 
@@ -25,10 +30,8 @@ const DonationCardLimited = ({ donation }) => {
         <img 
           src={imageUrl} 
           alt={titulo} 
-          className="w-full h-48 object-cover" // Altura fija para la imagen
+          className="w-full h-48 object-cover"
         />
-        {/* Podrías añadir una marca de agua o un efecto de "blur" para usuarios no registrados si lo deseas */}
-        {/* <div className="absolute inset-0 bg-black bg-opacity-20 backdrop-blur-sm"></div> */}
         <div className="absolute top-2 right-2 bg-white bg-opacity-70 p-1.5 rounded-full cursor-pointer hover:bg-opacity-100">
           <MoreVertical size={20} className="text-gray-600" />
         </div>
@@ -42,9 +45,9 @@ const DonationCardLimited = ({ donation }) => {
         <h3 className="text-lg font-semibold text-textMain mb-1 truncate" title={titulo}>
           {titulo}
         </h3>
-        <p className="text-xs text-textMuted mb-2">Cantidad: {cantidad}</p>
+        {/* Usamos la categoría que sí viene del backend */}
         <p className="text-sm text-textMuted mb-4 flex-grow text-ellipsis overflow-hidden line-clamp-3">
-          {descripcionCorta}
+          {categoria}
         </p>
         <div className="mt-auto pt-3 border-t border-gray-200 flex space-x-2">
           <button
