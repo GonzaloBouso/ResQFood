@@ -40,5 +40,5 @@ const upload = multer({
 
 // Middleware para subir múltiples imágenes (ej. hasta 5) a un campo llamado 'imagenesDonacion'
 export const uploadDonacionImages = upload.array('imagenesDonacion', 5); 
-// 'imagenesDonacion' es el nombre del campo que el frontend enviará con los archivos.
-// 5 es el número máximo de archivos permitidos.
+
+export const uploadAvatar = multer({ storage: storage }).single('avatar');

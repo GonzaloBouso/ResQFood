@@ -146,4 +146,42 @@ export class UserController {
             return res.status(500).json({ message: 'Error interno del servidor.' });
         }
     }
+    
+     static async updateAvatar(req, res) {
+        const clerkUserId = req.auth?.userId;
+        if (!clerkUserId) {
+            return res.status(401).json({ message: 'No autenticado.' });
+        }
+
+        try {
+            // 1. Verificar si se subió un archivo
+            if (!req.file) {
+                return res.status(400).json({ message: 'No se ha subido ningún archivo.' });
+            }
+
+            // 2. 'req.file.path' contiene la URL segura de Cloudinary gracias a multer-storage-cloudinary
+            const newAvatarUrl = req.file.path;
+
+            // 3. Encontrar al usuario y actualizar su fotoDePerfilUrl
+            const updatedUser = await User.findOneAndUpdate(
+                { clerkUserId },
+                { fotoDePerfilUrl: newAvatarUrl },
+                { new: true } // Devuelve el documento actualizado
+            );
+
+            if (!updatedUser) {
+                return res.status(404).json({ message: 'Usuario no encontrado.' });
+            }
+
+            // 4. Devolver el usuario actualizado para que el frontend pueda refrescar el estado
+            res.status(200).json({ 
+                message: 'Foto de perfil actualizada exitosamente.', 
+                user: updatedUser.toJSON() 
+            });
+
+        } catch (error) {
+            console.error('Error al actualizar el avatar:', error);
+            res.status(500).json({ message: 'Error interno del servidor al actualizar el avatar.' });
+        }
+    }
 }

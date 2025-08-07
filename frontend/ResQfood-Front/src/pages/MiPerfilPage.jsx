@@ -1,41 +1,44 @@
 import React, { useContext, useState } from 'react';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
-import PerfilUsuarioGeneral from './PerfilUsuarioGeneral'; // Reutilizamos la vista
-import PerfilUsuarioEmpresa from './PerfilUsuarioEmpresa'; // Reutilizamos la vista
+import PerfilUsuarioGeneral from './PerfilUsuarioGeneral';
+import PerfilUsuarioEmpresa from './PerfilUsuarioEmpresa';
 import { Camera } from 'lucide-react';
-
-// Nuevo componente para el modal de cambio de foto (lo crearemos después)
-// import CambiarFotoPerfilModal from '../components/modals/CambiarFotoPerfilModal';
+import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModal';
 
 const MiPerfilPage = () => {
-  // Obtenemos los datos del usuario actual desde el contexto
-  const { currentUserDataFromDB, isLoadingUserProfile } = useContext(ProfileStatusContext);
+  // Obtenemos los datos y la función de actualización del contexto.
+  const { currentUserDataFromDB, isLoadingUserProfile, updateProfileState } = useContext(ProfileStatusContext);
   
-  // Estado para controlar la visibilidad del modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Muestra un mensaje mientras se carga el perfil.
   if (isLoadingUserProfile) {
     return <div className="text-center py-20">Cargando tu perfil...</div>;
   }
 
+  // Muestra un mensaje si no se pudieron cargar los datos.
   if (!currentUserDataFromDB) {
     return <div className="text-center py-20">No se pudo cargar la información de tu perfil.</div>;
   }
 
-  // Decidimos qué componente de visualización usar
+
+  const handleUploadSuccess = (updatedUser) => {
+    updateProfileState(updatedUser);
+    // Opcional: cierra el modal automáticamente
+    setIsModalOpen(false); 
+  };
+
+  // Decide qué componente de visualización usar (ya lo tenías).
   const ProfileComponent = currentUserDataFromDB.rol === 'LOCAL' 
     ? PerfilUsuarioEmpresa 
     : PerfilUsuarioGeneral;
 
   return (
     <div className="relative">
-      {/* Pasamos los datos del usuario actual a los componentes de visualización */}
+      {/* Muestra el componente de perfil correspondiente (General o Empresa) */}
       <ProfileComponent userData={currentUserDataFromDB} />
 
-      {/* 
-        LA SOLUCIÓN: Botón flotante de "Editar Foto"
-        Lo posicionamos de forma absoluta sobre el área de la foto de perfil.
-      */}
+      {/* Botón flotante para editar la foto (ya lo tenías) */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 sm:left-auto sm:right-auto sm:top-10 sm:translate-x-0">
          <div className="relative w-32 h-32 sm:w-40 sm:h-40">
             <button
@@ -48,10 +51,18 @@ const MiPerfilPage = () => {
          </div>
       </div>
       
-      {/* El modal se mostrará cuando isModalOpen sea true */}
-      {/*isModalOpen && (
-        <CambiarFotoPerfilModal onClose={() => setIsModalOpen(false)} />
-      )*/}
+      {/*
+        LA SOLUCIÓN:
+        3. Renderizamos el modal condicionalmente y le pasamos las props necesarias:
+           - onClose: para que el modal pueda cerrarse a sí mismo.
+           - onUploadSuccess: para que el modal pueda notificar a esta página cuando la subida fue exitosa.
+      */}
+      {isModalOpen && (
+        <CambiarFotoPerfilModal 
+          onClose={() => setIsModalOpen(false)} 
+          onUploadSuccess={handleUploadSuccess}
+        />
+      )}
     </div>
   );
 };

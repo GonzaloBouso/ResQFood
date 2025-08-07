@@ -1,6 +1,7 @@
 import express from 'express';
 import { UserController } from '../controllers/UserController.js';
 import { requireAuth } from '../middlewares/autMiddleware.js';
+import { uploadAvatar } from '../middlewares/uploadMiddleware.js';
 
 const router = express.Router();
 
@@ -9,6 +10,8 @@ router.get('/me', requireAuth, UserController.getCurrentUserProfile);
 
 // Actualizar el perfil del usuario actual (PUT /me)
 router.put('/me', requireAuth, UserController.updateCurrentUserProfile);
+
+router.post('/me/avatar', requireAuth, uploadAvatar, UserController.updateAvatar);
 
 // --- LA SOLUCIÓN: Nueva ruta para que el frontend cree el perfil ---
 router.post('/create-profile', requireAuth, UserController.createProfileFromFrontend);
