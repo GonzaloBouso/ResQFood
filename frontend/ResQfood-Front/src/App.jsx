@@ -13,7 +13,7 @@ import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import CompleteProfilePage from './pages/CompleteProfilePage';
 import UserProfilePage from './pages/UserProfilePage';
-import MiPerfilPage from './pages/MiPerfilPage'; // <-- Asegúrate de que esta importación exista
+import MiPerfilPage from './pages/MiPerfilPage';
 import NewDonationPage from './pages/NewDonationPage';
 import PoliticaPrivacidad from './pages/PoliticaPrivacidad';
 import FormularioContacto from './pages/FormularioContacto';
@@ -38,20 +38,108 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
-// --- Tu hook y ProtectedLayout (ya son correctos) ---
+// --- Hook personalizado para gestionar el estado global ---
 const useUserProfileAndLocation = () => {
-    // ... tu lógica de hook (sin cambios) ...
+    const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
+    const [profileStatus, setProfileStatus] = useState({ isLoading: true, isComplete: false, userRole: null, userDataFromDB: null });
+    const [activeSearchLocation, setActiveSearchLocation] = useState(null);
+    const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
+
+    const updateProfileState = (userData) => {
+        if (!userData) {
+            setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
+            return;
+        }
+        setProfileStatus({ isLoading: false, isComplete: !!userData.rol, userRole: userData.rol || null, userDataFromDB: userData });
+    };
+
+    const triggerDonationReFetch = () => {
+        setDonationCreationTimestamp(Date.now());
+    };
+
+    useEffect(() => {
+        if (!isAuthLoaded) return;
+        const fetchUserProfileFunction = async () => {
+            if (!isSignedIn) {
+                updateProfileState(null);
+                setActiveSearchLocation(null);
+                return;
+            }
+            if (profileStatus.isComplete && !profileStatus.isLoading) return;
+            
+            setProfileStatus(prev => ({ ...prev, isLoading: true }));
+            try {
+                const token = await getToken();
+                const response = await fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+                
+                if (response.status === 404) {
+                    setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
+                    return;
+                }
+                
+                if (!response.ok) throw new Error("Error fetching user profile");
+                
+                const data = await response.json();
+                updateProfileState(data.user);
+            } catch (error) {
+                console.error("Error en fetchUserProfileFunction:", error);
+                setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
+            }
+        };
+        fetchUserProfileFunction();
+    }, [isAuthLoaded, isSignedIn]);
+
+    return { 
+        ...profileStatus, 
+        updateProfileState, 
+        currentClerkUserId: userId,
+        activeSearchLocation,
+        setActiveSearchLocation,
+        donationCreationTimestamp,
+        triggerDonationReFetch
+    };
 };
+
+// ==================================================================
+// LA SOLUCIÓN FINAL: Un "Layout Guardián" para todas las rutas protegidas
+// ==================================================================
 const ProtectedLayout = () => {
-    // ... tu lógica de layout (sin cambios) ...
+    const { isLoading, isComplete, updateProfileState } = useContext(ProfileStatusContext);
+
+    // Muestra un mensaje mientras se verifica el estado del perfil.
+    if (isLoading) {
+        return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
+    }
+
+    // Si el perfil NO está completo, SIEMPRE muestra la página para completarlo.
+    // No importa si el usuario intenta ir a /dashboard o /perfil, verá esta página primero.
+    if (!isComplete) {
+        return <CompleteProfilePage onProfileComplete={updateProfileState} />;
+    }
+
+    // Si el perfil SÍ está completo, renderiza la ruta anidada que el usuario solicitó (Dashboard, Perfil, etc.).
+    return <Outlet />;
 };
 
 const AppContent = () => {
   const appStateHook = useUserProfileAndLocation();
   
   const contextValueForProvider = useMemo(() => ({
-    // ... tu lógica de contexto (sin cambios) ...
+    isLoading: appStateHook.isLoading,
+    isComplete: appStateHook.isComplete,
+    currentUserRole: appStateHook.userRole,
+    currentUserDataFromDB: appStateHook.userDataFromDB,
+    currentClerkUserId: appStateHook.currentClerkUserId,
+    updateProfileState: appStateHook.updateProfileState,
+    activeSearchLocation: appStateHook.activeSearchLocation,
+    setActiveSearchLocation: appStateHook.setActiveSearchLocation,
+    donationCreationTimestamp: appStateHook.donationCreationTimestamp,
+    triggerDonationReFetch: appStateHook.triggerDonationReFetch
   }), [appStateHook]);
+
+  const handleDonationCreated = () => {
+    appStateHook.triggerDonationReFetch();
+  };
 
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
@@ -60,34 +148,22 @@ const AppContent = () => {
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             <ClerkLoaded>
                 <Routes>
-                    {/* --- Ruta Raíz --- */}
                     <Route path="/" element={<RootRedirector />} />
-                    
-                    {/* --- Rutas de Autenticación --- */}
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
 
-                    {/* --- Grupo de Rutas Protegidas --- */}
+                    {/*
+                      LA SOLUCIÓN:
+                      Ahora, CUALQUIER ruta anidada aquí primero pasará por ProtectedLayout.
+                      ProtectedLayout decidirá si muestra CompleteProfilePage o la ruta solicitada.
+                      Ya no necesitamos una ruta separada para "/complete-profile".
+                    */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-
-                        {/* ================================================================== */}
-                        {/* LA SOLUCIÓN FINAL ESTÁ AQUÍ */}
-                        {/* ================================================================== */}
-                        {/* La ruta específica "/perfil" para el usuario actual va PRIMERO. */}
                         <Route path="/perfil" element={<MiPerfilPage />} />
-                        
-                        {/* La ruta dinámica "/perfil/:id" para otros usuarios va DESPUÉS. */}
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
-                        
-                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={() => appStateHook.triggerDonationReFetch()} />} />
+                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
                     </Route>
-
-                    {/* --- Ruta para Completar Perfil (fuera del ProtectedLayout) --- */}
-                    <Route 
-                        path="/complete-profile" 
-                        element={<SignedIn><CompleteProfilePage onProfileComplete={appStateHook.updateProfileState} /></SignedIn>}
-                    />
 
                     {/* --- Rutas Públicas de Contenido Estático --- */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
@@ -96,7 +172,7 @@ const AppContent = () => {
                     <Route path="/preguntasFrecuentes" element={<PreguntasFrecuentes />} />
                     <Route path="/sobreNosotros" element={<SobreNosotros />} />
                     <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
-                    <Route path="/formulario-voluntario" element={<FormularioVoluntario />} />
+                    <Route path="/formularioVoluntario" element={<FormularioVoluntario />} />
                 </Routes>
             </ClerkLoaded>
             </main>
