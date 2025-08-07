@@ -125,7 +125,7 @@ const Header = () => {
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">
                       <Link
-                        to={profilePath}
+                        to="/perfil"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                         onClick={() => setIsProfileMenuOpen(false)}
                       >
