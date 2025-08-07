@@ -20,6 +20,7 @@ const Header = () => {
   } = useContext(ProfileStatusContext) || {};
   
   const profilePath = currentUserDataFromDB?._id ? `/perfil/${currentUserDataFromDB._id}` : '#';
+  const misDonacionesPath = "/mis-donaciones"; // <-- 1. AÑADE LA VARIABLE PARA LA RUTA
   const authButtonBaseClasses = "text-xs sm:text-sm font-medium py-1.5 px-2 sm:px-3 rounded-md transition-colors duration-150 ease-in-out whitespace-nowrap";
   
   const toggleProfileMenu = () => setIsProfileMenuOpen(prev => !prev);
@@ -129,6 +130,14 @@ const Header = () => {
                         onClick={() => setIsProfileMenuOpen(false)}
                       >
                         Ir a mi perfil
+                      </Link>
+                      {/* <-- 2. AÑADE EL NUEVO ENLACE AQUÍ --> */}
+                      <Link
+                        to={misDonacionesPath}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        Mis donaciones
                       </Link>
                     </div>
                   </div>
