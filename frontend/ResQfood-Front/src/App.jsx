@@ -160,10 +160,11 @@ const AppContent = () => {
                     */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/perfil" element={<MiPerfilPage />} />
-                        <Route path="/perfil/:id" element={<UserProfilePage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
                     </Route>
+
+                    <Route path="/perfil" element={<MiPerfilPage />} />
+                    <Route path="/perfil/:id" element={<UserProfilePage />} />
 
                     {/* --- Rutas Públicas de Contenido Estático --- */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
