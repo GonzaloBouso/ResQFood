@@ -99,24 +99,29 @@ export class DonacionController {
     }
 
     static async getDonacionesByUsuario(req, res) {
-        try {
-            const userId = req.params.id;
-            if (!mongoose.Types.ObjectId.isValid(userId)) {
-                return res.status(400).json({ message: 'ID de usuario inválido.' });
-            }
-
-            const donaciones = await Donacion.find({ donanteId: userId })
-                .sort({ createdAt: -1 });
-
-            res.status(200).json({ donaciones });
-        } catch (error) {
-            console.error('Error al obtener las donaciones del usuario:', error);
-            res.status(500).json({
-                message: 'Error interno al obtener las donaciones del usuario',
-                errorDetails: error.message,
-            });
+    try {
+        const userId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: 'ID de usuario inválido.' });
         }
+
+        // --- CORRECCIÓN ---
+        // Este filtro asegura que solo se devuelvan las donaciones activas o pendientes.
+        const donaciones = await Donacion.find({ 
+            donanteId: userId,
+            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] } 
+        })
+        .sort({ createdAt: -1 });
+
+        res.status(200).json({ donaciones });
+    } catch (error) {
+        console.error('Error al obtener las donaciones del usuario:', error);
+        res.status(500).json({
+            message: 'Error interno al obtener las donaciones del usuario',
+            errorDetails: error.message,
+        });
     }
+}
 
     static async getDonationById(req, res) {
         try {
