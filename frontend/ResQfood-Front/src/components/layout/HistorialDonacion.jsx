@@ -11,10 +11,11 @@ const HistorialDonacion = ({ userId }) => {
 
   useEffect(() => {
     const fetchDonaciones = async () => {
+      setLoading(true); setError(null);
       try {
         const token = await getToken();
-        const res = await fetch(`${API_BASE_URL}/api/donacion/usuario/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+        const res = await fetch(`${API_BASE_URL}/api/donacion/usuario/${userId}/historial`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) {
@@ -24,33 +25,30 @@ const HistorialDonacion = ({ userId }) => {
 
         const data = await res.json();
         setDonaciones(data.donaciones || []);
-      } catch (error) {
-        console.error('Error al cargar donaciones:', error);
-        setError(error.message);
+      } catch (e) {
+        setError(e.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (userId) {
-      fetchDonaciones();
-    }
+    if (userId) fetchDonaciones();
   }, [userId, getToken]);
 
   if (loading) return <div className="text-center py-4">Cargando donaciones...</div>;
   if (error) return <div className="text-center py-4 text-red-600">{error}</div>;
-  if (donaciones.length === 0) return <div className="text-center py-4 text-gray-600">No hay donaciones registradas.</div>;
+  if (donaciones.length === 0) return <div className="text-center py-4 text-gray-600">No hay donaciones finalizadas.</div>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {donaciones.map((donacion) => (
+      {donaciones.map((d) => (
         <CardVerInformacion
-          key={donacion._id}
-          titulo={donacion.titulo}
-          descripcion={donacion.descripcion}
-          imagenUrl={donacion.imagenesUrl?.[0] || ''}
-          estado={donacion.estadoPublicacion}
-          fecha={donacion.createdAt}
+          key={d._id}
+          titulo={d.titulo}
+          descripcion={d.descripcion}
+          imagenUrl={d.imagenesUrl?.[0] || ''}
+          estado={d.estadoPublicacion}
+          fecha={d.createdAt}
         />
       ))}
     </div>

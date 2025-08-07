@@ -13,6 +13,7 @@ router.get('/', DonacionController.getDonations)
 router.get('/cercanas', DonacionController.getDonacionesCercanas);
 router.get('/:id', DonacionController.getDonationById);
 router.get('/usuario/:id', DonacionController.getDonacionesByUsuario);
+router.get('/usuario/:id/historial', DonacionController.getDonacionesFinalizadasByUsuario);
 
 
 export default router;
