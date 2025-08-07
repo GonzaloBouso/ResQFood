@@ -21,6 +21,7 @@ import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
+import MiPerfilPage from './pages/MiPerfilPage.jsx';
 
 import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
