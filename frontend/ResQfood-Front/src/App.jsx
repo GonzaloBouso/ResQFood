@@ -149,18 +149,14 @@ const AppContent = () => {
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
 
-                    {/*
-                      LA ARQUITECTURA FINAL:
-                      Ahora, CUALQUIER ruta anidada aquí primero pasará por ProtectedLayout.
-                      ProtectedLayout decidirá si muestra CompleteProfilePage o la ruta solicitada.
-                    */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/perfil" element={<MiPerfilPage />} />
-                        <Route path="/perfil/:id" element={<UserProfilePage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
                     </Route>
 
+                    <Route path="/perfil" element={<MiPerfilPage />} />
+                    <Route path="/perfil/:id" element={<UserProfilePage />} />
+                    
                     {/* --- Rutas Públicas de Contenido Estático --- */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
