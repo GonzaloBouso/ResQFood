@@ -1,20 +1,32 @@
-// src/components/layout/HistorialDonacion.jsx
 import React, { useEffect, useState } from 'react';
 import CardVerInformacion from './CardVerInformacion';
 import API_BASE_URL from '../../api/config';
+import { useAuth } from '@clerk/clerk-react';
 
 const HistorialDonacion = ({ userId }) => {
   const [donaciones, setDonaciones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     const fetchDonaciones = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/donacion/usuario/${userId}`);
+        const token = await getToken();
+        const res = await fetch(`${API_BASE_URL}/api/donacion/usuario/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Error ${res.status}`);
+        }
+
         const data = await res.json();
         setDonaciones(data.donaciones || []);
       } catch (error) {
         console.error('Error al cargar donaciones:', error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -23,13 +35,11 @@ const HistorialDonacion = ({ userId }) => {
     if (userId) {
       fetchDonaciones();
     }
-  }, [userId]);
+  }, [userId, getToken]);
 
   if (loading) return <div className="text-center py-4">Cargando donaciones...</div>;
-
-  if (donaciones.length === 0) {
-    return <div className="text-center py-4 text-gray-600">No hay donaciones registradas.</div>;
-  }
+  if (error) return <div className="text-center py-4 text-red-600">{error}</div>;
+  if (donaciones.length === 0) return <div className="text-center py-4 text-gray-600">No hay donaciones registradas.</div>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
