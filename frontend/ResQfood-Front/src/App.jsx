@@ -46,11 +46,7 @@ const useUserProfileAndLocation = () => {
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
 
     const updateProfileState = (userData) => {
-        if (!userData) {
-            setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
-            return;
-        }
-        setProfileStatus({ isLoading: false, isComplete: !!userData.rol, userRole: userData.rol || null, userDataFromDB: userData });
+        setProfileStatus({ isLoading: false, isComplete: !!userData?.rol, userRole: userData?.rol || null, userDataFromDB: userData });
     };
 
     const triggerDonationReFetch = () => {
@@ -59,6 +55,7 @@ const useUserProfileAndLocation = () => {
 
     useEffect(() => {
         if (!isAuthLoaded) return;
+        
         const fetchUserProfileFunction = async () => {
             if (!isSignedIn) {
                 updateProfileState(null);
@@ -117,7 +114,7 @@ const ProtectedLayout = () => {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
 
-    // Si el perfil SÍ está completo, renderiza la ruta anidada que el usuario solicitó (Dashboard, Perfil, etc.).
+    // Si el perfil SÍ está completo, renderiza la ruta anidada que el usuario solicitó.
     return <Outlet />;
 };
 
@@ -153,18 +150,16 @@ const AppContent = () => {
                     <Route path="/sign-up/*" element={<SignUpPage />} />
 
                     {/*
-                      LA SOLUCIÓN:
+                      LA ARQUITECTURA FINAL:
                       Ahora, CUALQUIER ruta anidada aquí primero pasará por ProtectedLayout.
                       ProtectedLayout decidirá si muestra CompleteProfilePage o la ruta solicitada.
-                      Ya no necesitamos una ruta separada para "/complete-profile".
                     */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route path="/perfil" element={<MiPerfilPage />} />
+                        <Route path="/perfil/:id" element={<UserProfilePage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
                     </Route>
-
-                    <Route path="/perfil" element={<MiPerfilPage />} />
-                    <Route path="/perfil/:id" element={<UserProfilePage />} />
 
                     {/* --- Rutas Públicas de Contenido Estático --- */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
@@ -173,7 +168,7 @@ const AppContent = () => {
                     <Route path="/preguntasFrecuentes" element={<PreguntasFrecuentes />} />
                     <Route path="/sobreNosotros" element={<SobreNosotros />} />
                     <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
-                    <Route path="/formularioVoluntario" element={<FormularioVoluntario />} />
+                    <Route path="/formulario-voluntario" element={<FormularioVoluntario />} />
                 </Routes>
             </ClerkLoaded>
             </main>
