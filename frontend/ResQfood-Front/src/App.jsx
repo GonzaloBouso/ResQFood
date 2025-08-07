@@ -110,6 +110,7 @@ const AppContent = () => {
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
+                        <Route path="/perfil" element={<SignedIn><MiPerfilPage /></SignedIn>} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
                         <Route path="/mis-donaciones" element={<MyDonationsPage />} />
                     </Route>
