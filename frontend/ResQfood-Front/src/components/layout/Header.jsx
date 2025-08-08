@@ -11,17 +11,17 @@ const Header = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
   
+  // --- CORRECCIÓN ---: Usamos los nombres correctos del contexto
   const { 
-    isLoading, 
+    isLoadingUserProfile, 
     isComplete, 
+    currentUserDataFromDB,
     activeSearchLocation,
     setActiveSearchLocation 
   } = useContext(ProfileStatusContext) || {};
   
-  // ==================================================================
-  // LA SOLUCIÓN: Eliminamos la lógica de la variable `profilePath`
-  // ==================================================================
-  const misDonacionesPath = "/mis-donaciones"; 
+  const profilePath = currentUserDataFromDB?._id ? `/perfil/${currentUserDataFromDB._id}` : '#';
+  const misDonacionesPath = "/mis-donaciones";
   const authButtonBaseClasses = "text-xs sm:text-sm font-medium py-1.5 px-2 sm:px-3 rounded-md transition-colors duration-150 ease-in-out whitespace-nowrap";
   
   const toggleProfileMenu = () => setIsProfileMenuOpen(prev => !prev);
@@ -112,7 +112,7 @@ const Header = () => {
             <SignedIn>
               <div className="relative flex items-center" ref={menuRef}>
                 <UserButton afterSignOutUrl="/" />
-                {!isLoading && isComplete && (
+                {!isLoadingUserProfile && isComplete && (
                   <button
                     onClick={toggleProfileMenu}
                     className="p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
@@ -122,20 +122,16 @@ const Header = () => {
                   </button>
                 )}
                 
-                {isProfileMenuOpen && !isLoading && isComplete && (
+                {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">
-                      {/* ================================================================== */}
-                      {/* LA SOLUCIÓN: El enlace ahora apunta directamente a "/perfil" */}
-                      {/* ================================================================== */}
                       <Link
-                        to="/perfil"
+                        to={profilePath}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                         onClick={() => setIsProfileMenuOpen(false)}
                       >
                         Ir a mi perfil
                       </Link>
-                      
                       <Link
                         to={misDonacionesPath}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"

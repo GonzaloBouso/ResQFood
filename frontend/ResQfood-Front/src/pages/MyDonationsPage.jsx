@@ -1,26 +1,22 @@
-// src/pages/MyDonationsPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import API_BASE_URL from '../api/config';
-import CardDonacion from '../components/layout/CardDonacion'; 
+import CardDonacion from '../components/layout/CardDonacion';
 
 const MyDonationsPage = () => {
   const { getToken } = useAuth();
-  // Obtiene los datos del usuario logueado desde nuestro contexto global
-  const { currentUserDataFromDB, isLoading: isProfileLoading } = useContext(ProfileStatusContext);
+  const { currentUserDataFromDB, isLoadingUserProfile } = useContext(ProfileStatusContext);
 
   const [donaciones, setDonaciones] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Este useEffect se encargará de buscar las donaciones cuando el componente se cargue
   useEffect(() => {
-    // No hacemos nada hasta que sepa quien es el usuairo
-    if (isProfileLoading || !currentUserDataFromDB?._id) {
-      if (!isProfileLoading) {
-        setIsLoading(false); // Si ya no está cargando el perfil pero no hay ID, dejamos de cargar esta página
+    if (isLoadingUserProfile || !currentUserDataFromDB?._id) {
+      if (!isLoadingUserProfile) {
+        setIsLoading(false);
       }
       return;
     }
@@ -32,7 +28,6 @@ const MyDonationsPage = () => {
         const token = await getToken();
         const userId = currentUserDataFromDB._id;
         
-        // Llamamos a la ruta del backend 
         const response = await fetch(`${API_BASE_URL}/api/donacion/usuario/${userId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -51,11 +46,10 @@ const MyDonationsPage = () => {
     };
 
     fetchMisDonaciones();
-  }, [currentUserDataFromDB, isProfileLoading, getToken]); // Se ejecuta si cambia el usuario
+  }, [currentUserDataFromDB, isLoadingUserProfile, getToken]);
 
-  // Función para decidir qué mostrar en pantalla (cargando, error, datos, etc.)
   const renderContent = () => {
-    if (isLoading || isProfileLoading) {
+    if (isLoading || isLoadingUserProfile) {
       return <p className="text-center py-10 text-gray-500">Cargando tus donaciones...</p>;
     }
 
@@ -77,11 +71,9 @@ const MyDonationsPage = () => {
       );
     }
 
-    // Aquí renderizamos la lista de donaciones reales
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {donaciones.map(donacion => (
-          
           <CardDonacion key={donacion._id} donacion={donacion} />
         ))}
       </div>
