@@ -51,7 +51,6 @@ const MiPerfilPage = () => {
          </div>
       </div>
       
-      {/* Renderiza el modal condicionalmente y le pasa las props necesarias */}
       {isModalOpen && (
         <ChangePhotoProfileModal 
           onClose={() => setIsModalOpen(false)} 
