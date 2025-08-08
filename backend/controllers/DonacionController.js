@@ -105,12 +105,11 @@ export class DonacionController {
             return res.status(400).json({ message: 'ID de usuario inválido.' });
         }
 
-        // --- CORRECCIÓN ---
-        // Este filtro asegura que solo se devuelvan las donaciones activas o pendientes.
         const donaciones = await Donacion.find({ 
             donanteId: userId,
             estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] } 
         })
+        .populate('donanteId', 'nombre fotoDePerfilUrl') 
         .sort({ createdAt: -1 });
 
         res.status(200).json({ donaciones });
