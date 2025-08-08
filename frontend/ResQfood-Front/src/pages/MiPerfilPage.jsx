@@ -3,9 +3,7 @@ import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import PerfilUsuarioGeneral from './PerfilUsuarioGeneral';
 import PerfilUsuarioEmpresa from './PerfilUsuarioEmpresa';
 import { Camera } from 'lucide-react';
-// Asegúrate de que la ruta y el nombre del archivo del modal sean correctos
-import CambiarFotoPerfilModal from '../components/modals/CambiarFotoPerfilModal'; 
-
+import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModal';
 const MiPerfilPage = () => {
   // 1. Obtenemos los datos y la función de actualización del contexto.
   //    Esta línea ya es correcta porque usa 'isLoadingUserProfile'.
@@ -55,7 +53,7 @@ const MiPerfilPage = () => {
       
       {/* Renderiza el modal condicionalmente y le pasa las props necesarias */}
       {isModalOpen && (
-        <CambiarFotoPerfilModal 
+        <ChangePhotoProfileModal 
           onClose={() => setIsModalOpen(false)} 
           onUploadSuccess={handleUploadSuccess}
         />
