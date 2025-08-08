@@ -38,15 +38,14 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
-// --- Hook personalizado para gestionar el estado global ---
 const useUserProfileAndLocation = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
-    const [profileStatus, setProfileStatus] = useState({ isLoading: true, isComplete: false, userRole: null, userDataFromDB: null });
+    const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
 
     const updateProfileState = (userData) => {
-        setProfileStatus({ isLoading: false, isComplete: !!userData?.rol, userRole: userData?.rol || null, userDataFromDB: userData });
+        setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, userRole: userData?.rol || null, userDataFromDB: userData });
     };
 
     const triggerDonationReFetch = () => {
@@ -62,15 +61,15 @@ const useUserProfileAndLocation = () => {
                 setActiveSearchLocation(null);
                 return;
             }
-            if (profileStatus.isComplete && !profileStatus.isLoading) return;
+            if (profileStatus.isComplete && !profileStatus.isLoadingUserProfile) return;
             
-            setProfileStatus(prev => ({ ...prev, isLoading: true }));
+            setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
             try {
                 const token = await getToken();
                 const response = await fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 
                 if (response.status === 404) {
-                    setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
+                    setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
                     return;
                 }
                 
@@ -80,7 +79,7 @@ const useUserProfileAndLocation = () => {
                 updateProfileState(data.user);
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error);
-                setProfileStatus({ isLoading: false, isComplete: false, userRole: null, userDataFromDB: null });
+                setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
             }
         };
         fetchUserProfileFunction();
@@ -97,24 +96,17 @@ const useUserProfileAndLocation = () => {
     };
 };
 
-// ==================================================================
-// LA SOLUCIÓN FINAL: Un "Layout Guardián" para todas las rutas protegidas
-// ==================================================================
 const ProtectedLayout = () => {
-    const { isLoading, isComplete, updateProfileState } = useContext(ProfileStatusContext);
+    const { isLoadingUserProfile, isComplete, updateProfileState } = useContext(ProfileStatusContext);
 
-    // Muestra un mensaje mientras se verifica el estado del perfil.
-    if (isLoading) {
+    if (isLoadingUserProfile) {
         return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
     }
 
-    // Si el perfil NO está completo, SIEMPRE muestra la página para completarlo.
-    // No importa si el usuario intenta ir a /dashboard o /perfil, verá esta página primero.
     if (!isComplete) {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
 
-    // Si el perfil SÍ está completo, renderiza la ruta anidada que el usuario solicitó.
     return <Outlet />;
 };
 
@@ -122,7 +114,7 @@ const AppContent = () => {
   const appStateHook = useUserProfileAndLocation();
   
   const contextValueForProvider = useMemo(() => ({
-    isLoading: appStateHook.isLoading,
+    isLoadingUserProfile: appStateHook.isLoadingUserProfile,
     isComplete: appStateHook.isComplete,
     currentUserRole: appStateHook.userRole,
     currentUserDataFromDB: appStateHook.userDataFromDB,
@@ -149,11 +141,7 @@ const AppContent = () => {
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
 
-                    {/*
-                      LA ARQUITECTURA FINAL:
-                      Ahora, CUALQUIER ruta anidada aquí primero pasará por ProtectedLayout.
-                      ProtectedLayout decidirá si muestra CompleteProfilePage o la ruta solicitada.
-                    */}
+                    {/* Grupo de rutas que pasan por el guardián ProtectedLayout */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/perfil" element={<MiPerfilPage />} />
