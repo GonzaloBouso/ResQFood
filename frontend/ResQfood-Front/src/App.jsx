@@ -38,8 +38,10 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
+// --- Hook personalizado para gestionar el estado global ---
 const useUserProfileAndLocation = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
+    // LA SOLUCIÓN: Estandarizamos el nombre del estado de carga aquí.
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
@@ -61,14 +63,17 @@ const useUserProfileAndLocation = () => {
                 setActiveSearchLocation(null);
                 return;
             }
+            // Usa el nombre estandarizado
             if (profileStatus.isComplete && !profileStatus.isLoadingUserProfile) return;
             
+            // Usa el nombre estandarizado
             setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
             try {
                 const token = await getToken();
                 const response = await fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 
                 if (response.status === 404) {
+                    // Usa el nombre estandarizado
                     setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
                     return;
                 }
@@ -79,6 +84,7 @@ const useUserProfileAndLocation = () => {
                 updateProfileState(data.user);
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error);
+                // Usa el nombre estandarizado
                 setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
             }
         };
@@ -96,7 +102,9 @@ const useUserProfileAndLocation = () => {
     };
 };
 
+// --- Layout Guardián para todas las rutas protegidas ---
 const ProtectedLayout = () => {
+    // LA SOLUCIÓN: Consumimos el nombre de variable correcto del contexto.
     const { isLoadingUserProfile, isComplete, updateProfileState } = useContext(ProfileStatusContext);
 
     if (isLoadingUserProfile) {
@@ -114,6 +122,7 @@ const AppContent = () => {
   const appStateHook = useUserProfileAndLocation();
   
   const contextValueForProvider = useMemo(() => ({
+    // LA SOLUCIÓN: Proveemos la variable con el nombre estandarizado.
     isLoadingUserProfile: appStateHook.isLoadingUserProfile,
     isComplete: appStateHook.isComplete,
     currentUserRole: appStateHook.userRole,
