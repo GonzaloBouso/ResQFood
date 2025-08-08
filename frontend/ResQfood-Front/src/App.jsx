@@ -41,7 +41,6 @@ const RootRedirector = () => {
 // --- Hook personalizado para gestionar el estado global ---
 const useUserProfileAndLocation = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
-    // LA SOLUCIÓN: Estandarizamos el nombre del estado de carga aquí.
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
@@ -63,17 +62,14 @@ const useUserProfileAndLocation = () => {
                 setActiveSearchLocation(null);
                 return;
             }
-            // Usa el nombre estandarizado
             if (profileStatus.isComplete && !profileStatus.isLoadingUserProfile) return;
             
-            // Usa el nombre estandarizado
             setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
             try {
                 const token = await getToken();
                 const response = await fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 
                 if (response.status === 404) {
-                    // Usa el nombre estandarizado
                     setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
                     return;
                 }
@@ -84,7 +80,6 @@ const useUserProfileAndLocation = () => {
                 updateProfileState(data.user);
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error);
-                // Usa el nombre estandarizado
                 setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
             }
         };
@@ -102,9 +97,8 @@ const useUserProfileAndLocation = () => {
     };
 };
 
-// --- Layout Guardián para todas las rutas protegidas ---
+// --- Layout Guardián ---
 const ProtectedLayout = () => {
-    // LA SOLUCIÓN: Consumimos el nombre de variable correcto del contexto.
     const { isLoadingUserProfile, isComplete, updateProfileState } = useContext(ProfileStatusContext);
 
     if (isLoadingUserProfile) {
@@ -114,7 +108,7 @@ const ProtectedLayout = () => {
     if (!isComplete) {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
-
+    
     return <Outlet />;
 };
 
@@ -122,7 +116,6 @@ const AppContent = () => {
   const appStateHook = useUserProfileAndLocation();
   
   const contextValueForProvider = useMemo(() => ({
-    // LA SOLUCIÓN: Proveemos la variable con el nombre estandarizado.
     isLoadingUserProfile: appStateHook.isLoadingUserProfile,
     isComplete: appStateHook.isComplete,
     currentUserRole: appStateHook.userRole,
@@ -146,17 +139,23 @@ const AppContent = () => {
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             <ClerkLoaded>
                 <Routes>
+                    {/* --- Rutas Públicas y de Autenticación --- */}
                     <Route path="/" element={<RootRedirector />} />
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
 
-                    {/* Grupo de rutas que pasan por el guardián ProtectedLayout */}
+                    {/*
+                      LA SOLUCIÓN:
+                      Un grupo de rutas protegidas que usan el layout guardián.
+                      Y las rutas de perfil se definen por separado para evitar conflictos.
+                    */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/perfil" element={<MiPerfilPage />} />
-                        <Route path="/perfil/:id" element={<UserProfilePage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
                     </Route>
+
+                    <Route path="/perfil" element={<SignedIn><MiPerfilPage /></SignedIn>} />
+                    <Route path="/perfil/:id" element={<SignedIn><UserProfilePage /></SignedIn>} />
 
                     {/* --- Rutas Públicas de Contenido Estático --- */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
