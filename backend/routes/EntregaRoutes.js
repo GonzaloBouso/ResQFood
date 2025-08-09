@@ -4,6 +4,8 @@ import { requireAuth } from '../middlewares/autMiddleware.js';
 
 const router = express.Router();
 
+router.get('/usuario/:id/historial-recepciones', requireAuth, EntregaController.getRecepcionesFinalizadasByUsuario);
+
 // Receptor confirma el horario propuesto por el donante
 router.patch('/:entregaId/confirmar-horario', requireAuth, EntregaController.confirmarHorario);
 
