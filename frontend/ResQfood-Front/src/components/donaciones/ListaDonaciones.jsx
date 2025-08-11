@@ -1,17 +1,16 @@
 import React from 'react';
 import CardDonacion from './CardDonacion';
 
-const ListaDonaciones = ({ donaciones, onEliminar }) => {
+const ListaDonaciones = ({ donaciones }) => {
   return (
     <>
       {donaciones.map((d, i) => (
-        <CardDonacion key={d._id || i} donacion={d} onEliminar={onEliminar} />
+        <CardDonacion key={d._id || i} donacion={d} />
       ))}
     </>
   );
 };
 
 export default ListaDonaciones;
-
 
 
