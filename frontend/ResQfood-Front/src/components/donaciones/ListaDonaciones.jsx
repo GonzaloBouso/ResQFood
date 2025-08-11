@@ -4,7 +4,7 @@ const ListaDonaciones = ({donaciones}) => {
   return (
     <div className="flex flex-col gap-4">
       {donaciones.map((donacion) => (
-        <CardDonacion key={donacion._id} donacion={donacion} />
+        console.log(donacion)
       ))}
     </div>
   );

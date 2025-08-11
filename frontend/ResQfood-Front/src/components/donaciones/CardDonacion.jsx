@@ -2,7 +2,7 @@ import DropdownSolicitudes from './DropdownSolicitudes';
 import SolicitudAceptada from './SolicitudAceptada';
 
 const CardDonacion = ({ donacion }) => {
-  const { producto, cantidadDisponible, imagenUrl, solicitudes, solicitudAceptada } = donacion;
+  const { producto, cantidadDisponible, imagenUrl} = donacion;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 text-gray-800 w-full max-w-screen-md mx-auto">
