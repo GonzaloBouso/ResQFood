@@ -1,18 +1,10 @@
 import DropdownSolicitudes from './DropdownSolicitudes';
 import SolicitudAceptada from './SolicitudAceptada';
 
-import React from 'react';
-
 const CardDonacion = ({ donacion }) => {
   const {
-    titulo,
-    descripcion,
-    imagenesUrl = [],
-    categoria,
-    estadoPublicacion,
-    ubicacionRetiro,
-    fechaVencimientoProducto,
-    fechaElaboracion,
+    titulo, descripcion, imagenesUrl = [], categoria,
+    estadoPublicacion, ubicacionRetiro, fechaVencimientoProducto, fechaElaboracion,
   } = donacion || {};
 
   const img = imagenesUrl[0] || '/placeholder.png';
@@ -21,9 +13,12 @@ const CardDonacion = ({ donacion }) => {
   const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 
   return (
-    <article className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col lg:flex-row">
-      {/* Imagen: vertical (mobile) = llena ancho con ratio; horizontal (lg) = cuadrada fija */}
-      <div className="w-full aspect-[4/3] lg:w-40 lg:h-40 lg:aspect-auto shrink-0 overflow-hidden bg-gray-50">
+    <article
+      className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden
+                 flex flex-col xl:flex-row min-w-[300px]"
+    >
+      {/* Imagen: vertical = 4/3; horizontal = fija */}
+      <div className="w-full aspect-[4/3] xl:w-48 xl:h-48 xl:aspect-auto shrink-0 overflow-hidden bg-gray-50">
         <img src={img} alt={titulo} className="w-full h-full object-cover" loading="lazy" />
       </div>
 
@@ -38,7 +33,6 @@ const CardDonacion = ({ donacion }) => {
 
         {categoria && <p className="text-xs text-gray-500">Categoría: {categoria}</p>}
         {descripcion && <p className="text-sm text-gray-700 line-clamp-2">{descripcion}</p>}
-
         {(dir || ciudadProv) && (
           <p className="text-xs text-gray-500">
             Retiro: {dir}{dir && ciudadProv ? ' · ' : ''}{ciudadProv}
@@ -50,7 +44,7 @@ const CardDonacion = ({ donacion }) => {
           <span>Vence: {fmt(fechaVencimientoProducto)}</span>
         </div>
 
-        <div className="mt-3 flex lg:justify-end">
+        <div className="mt-3 flex xl:justify-end">
           <button className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1.5 rounded-md transition-colors">
             Eliminar
           </button>
@@ -61,4 +55,3 @@ const CardDonacion = ({ donacion }) => {
 };
 
 export default CardDonacion;
-
