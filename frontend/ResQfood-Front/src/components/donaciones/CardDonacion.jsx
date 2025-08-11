@@ -17,47 +17,31 @@ const CardDonacion = ({ donacion }) => {
 
   const img = imagenesUrl[0] || '/placeholder.png';
   const dir = ubicacionRetiro?.direccion || '';
-  const ciudadProv = [ubicacionRetiro?.ciudad, ubicacionRetiro?.provincia]
-    .filter(Boolean)
-    .join(', ');
+  const ciudadProv = [ubicacionRetiro?.ciudad, ubicacionRetiro?.provincia].filter(Boolean).join(', ');
   const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 
   return (
     <article className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col lg:flex-row">
-      {/* Imagen */}
-      <div className="w-full lg:w-48 h-48 lg:h-auto shrink-0 bg-gray-50">
-        <img
-          src={img}
-          alt={titulo}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
+      {/* Imagen: vertical (mobile) = llena ancho con ratio; horizontal (lg) = cuadrada fija */}
+      <div className="w-full aspect-[4/3] lg:w-40 lg:h-40 lg:aspect-auto shrink-0 overflow-hidden bg-gray-50">
+        <img src={img} alt={titulo} className="w-full h-full object-cover" loading="lazy" />
       </div>
 
       {/* Contenido */}
-      <div className="p-4 flex-1 flex flex-col gap-2">
+      <div className="p-4 flex-1 flex flex-col gap-2 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-base text-gray-900 line-clamp-1">
-            {titulo}
-          </h3>
+          <h3 className="font-semibold text-base text-gray-900 truncate">{titulo}</h3>
           <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 whitespace-nowrap">
             {estadoPublicacion}
           </span>
         </div>
 
-        {categoria && (
-          <p className="text-xs text-gray-500">Categoría: {categoria}</p>
-        )}
-
-        {descripcion && (
-          <p className="text-sm text-gray-700 line-clamp-2">{descripcion}</p>
-        )}
+        {categoria && <p className="text-xs text-gray-500">Categoría: {categoria}</p>}
+        {descripcion && <p className="text-sm text-gray-700 line-clamp-2">{descripcion}</p>}
 
         {(dir || ciudadProv) && (
           <p className="text-xs text-gray-500">
-            Retiro: {dir}
-            {dir && ciudadProv ? ' · ' : ''}
-            {ciudadProv}
+            Retiro: {dir}{dir && ciudadProv ? ' · ' : ''}{ciudadProv}
           </p>
         )}
 
@@ -66,7 +50,6 @@ const CardDonacion = ({ donacion }) => {
           <span>Vence: {fmt(fechaVencimientoProducto)}</span>
         </div>
 
-        {/* Botón eliminar (visual por ahora) */}
         <div className="mt-3 flex lg:justify-end">
           <button className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1.5 rounded-md transition-colors">
             Eliminar
@@ -78,3 +61,4 @@ const CardDonacion = ({ donacion }) => {
 };
 
 export default CardDonacion;
+
