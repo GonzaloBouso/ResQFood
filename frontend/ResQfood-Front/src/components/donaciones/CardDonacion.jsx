@@ -34,10 +34,11 @@ const CardDonacion = ({ donacion }) => {
         <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4">
           {/* Columna izquierda */}
           <div>
+            
+            <h3 className="font-semibold text-gray-900">{titulo}</h3>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 mb-2">
               {estadoPublicacion}
             </span>
-            <h3 className="font-semibold text-gray-900">{titulo}</h3>
             {categoria && (
               <p className="text-sm text-gray-500">Categoría: {categoria}</p>
             )}
