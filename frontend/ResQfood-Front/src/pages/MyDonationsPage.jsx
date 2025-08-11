@@ -72,7 +72,7 @@ const MyDonationsPage = () => {
     }
 
     return (
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div className="max-w-5xl mx-auto space-y-4 px-1 sm:px-2">
         <ListaDonaciones donaciones={donaciones} />
       </div>
     );
