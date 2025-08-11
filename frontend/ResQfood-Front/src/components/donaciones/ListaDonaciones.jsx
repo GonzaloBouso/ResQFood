@@ -1,3 +1,4 @@
+import React from 'react';
 import CardDonacion from './CardDonacion';
 
 const ListaDonaciones = ({ donaciones }) => {
@@ -11,4 +12,5 @@ const ListaDonaciones = ({ donaciones }) => {
 };
 
 export default ListaDonaciones;
+
 
