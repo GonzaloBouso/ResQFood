@@ -15,6 +15,5 @@ router.get('/:id', DonacionController.getDonationById);
 router.get('/usuario/:id', DonacionController.getDonacionesByUsuario);
 router.get('/usuario/:id/historial', DonacionController.getDonacionesFinalizadasByUsuario);
 
-router.delete('/:id', requireAuth, DonacionController.deleteDonation);
 
 export default router;
