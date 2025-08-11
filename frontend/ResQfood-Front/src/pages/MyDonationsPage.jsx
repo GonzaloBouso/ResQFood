@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import API_BASE_URL from '../api/config';
-import ListaDonaciones from '../components/donaciones/ListaDonaciones';
+import CardDonacion from '../components/layout/CardDonacion';
 
 const MyDonationsPage = () => {
   const { getToken } = useAuth();
@@ -73,7 +73,9 @@ const MyDonationsPage = () => {
 
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <ListaDonaciones donacion={donaciones} />
+        {donaciones.map(donacion => (
+          <CardDonacion key={donacion._id} donacion={donacion} />
+        ))}
       </div>
     );
   };
