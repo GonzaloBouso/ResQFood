@@ -5,7 +5,7 @@ import PerfilUsuarioEmpresa from './PerfilUsuarioEmpresa';
 import { Camera } from 'lucide-react';
 import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModal';
 const MiPerfilPage = () => {
-  // 1. Obtenemos los datos y la función de actualización del contexto.
+  // 1. Obtenemos los datos y la función de actualización del contexto
   //    Esta línea ya es correcta porque usa 'isLoadingUserProfile'.
   const { currentUserDataFromDB, isLoadingUserProfile, updateProfileState } = useContext(ProfileStatusContext);
   
