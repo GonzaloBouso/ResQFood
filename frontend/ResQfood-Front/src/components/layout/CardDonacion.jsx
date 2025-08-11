@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // <<< 1. Importa el componente Link
+import { Link } from 'react-router-dom';
 import DetallesCardDonacion from './DetallesCardDonacion';
 
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200.png?text=Sin+Imagen';
@@ -7,8 +7,10 @@ const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200.png?text=Sin+Ima
 const CardDonacion = ({ donacion, onSolicitar }) => {
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  // Verificación de seguridad: si no hay donación, no renderizamos nada.
-  if (!donacion) return null;
+  // Verificación de seguridad: si no hay donación, no renderizamos nada para evitar errores.
+  if (!donacion) {
+    return null;
+  }
 
   const {
     _id,
@@ -19,13 +21,17 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
     donanteId,
   } = donacion;
 
+ 
+  const isDonantePopulated = donanteId && typeof donanteId === 'object';
+
   const imageUrl = imagenesUrl && imagenesUrl.length > 0 ? imagenesUrl[0] : FALLBACK_IMAGE_URL;
 
   const ubicacionSimple = ubicacionRetiro
     ? `${ubicacionRetiro.ciudad || ''}${ubicacionRetiro.provincia ? ', ' + ubicacionRetiro.provincia : ''}`.trim()
     : 'Ubicación no especificada';
 
-  const nombreDonante = donanteId?.nombre || 'Donante Anónimo';
+  
+  const nombreDonante = isDonantePopulated ? donanteId.nombre : 'Donante';
   const inicialesDonante = nombreDonante
     .split(' ')
     .map(n => n[0])
@@ -36,8 +42,6 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
   const handleSolicitarClick = () => {
     if (onSolicitar) {
       onSolicitar(donacion);
-    } else {
-      console.warn("La función onSolicitar no fue proporcionada a CardDonacion para la donación:", titulo);
     }
   };
 
@@ -47,14 +51,10 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
   return (
     <>
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col h-full transition-shadow hover:shadow-lg">
-        {/*
-          LA SOLUCIÓN:
-          Envolvemos toda la sección del header del donante con un componente <Link>.
-          Esto convierte toda el área en un enlace clicable que navega al perfil del usuario.
-        */}
-        {donanteId ? (
+       
+        {isDonantePopulated ? (
           <Link 
-            to={`/perfil/${donanteId._id}`} // <<< 2. URL dinámica con el ID del donante.
+            to={`/perfil/${donanteId._id}`} 
             className="block px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center justify-between">
@@ -73,7 +73,7 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
             </div>
           </Link>
         ) : (
-          // Fallback por si una donación no tuviera donante (buena práctica)
+          // Si 'donanteId' no está poblado, muestra un estado genérico sin enlace.
           <div className="px-4 py-3 border-b border-gray-100">
              <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-sm flex-shrink-0">?</div>
@@ -82,20 +82,16 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
           </div>
         )}
 
-        {/* Imagen */}
+        
         <div className="w-full h-48 bg-gray-100">
           <img
             className="w-full h-full object-cover"
             src={imageUrl}
             alt={titulo || 'Imagen de la donación'}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = FALLBACK_IMAGE_URL;
-            }}
+            onError={(e) => { e.target.onerror = null; e.target.src = FALLBACK_IMAGE_URL; }}
           />
         </div>
 
-        {/* Contenido */}
         <div className="p-4 flex flex-col flex-grow">
           {categoria && (
             <span className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
@@ -113,7 +109,6 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
           )}
         </div>
 
-        {/* Botones */}
         <div className="px-4 pb-4 pt-3 border-t border-gray-100">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
             <button

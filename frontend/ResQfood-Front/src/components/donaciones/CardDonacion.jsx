@@ -1,34 +1,72 @@
 import DropdownSolicitudes from './DropdownSolicitudes';
 import SolicitudAceptada from './SolicitudAceptada';
 
+import React from 'react';
+
 const CardDonacion = ({ donacion }) => {
-  const { producto, cantidadDisponible, imagenUrl, solicitudes, solicitudAceptada } = donacion;
+  const {
+    titulo,
+    descripcion,
+    imagenesUrl = [],
+    categoria,
+    estadoPublicacion,
+    ubicacionRetiro,
+    fechaVencimientoProducto,
+    fechaElaboracion,
+  } = donacion || {};
+
+  const img = imagenesUrl[0] || '/placeholder.png';
+  const dir = ubicacionRetiro?.direccion || '';
+  const ciudadProv = [ubicacionRetiro?.ciudad, ubicacionRetiro?.provincia]
+    .filter(Boolean)
+    .join(', ');
+  const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 text-gray-800 w-full max-w-screen-md mx-auto">
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <img
-          src={imagenUrl}
-          alt={producto}
-          className="w-24 h-24 object-cover rounded-md"
-        />
-        <div className="flex-1">
-          <p className="font-semibold text-base">Producto: {producto}</p>
-          <p className="text-sm text-gray-600">Cantidad disponible: {cantidadDisponible}</p>
+    <article className="w-full bg-white border border-gray-200 rounded-2xl shadow-sm">
+      <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* Imagen */}
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-50 shrink-0">
+          <img src={img} alt={titulo} className="w-full h-full object-cover" loading="lazy" />
         </div>
-        <button className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-1 rounded transition">
-  Eliminar
-</button>
 
+        {/* Contenido central en dos columnas */}
+        <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4">
+          {/* Columna izquierda */}
+          <div>
+            
+            <h3 className="font-semibold text-gray-900">{titulo}</h3>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 mb-2">
+              {estadoPublicacion}
+            </span>
+            {categoria && (
+              <p className="text-sm text-gray-500">Categoría: {categoria}</p>
+            )}
+            {descripcion && (
+              <p className="text-sm text-gray-700">{descripcion}</p>
+            )}
+            {(dir || ciudadProv) && (
+              <p className="text-xs text-gray-500">
+                Retiro: {dir}{dir && ciudadProv ? ' · ' : ''}{ciudadProv}
+              </p>
+            )}
+            <p className="text-xs text-gray-500">
+              Elaboración: {fmt(fechaElaboracion)}
+            </p>
+            <p className="text-xs text-gray-500">
+              Vence: {fmt(fechaVencimientoProducto)}
+            </p>
+          </div>
+        </div>
 
+        {/* Botón eliminar */}
+        <div className="sm:self-stretch flex sm:items-center">
+          <button className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-md transition-colors">
+            Eliminar
+          </button>
+        </div>
       </div>
-
-      <div className="mt-4 space-y-2">
-        <DropdownSolicitudes solicitudes={solicitudes} solicitudAceptada={solicitudAceptada} />
-
-        <SolicitudAceptada solicitud={solicitudAceptada} />
-      </div>
-    </div>
+    </article>
   );
 };
 

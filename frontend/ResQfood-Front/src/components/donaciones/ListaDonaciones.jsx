@@ -1,13 +1,16 @@
+import React from 'react';
 import CardDonacion from './CardDonacion';
 
-const ListaDonaciones = ({donaciones}) => {
+const ListaDonaciones = ({ donaciones }) => {
   return (
-    <div className="flex flex-col gap-4">
-      {donaciones.map((donacion) => (
-        <CardDonacion key={donacion._id} donacion={donacion} />
+    <>
+      {donaciones.map((d, i) => (
+        <CardDonacion key={d._id || i} donacion={d} />
       ))}
-    </div>
+    </>
   );
 };
 
 export default ListaDonaciones;
+
+
