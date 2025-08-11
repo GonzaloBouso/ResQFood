@@ -130,38 +130,4 @@ export class EntregaController {
             session.endSession();
         }
     }
-
-            // Historial de recepciones finalizadas por receptor
-        static async getRecepcionesFinalizadasByUsuario(req, res) {
-        try {
-            const userId = req.params.id;
-            if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'ID de usuario inválido.' });
-            }
-
-            const estadosFinalizados = [
-            'COMPLETADA',
-            'CANCELADA_POR_DONANTE',
-            'CANCELADA_POR_SOLICITANTE',
-            'FALLIDA_RECEPTOR_NO_ASISTIO',
-            'FALLIDA_OTRO_MOTIVO',
-            ];
-
-            const recepciones = await Entrega.find({
-            receptorId: userId,
-            estadoEntrega: { $in: estadosFinalizados },
-            })
-            .sort({ updatedAt: -1 })
-            .populate('donacionId', 'titulo descripcion imagenesUrl ubicacionRetiro createdAt estadoPublicacion')
-            .populate('donanteId', 'nombre')
-            .populate('receptorId', 'nombre')
-            .lean();
-
-            return res.status(200).json({ recepciones });
-        } catch (error) {
-            console.error('Error al obtener recepciones finalizadas:', error);
-            return res.status(500).json({ message: 'Error interno al obtener recepciones finalizadas', errorDetails: error.message });
-        }
-        }
-
 }
