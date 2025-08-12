@@ -30,7 +30,7 @@ const MiPerfilPage = () => {
   return (
     <div className="relative">
       <ProfileComponentToRender userData={currentUserDataFromDB} />
-      {/* ... Tu botón de cámara y modal (sin cambios) ... */}
+      <ChangePhotoProfileModal />
     </div>
   );
 };
