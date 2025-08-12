@@ -184,4 +184,49 @@ export class UserController {
             res.status(500).json({ message: 'Error interno del servidor al actualizar el avatar.' });
         }
     }
+    static async updateAvatar(req, res) {
+        const clerkUserId = req.auth?.userId;
+        if (!clerkUserId) {
+            return res.status(401).json({ message: 'No autenticado.' });
+        }
+
+        try {
+            if (!req.file) {
+                return res.status(400).json({ message: 'No se ha subido ningún archivo.' });
+            }
+
+            const newAvatarUrl = req.file.path; // URL de Cloudinary
+
+            // --- PASO 1 (NUEVO): Actualizar el perfil en Clerk ---
+            // Le decimos a la API de Clerk que actualice la foto de perfil para este usuario.
+            await clerk.users.updateUser(clerkUserId, {
+                profileImageUrl: newAvatarUrl,
+            });
+            console.log(`Avatar actualizado en Clerk para el usuario: ${clerkUserId}`);
+
+
+            // --- PASO 2 (EXISTENTE): Actualizar el perfil en nuestra base de datos MongoDB ---
+            const updatedUser = await User.findOneAndUpdate(
+                { clerkUserId },
+                { fotoDePerfilUrl: newAvatarUrl },
+                { new: true } 
+            );
+
+            if (!updatedUser) {
+                // Este caso es poco probable si el paso 1 tuvo éxito, pero es una buena guarda.
+                return res.status(404).json({ message: 'Usuario no encontrado en la base de datos local.' });
+            }
+
+            // --- PASO 3 (EXISTENTE): Devolver la respuesta al frontend ---
+            res.status(200).json({ 
+                message: 'Foto de perfil actualizada exitosamente.', 
+                user: updatedUser.toJSON() 
+            });
+
+        } catch (error) {
+            console.error('Error al actualizar el avatar:', error);
+            // Si el error viene de Clerk, puede que necesites manejarlo de forma específica.
+            res.status(500).json({ message: 'Error interno del servidor al actualizar el avatar.' });
+        }
+    }
 }
