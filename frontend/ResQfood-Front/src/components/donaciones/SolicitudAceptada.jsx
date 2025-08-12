@@ -13,7 +13,6 @@ const SolicitudAceptada = ({ solicitud }) => {
 
   const handleVerificar = async () => {
     alert("Funcionalidad de completar entrega aún en desarrollo.");
-   
   };
 
   return (
