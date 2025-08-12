@@ -3,8 +3,8 @@ import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import { Camera, Edit2 } from 'lucide-react'; // <-- Importa el icono de editar
 
 // Importamos los componentes de visualización que vamos a reutilizar
-import PerfilUsuarioGeneral from './PerfilUsuarioGeneral';
-import PerfilUsuarioEmpresa from './PerfilUsuarioEmpresa';
+import PerfilEmpresaView from '../components/profile/PerfilEmpresaView';
+import PerfilGeneralView from '../components/profile/PerfilGeneralView';
 import CambiarFotoPerfilModal from '../components/modals/CambiarFotoPerfilModal';
 // import EditarInfoModal from '../components/modals/EditarInfoModal'; // <-- Futuro modal
 
@@ -28,8 +28,8 @@ const MiPerfilPage = () => {
 
   // Decidimos qué componente de visualización usar
   const ProfileComponentToRender = currentUserDataFromDB.rol === 'LOCAL' 
-    ? PerfilUsuarioEmpresa 
-    : PerfilUsuarioGeneral;
+    ? PerfilEmpresaView 
+    : PerfilGeneralView;
 
   return (
     // Usamos un contenedor relativo para posicionar los botones de edición
