@@ -17,8 +17,7 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => 
   };
 
   const handleRechazarClick = async (solicitud) => {
-    // --- CORRECCIÓN ---: Usamos s.solicitanteId.nombre para el mensaje de confirmación
-    if (!window.confirm(`¿Estás seguro de que quieres rechazar la solicitud de ${solicitud.solicitanteId?.nombre || 'este usuario'}?`)) return;
+    if (!window.confirm(`¿Estás seguro de que quieres rechazar la solicitud de ${solicitud.solicitanteId.nombre}?`)) return;
     
     try {
       const token = await getToken();
@@ -45,8 +44,8 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => 
             horarioFin: data.horaHasta,
         },
         fechaPropuesto: {
-            fechaInicio: new Date(`${data.fechaDesde}T${data.horaDesde}`),
-            fechaFin: data.fechaHasta ? new Date(`${data.fechaHasta}T${data.horaHasta}`) : new Date(`${data.fechaDesde}T${data.horaHasta}`),
+            fechaInicio: new Date(data.fechaDesde),
+            fechaFin: data.fechaHasta ? new Date(data.fechaHasta) : new Date(data.fechaDesde),
         }
       };
 
@@ -83,7 +82,6 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => 
             solicitudes.map((s) => (
               <div key={s._id} className="py-3 flex flex-col sm:flex-row justify-between sm:items-center">
                 <div className="text-sm">
-                  {/* --- CORRECCIÓN ---: Usamos la propiedad correcta 'solicitanteId.nombre' */}
                   <p><strong>Usuario:</strong> {s.solicitanteId?.nombre || 'Usuario desconocido'}</p>
                 </div>
                 <div className="flex gap-2 mt-2 sm:mt-0">

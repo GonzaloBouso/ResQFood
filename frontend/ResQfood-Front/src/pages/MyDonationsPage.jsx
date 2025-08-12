@@ -26,23 +26,25 @@ const MyDonationsPage = () => {
         const token = await getToken();
         const userId = currentUserDataFromDB._id;
         
-        const [donacionesRes, solicitudesRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/donacion/usuario/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/api/solicitud/recibidas`, { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
-
+        // 1. Obtenemos las donaciones activas del usuario
+        const donacionesRes = await fetch(`${API_BASE_URL}/api/donacion/usuario/${userId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (!donacionesRes.ok) throw new Error('No se pudieron cargar tus donaciones.');
-        if (!solicitudesRes.ok) throw new Error('No se pudieron cargar las solicitudes.');
-
         const donacionesData = await donacionesRes.json();
-        const solicitudesData = await solicitudesRes.json();
-        
         const donaciones = donacionesData.donaciones || [];
+
+        // 2. Obtenemos TODAS las solicitudes recibidas por el usuario
+        const solicitudesRes = await fetch(`${API_BASE_URL}/api/solicitud/recibidas`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!solicitudesRes.ok) throw new Error('No se pudieron cargar las solicitudes.');
+        const solicitudesData = await solicitudesRes.json();
         const solicitudes = solicitudesData.solicitudes || [];
         
+        // 3. Unimos los datos: a cada donación le añadimos sus solicitudes
         const donacionesConDatos = donaciones.map(donacion => {
-            // El backend ya puebla donacionId, por lo que s.donacionId es un objeto.
-            const solicitudesParaEstaDonacion = solicitudes.filter(s => s.donacionId?._id === donacion._id);
+            const solicitudesParaEstaDonacion = solicitudes.filter(s => s.donacionId._id === donacion._id);
             const solicitudAceptada = solicitudesParaEstaDonacion.find(s => s.estadoSolicitud === 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO');
             
             return {
