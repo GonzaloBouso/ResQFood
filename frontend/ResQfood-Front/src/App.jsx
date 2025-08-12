@@ -158,7 +158,7 @@ const AppContent = () => {
                       para eliminar el conflicto de "matching" de una vez por todas.
                       El orden (estática antes de dinámica) sigue siendo crucial.
                     */}
-                    <Route path="/perfil" element={<SignedIn><MiPerfilPage /></SignedIn>} />
+                    <Route path="/mi-perfil" element={<SignedIn><MiPerfilPage /></SignedIn>} />
                     <Route path="/perfil/:id" element={<SignedIn><UserProfilePage /></SignedIn>} />
 
                     {/* --- Rutas Públicas de Contenido Estático --- */}

@@ -129,7 +129,7 @@ const Header = () => {
                       {/* LA SOLUCIÓN: El enlace ahora apunta directamente a "/perfil" */}
                       {/* ================================================================== */}
                       <Link
-                        to="/perfil"
+                        to="/mi-perfil"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                         onClick={() => setIsProfileMenuOpen(false)}
                       >
