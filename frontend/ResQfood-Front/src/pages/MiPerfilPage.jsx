@@ -5,7 +5,7 @@ import { Camera, Edit2 } from 'lucide-react';
 
 import PerfilEmpresaView from '../components/profile/PerfilEmpresaView';
 import PerfilGeneralView from '../components/profile/PerfilGeneralView';
-import ChangePhotoPerfileModal from '../components/layout/ChangePhotoProfileModal;';
+import ChangePhotoPerfileModal from '../components/layout/ChangePhotoProfileModal';
 import EditarPerfilModal from '../components/profile/EditarPerfilModal';
 const MiPerfilPage = () => {
   const { user: clerkUser } = useUser(); // <<< 2. Obtiene la instancia del usuario de Clerk
