@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Camera, Edit2 } from 'lucide-react';
 import HistorialDonacion from '../layout/HistorialDonacion';
 import HistorialRecepcion from '../layout/HistorialRecepcion';
 import BotonPublicar from '../layout/BotonPublicar';
 
-// Componente interno para mostrar la información detallada. No necesita cambios.
+// --- Componente interno para mostrar la información detallada  ---
 const InfoUsuarioGeneralDinamico = ({ userData }) => {
   if (!userData) return <p className="text-center text-gray-600 py-4">Cargando información del usuario...</p>;
 
@@ -53,8 +54,8 @@ const InfoUsuarioGeneralDinamico = ({ userData }) => {
 };
 
 
-// --- Componente principal de VISTA (sin lógica de edición) ---
-const PerfilGeneralView = ({ userData }) => {
+// --- Componente principal de VISTA ---
+const PerfilGeneralView = ({ userData, isEditable, onEditPhotoClick, onEditInfoClick }) => {
   const [activeTab, setActiveTab] = useState('info');
 
   const renderTabContent = () => {
@@ -71,53 +72,62 @@ const PerfilGeneralView = ({ userData }) => {
   };
 
   if (!userData) {
-    // Esta guarda es por si acaso, aunque el componente padre ya debería haber verificado.
     return <div className="text-center py-10">No hay datos de usuario para mostrar.</div>;
   }
 
   return (
-    // LA SOLUCIÓN: El contenedor principal ya no es 'relative'.
-    // El JSX se centra únicamente en mostrar la información.
     <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col items-center sm:flex-row sm:items-start sm:gap-8 mb-10 p-6 bg-white rounded-xl shadow-lg">
-        <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 border-4 border-white shadow-md">
-          {userData.fotoDePerfilUrl ? (
-            <img src={userData.fotoDePerfilUrl} alt={`Foto de perfil de ${userData.nombre}`} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl text-gray-400 bg-gray-100">
-              {userData.nombre ? userData.nombre.charAt(0).toUpperCase() : '?'}
-            </div>
+      <div className="relative flex flex-col items-center sm:flex-row sm:items-start sm:gap-8 mb-10 p-6 bg-white rounded-xl shadow-lg">
+        
+        <div className="relative w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0">
+          <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden border-4 border-white shadow-md">
+            {userData.fotoDePerfilUrl ? (
+              <img src={userData.fotoDePerfilUrl} alt={`Foto de ${userData.nombre}`} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-5xl text-gray-400 bg-gray-100">
+                {userData.nombre ? userData.nombre.charAt(0).toUpperCase() : '?'}
+              </div>
+            )}
+          </div>
+          {isEditable && (
+            <button
+              onClick={onEditPhotoClick}
+              className="absolute inset-0 bg-black/50 text-white flex items-center justify-center rounded-full opacity-0 hover:opacity-100 transition-opacity duration-300"
+              title="Cambiar foto de perfil"
+            >
+              <Camera size={32} />
+            </button>
           )}
         </div>
-        <div className="text-center sm:text-left mt-6 sm:mt-0">
+
+        <div className="text-center sm:text-left mt-6 sm:mt-0 flex-grow">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">{userData.nombre}</h1>
           <p className="text-md text-primary mt-1">Usuario General</p>
         </div>
+
+        {isEditable && (
+          <button 
+            onClick={onEditInfoClick}
+            className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border rounded-md shadow-sm hover:bg-gray-100 transition-colors"
+          >
+            <Edit2 size={14} />
+            Editar Perfil
+          </button>
+        )}
       </div>
+
       <div className="flex justify-center mb-6">
         <BotonPublicar />
       </div>
       <div className="mb-8">
         <div className="flex justify-center border-b border-gray-200">
-          <button
-            className={`px-4 py-3 text-sm font-medium transition-colors duration-150
-                        ${activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('info')}
-          >
+          <button className={`px-4 py-3 text-sm font-medium ${activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`} onClick={() => setActiveTab('info')}>
             Información
           </button>
-          <button
-            className={`px-4 py-3 text-sm font-medium transition-colors duration-150
-                        ${activeTab === 'donations' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('donations')}
-          >
+          <button className={`px-4 py-3 text-sm font-medium ${activeTab === 'donations' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`} onClick={() => setActiveTab('donations')}>
             Donaciones Hechas
           </button>
-          <button
-            className={`px-4 py-3 text-sm font-medium transition-colors duration-150
-                        ${activeTab === 'receptions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('receptions')}
-          >
+          <button className={`px-4 py-3 text-sm font-medium ${activeTab === 'receptions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`} onClick={() => setActiveTab('receptions')}>
             Donaciones Recibidas
           </button>
         </div>
