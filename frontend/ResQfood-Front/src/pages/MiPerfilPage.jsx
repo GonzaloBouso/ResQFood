@@ -2,8 +2,8 @@ import React, { useContext, useState } from 'react';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import PerfilGeneralView from '../components/profile/PerfilGeneralView';
 import PerfilEmpresaView from '../components/profile/PerfilEmpresaView';
-import CambiarFotoPerfilModal from '../components/modals/CambiarFotoPerfilModal';
-import EditarPerfilModal from '../components/modals/EditarPerfilModal';
+import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModal';
+import EditarPerfilModal from '../components/profile/EditarPerfilModal';
 
 const MiPerfilPage = () => {
   const { currentUserDataFromDB, isLoadingUserProfile, updateProfileState } = useContext(ProfileStatusContext);
@@ -38,7 +38,7 @@ const MiPerfilPage = () => {
       
       {/* El renderizado de los modales se queda aquí, en la página principal */}
       {isPhotoModalOpen && (
-        <CambiarFotoPerfilModal 
+        <ChangePhotoProfileModal 
           onClose={() => setIsPhotoModalOpen(false)} 
           onUploadSuccess={handleUploadSuccess}
         />
