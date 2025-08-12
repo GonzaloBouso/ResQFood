@@ -1,8 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import { Camera } from 'lucide-react';
-import CambiarFotoPerfilModal from '../components/modals/CambiarFotoPerfilModal';
-
+import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModal';
 // LA SOLUCIÓN: Importamos las nuevas "vistas"
 import PerfilGeneralView from '../components/profile/PerfilGeneralView';
 import PerfilEmpresaView from '../components/profile/PerfilEmpresaView';
