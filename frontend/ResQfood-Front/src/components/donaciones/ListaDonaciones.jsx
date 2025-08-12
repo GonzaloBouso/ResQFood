@@ -1,18 +1,16 @@
 import React from 'react';
 import CardDonacion from './CardDonacion';
 
-const ListaDonaciones = ({ donaciones, showManagement = false }) => {
+const ListaDonaciones = ({ donaciones }) => {
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {donaciones.map((d) => (
-        <CardDonacion 
-          key={d._id} 
-          donacion={d} 
-          showManagement={showManagement} 
-        />
+    <>
+      {donaciones.map((d, i) => (
+        <CardDonacion key={d._id || i} donacion={d} />
       ))}
-    </div>
+    </>
   );
 };
 
 export default ListaDonaciones;
+
+
