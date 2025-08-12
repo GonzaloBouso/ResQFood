@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Camera, Edit2 } from 'lucide-react';
 import HistorialDonacion from '../layout/HistorialDonacion';
+import BotonPublicar from '../layout/BotonPublicar';
 
 // --- Componente interno ---
 const InfoUsuarioEmpresaDinamico = ({ userData }) => {
@@ -109,7 +110,9 @@ const PerfilEmpresaView = ({ userData, isEditable, onEditPhotoClick, onEditInfoC
           </button>
         )}
       </div>
-
+        <div className="flex justify-center mb-6">
+        <BotonPublicar />
+      </div>
       <div className="mb-8">
         <div className="flex justify-center border-b border-gray-200">
           <button className={`px-4 py-3 text-sm font-medium ${activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`} onClick={() => setActiveTab('info')}>
