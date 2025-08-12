@@ -5,7 +5,7 @@ import { Camera, Edit2 } from 'lucide-react'; // <-- Importa el icono de editar
 // Importamos los componentes de visualización que vamos a reutilizar
 import PerfilEmpresaView from '../components/profile/PerfilEmpresaView';
 import PerfilGeneralView from '../components/profile/PerfilGeneralView';
-import CambiarFotoPerfilModal from '../components/modals/CambiarFotoPerfilModal';
+import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModal';
 // import EditarInfoModal from '../components/modals/EditarInfoModal'; // <-- Futuro modal
 
 const MiPerfilPage = () => {
@@ -66,7 +66,7 @@ const MiPerfilPage = () => {
       
       {/* Renderizado de los modales */}
       {isPhotoModalOpen && (
-        <CambiarFotoPerfilModal 
+        <ChangePhotoProfileModal 
           onClose={() => setIsPhotoModalOpen(false)} 
           onUploadSuccess={handleUploadSuccess}
         />
