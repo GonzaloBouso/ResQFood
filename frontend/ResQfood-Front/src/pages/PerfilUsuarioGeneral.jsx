@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useAuth } from '@clerk/clerk-react';
-
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import HistorialDonacion from '../components/layout/HistorialDonacion';
 import HistorialRecepcion from '../components/layout/HistorialRecepcion';
 import BotonPublicar from '../components/layout/BotonPublicar';
-import API_BASE_URL from '../api/config.js';
 
-// Componente interno (sin cambios, ya era correcto)
+// --- Componente interno para mostrar la información (sin cambios) ---
 const InfoUsuarioGeneralDinamico = ({ userData }) => {
   if (!userData) return <p className="text-center text-gray-600 py-4">Cargando información del usuario...</p>;
-
   return (
     <div className="space-y-6">
       <section className="border rounded-lg p-6 bg-white shadow">
@@ -19,7 +15,6 @@ const InfoUsuarioGeneralDinamico = ({ userData }) => {
           <p><strong>Nombre:</strong> {userData.nombre || 'No disponible'}</p>
         </div>
       </section>
-
       <section className="border rounded-lg p-6 bg-white shadow">
         <h2 className="text-xl font-semibold text-gray-800 mb-3">Información de Contacto</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
@@ -27,7 +22,6 @@ const InfoUsuarioGeneralDinamico = ({ userData }) => {
           <p><strong>Teléfono:</strong> {userData.telefono || 'No especificado'}</p>
         </div>
       </section>
-
       {userData.ubicacion && (
         <section className="border rounded-lg p-6 bg-white shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-3">Ubicación</h2>
@@ -39,7 +33,6 @@ const InfoUsuarioGeneralDinamico = ({ userData }) => {
           </div>
         </section>
       )}
-
       {userData.estadisticasGenerales && (
         <section className="border rounded-lg p-6 bg-white shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-3">Actividad en ResQFood</h2>
@@ -56,54 +49,14 @@ const InfoUsuarioGeneralDinamico = ({ userData }) => {
 };
 
 
-// Componente principal
-const PerfilUsuarioGeneral = () => {
-  // Le cambiamos el nombre a 'id' para que coincida con la ruta /perfil/:id
-  const { id: userId } = useParams();
-  const { getToken } = useAuth();
-  
-  const [userData, setUserData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+// ==================================================================
+// LA SOLUCIÓN: El componente principal ahora es un "componente de visualización".
+// Simplemente recibe los datos del usuario a través de `props` y los muestra.
+// Ya no tiene lógica propia para buscar datos.
+// ==================================================================
+const PerfilUsuarioGeneral = ({ userData }) => {
   const [activeTab, setActiveTab] = useState('info');
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!userId) {
-        setError("No se proporcionó un ID de usuario.");
-        setIsLoading(false);
-        return;
-      }
-      
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const token = await getToken();
-        // Usamos el endpoint del backend /api/usuario/:id
-        const response = await fetch(`${API_BASE_URL}/api/usuario/${userId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Error ${response.status}`);
-        }
-
-        const data = await response.json();
-        setUserData(data.user);
-      } catch (err) {
-        console.error("Error al buscar el perfil del usuario:", err);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [userId, getToken]);
-
-  // LA SOLUCIÓN: Rellenamos la función renderTabContent con tu lógica original
   const renderTabContent = () => {
     switch (activeTab) {
       case 'info':
@@ -117,18 +70,12 @@ const PerfilUsuarioGeneral = () => {
     }
   };
 
-  // Manejo de estados de carga
-  if (isLoading) {
-    return <div className="text-center py-20">Cargando perfil del usuario...</div>;
-  }
-  if (error) {
-    return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
-  }
+  // La guarda de "cargando" o "error" ya no vive aquí, sino en el componente padre
+  // que le pasa las props (MiPerfilPage o UserProfilePage).
   if (!userData) {
-    return <div className="text-center py-20">No se encontró la información del usuario.</div>;
+    return <div className="text-center py-10">No hay datos de usuario para mostrar.</div>;
   }
 
-  // LA SOLUCIÓN: Rellenamos el return final con tu JSX original
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center sm:flex-row sm:items-start sm:gap-8 mb-10 p-6 bg-white rounded-xl shadow-lg">

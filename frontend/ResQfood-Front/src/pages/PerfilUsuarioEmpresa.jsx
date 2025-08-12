@@ -2,16 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HistorialDonacion from '../components/layout/HistorialDonacion';
 
-// Componente interno para mostrar la información del local.
+// --- Componente interno (sin cambios) ---
 const InfoUsuarioEmpresaDinamico = ({ userData }) => {
-  // Verificación robusta de que los datos necesarios existen.
-  if (!userData || !userData.localData) {
-    return <p className="text-center text-gray-600 py-4">La información de este local no está disponible.</p>;
-  }
-
-  // Combinamos las estadísticas de ambas posibles ubicaciones para ser más robustos.
+  if (!userData || !userData.localData) return <p className="text-center text-gray-600 py-4">La información de este local no está disponible.</p>;
   const estadisticas = userData.localData || userData.estadisticasGenerales;
-
   return (
     <div className="space-y-6">
       <section className="border rounded-lg p-6 bg-white shadow">
@@ -23,7 +17,6 @@ const InfoUsuarioEmpresaDinamico = ({ userData }) => {
           <p className="md:col-span-2"><strong>Descripción:</strong> {userData.localData.descripcionEmpresa || 'Sin descripción.'}</p>
         </div>
       </section>
-
       <section className="border rounded-lg p-6 bg-white shadow">
         <h2 className="text-xl font-semibold text-gray-800 mb-3">Información de Contacto</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
@@ -31,7 +24,6 @@ const InfoUsuarioEmpresaDinamico = ({ userData }) => {
           <p><strong>Teléfono:</strong> {userData.telefono || 'No especificado'}</p>
         </div>
       </section>
-
       {userData.ubicacion && (
         <section className="border rounded-lg p-6 bg-white shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-3">Ubicación</h2>
@@ -43,7 +35,6 @@ const InfoUsuarioEmpresaDinamico = ({ userData }) => {
           </div>
         </section>
       )}
-      
       {estadisticas && (
         <section className="border rounded-lg p-6 bg-white shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-3">Actividad en ResQFood</h2>
@@ -57,7 +48,10 @@ const InfoUsuarioEmpresaDinamico = ({ userData }) => {
   );
 };
 
-// Componente principal que maneja los tabs.
+
+// ==================================================================
+// LA SOLUCIÓN: El componente principal ahora es un "componente de visualización".
+// ==================================================================
 const PerfilUsuarioEmpresa = ({ userData }) => {
   const [activeTab, setActiveTab] = useState('info');
 
@@ -66,17 +60,14 @@ const PerfilUsuarioEmpresa = ({ userData }) => {
       case 'info':
         return <InfoUsuarioEmpresaDinamico userData={userData} />;
       case 'donations':
-        // Pasamos el _id del usuario (de MongoDB) al componente de historial.
         return <HistorialDonacion userId={userData?._id} />;
       default:
         return <InfoUsuarioEmpresaDinamico userData={userData} />;
     }
   };
 
-  // El estado de carga principal ya lo maneja el componente padre (UserProfilePage).
-  // Esta comprobación es una segunda capa de seguridad.
   if (!userData) {
-    return <div className="text-center py-10">Cargando perfil de la empresa...</div>;
+    return <div className="text-center py-10">No hay datos de empresa para mostrar.</div>;
   }
 
   return (
