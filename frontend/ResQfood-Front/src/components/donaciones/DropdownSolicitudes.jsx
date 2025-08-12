@@ -17,8 +17,7 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => 
   };
 
   const handleRechazarClick = async (solicitud) => {
-    if (!window.confirm(`¿Estás seguro de que quieres rechazar la solicitud de ${solicitud.solicitanteId.nombre}?`)) return;
-    
+    if (!window.confirm(`¿Estás seguro de que quieres rechazar la solicitud de ${solicitud.solicitanteId?.nombre || 'este usuario'}?`)) return;
     try {
       const token = await getToken();
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitud._id}/rechazar`, {
@@ -44,11 +43,10 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => 
             horarioFin: data.horaHasta,
         },
         fechaPropuesto: {
-            fechaInicio: new Date(data.fechaDesde),
-            fechaFin: data.fechaHasta ? new Date(data.fechaHasta) : new Date(data.fechaDesde),
+            fechaInicio: new Date(`${data.fechaDesde}T${data.horaDesde}`),
+            fechaFin: data.fechaHasta ? new Date(`${data.fechaHasta}T${data.horaHasta}`) : new Date(`${data.fechaDesde}T${data.horaHasta}`),
         }
       };
-
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudSeleccionada._id}/aceptar-y-proponer`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
