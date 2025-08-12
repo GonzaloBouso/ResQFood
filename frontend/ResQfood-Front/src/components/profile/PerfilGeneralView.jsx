@@ -4,7 +4,7 @@ import HistorialDonacion from '../layout/HistorialDonacion';
 import HistorialRecepcion from '../layout/HistorialRecepcion';
 import BotonPublicar from '../layout/BotonPublicar';
 
-// Componente interno para mostrar la información (ya era correcto)
+// Componente interno para mostrar la información detallada. No necesita cambios.
 const InfoUsuarioGeneralDinamico = ({ userData }) => {
   if (!userData) return <p className="text-center text-gray-600 py-4">Cargando información del usuario...</p>;
 
@@ -52,7 +52,8 @@ const InfoUsuarioGeneralDinamico = ({ userData }) => {
   );
 };
 
-// --- Componente principal de VISTA ---
+
+// --- Componente principal de VISTA (sin lógica de edición) ---
 const PerfilGeneralView = ({ userData }) => {
   const [activeTab, setActiveTab] = useState('info');
 
@@ -69,13 +70,14 @@ const PerfilGeneralView = ({ userData }) => {
     }
   };
 
-  // La guarda de "cargando" o "error" ya no vive aquí.
-  // Este componente confía en que el padre le pasará datos válidos.
   if (!userData) {
+    // Esta guarda es por si acaso, aunque el componente padre ya debería haber verificado.
     return <div className="text-center py-10">No hay datos de usuario para mostrar.</div>;
   }
 
   return (
+    // LA SOLUCIÓN: El contenedor principal ya no es 'relative'.
+    // El JSX se centra únicamente en mostrar la información.
     <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center sm:flex-row sm:items-start sm:gap-8 mb-10 p-6 bg-white rounded-xl shadow-lg">
         <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 border-4 border-white shadow-md">

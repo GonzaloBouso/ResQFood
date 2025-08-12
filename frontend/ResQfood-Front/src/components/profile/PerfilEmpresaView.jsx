@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HistorialDonacion from '../layout/HistorialDonacion';
 
-// --- Componente interno (sin cambios) ---
+// --- Componente interno para mostrar la información (sin cambios) ---
 const InfoUsuarioEmpresaDinamico = ({ userData }) => {
   if (!userData || !userData.localData) return <p className="text-center text-gray-600 py-4">La información de este local no está disponible.</p>;
   const estadisticas = userData.localData || userData.estadisticasGenerales;
@@ -48,7 +48,8 @@ const InfoUsuarioEmpresaDinamico = ({ userData }) => {
   );
 };
 
-// --- Componente principal de VISTA ---
+
+// --- Componente principal de VISTA (sin lógica de edición) ---
 const PerfilEmpresaView = ({ userData }) => {
   const [activeTab, setActiveTab] = useState('info');
 
