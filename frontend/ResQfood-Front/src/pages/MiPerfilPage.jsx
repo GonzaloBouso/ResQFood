@@ -7,7 +7,7 @@ import PerfilGeneralView from '../components/profile/PerfilGeneralView';
 import PerfilEmpresaView from '../components/profile/PerfilEmpresaView';
 
 // Importamos AMBOS modales
-import CambiarFotoPerfilModal from '../components/modals/CambiarFotoPerfilModal';
+import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModal';
 import EditarPerfilModal from '../components/profile/EditarPerfilModal';
 
 const MiPerfilPage = () => {
@@ -81,7 +81,7 @@ const MiPerfilPage = () => {
       {/* 3. Renderizado condicional de los modales */}
       
       {isPhotoModalOpen && (
-        <CambiarFotoPerfilModal 
+        <ChangePhotoProfileModal 
           onClose={() => setIsPhotoModalOpen(false)} 
           onUploadSuccess={handleUploadSuccess}
         />
