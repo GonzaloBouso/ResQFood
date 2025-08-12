@@ -1,22 +1,42 @@
 import React, { useContext, useState } from 'react';
+import { useUser } from '@clerk/clerk-react'; // <<< 1. Importa el hook useUser
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
+import { Camera, Edit2 } from 'lucide-react';
+
 import PerfilGeneralView from '../components/profile/PerfilGeneralView';
 import PerfilEmpresaView from '../components/profile/PerfilEmpresaView';
-import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModal';
-import EditarPerfilModal from '../components/profile/EditarPerfilModal';
-
+import ChangePhotoPerfileModal from '../components/layout/ChangePhotoProfileModal'
+import EditarPerfilModal from '../components/profile/EditarPerfilModal'
 const MiPerfilPage = () => {
+  const { user: clerkUser } = useUser(); // <<< 2. Obtiene la instancia del usuario de Clerk
   const { currentUserDataFromDB, isLoadingUserProfile, updateProfileState } = useContext(ProfileStatusContext);
+  
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
 
-  if (isLoadingUserProfile) return <div className="text-center py-20">Cargando tu perfil...</div>;
-  if (!currentUserDataFromDB) return <div className="text-center py-20">No se pudo cargar la información.</div>;
+  if (isLoadingUserProfile) {
+    return <div className="text-center py-20">Cargando tu perfil...</div>;
+  }
+  if (!currentUserDataFromDB) {
+    return <div className="text-center py-20">No se pudo cargar la información de tu perfil.</div>;
+  }
 
-  const handleUploadSuccess = (updatedUser) => {
+ 
+  const handleUploadSuccess = async (updatedUser) => {
     updateProfileState(updatedUser);
-    setIsPhotoModalOpen(false);
+    
+    if (clerkUser) {
+      try {
+        await clerkUser.reload();
+        console.log("Datos de usuario de Clerk recargados exitosamente.");
+      } catch (error) {
+        console.error("Error al recargar los datos de usuario de Clerk:", error);
+      }
+    }
+
+    setIsPhotoModalOpen(false); 
   };
+  
   const handleProfileUpdate = (updatedUser) => {
     updateProfileState(updatedUser);
     setIsInfoModalOpen(false);
@@ -27,22 +47,22 @@ const MiPerfilPage = () => {
     : PerfilGeneralView;
 
   return (
-    <div>
-
+    <div className="relative">
+      
       <ProfileComponentToRender 
-        userData={currentUserDataFromDB}
-        isEditable={true}
-        onEditPhotoClick={() => setIsPhotoModalOpen(true)}
-        onEditInfoClick={() => setIsInfoModalOpen(true)}
+          userData={currentUserDataFromDB}
+          isEditable={true}
+          onEditPhotoClick={() => setIsPhotoModalOpen(true)}
+          onEditInfoClick={() => setIsInfoModalOpen(true)}
       />
       
-      {/* El renderizado de los modales se queda aquí, en la página principal */}
       {isPhotoModalOpen && (
-        <ChangePhotoProfileModal 
+        <ChangePhotoPerfileModal 
           onClose={() => setIsPhotoModalOpen(false)} 
           onUploadSuccess={handleUploadSuccess}
         />
       )}
+
       {isInfoModalOpen && (
         <EditarPerfilModal 
           userData={currentUserDataFromDB}
