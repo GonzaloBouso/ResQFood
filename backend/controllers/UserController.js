@@ -184,14 +184,53 @@ export class UserController {
             res.status(500).json({ message: 'Error interno del servidor al actualizar el avatar.' });
         }
     }
-    static async getAllUsers(req, res) {
-        try {
-            // Busca todos los usuarios y los ordena por fecha de creación descendente
-            const users = await User.find({}).sort({ createdAt: -1 });
-            res.status(200).json({ users });
-        } catch (error) {
-            console.error("Error al obtener todos los usuarios:", error);
-            res.status(500).json({ message: "Error interno del servidor." });
+    
+   static async getAllUsers(req, res) {
+    try {
+        // --- 1. Paginación ---
+        const page = parseInt(req.query.page) || 1; // Página actual, por defecto 1
+        const limit = parseInt(req.query.limit) || 10; // Resultados por página, por defecto 10
+        const skip = (page - 1) * limit;
+
+        // --- 2. Filtros y Búsqueda ---
+        const query = {}; // Objeto de consulta inicial para MongoDB
+
+        // Filtro por rol
+        if (req.query.rol) {
+            query.rol = req.query.rol;
         }
+
+        // Búsqueda por nombre o email
+        if (req.query.search) {
+            const searchTerm = req.query.search;
+            // Usamos una expresión regular para una búsqueda "case-insensitive"
+            query.$or = [
+                { nombre: { $regex: searchTerm, $options: 'i' } },
+                { email: { $regex: searchTerm, $options: 'i' } }
+            ];
+        }
+        
+        // --- 3. Ejecutar la Consulta ---
+        // Primero, contamos el número total de documentos que coinciden con la consulta (para la paginación)
+        const totalUsers = await User.countDocuments(query);
+        
+        // Luego, buscamos los usuarios con la paginación aplicada
+        const users = await User.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        // --- 4. Enviar la Respuesta ---
+        res.status(200).json({
+            users,
+            currentPage: page,
+            totalPages: Math.ceil(totalUsers / limit),
+            totalUsers,
+        });
+
+    } catch (error) {
+        console.error("Error al obtener todos los usuarios:", error);
+        res.status(500).json({ message: "Error interno del servidor." });
     }
+}
 }

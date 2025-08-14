@@ -18,8 +18,7 @@ const Header = () => {
     activeSearchLocation,
     setActiveSearchLocation 
   } = useContext(ProfileStatusContext) || {};
-  
-  console.log("Rol actual en el Header:", currentUserRole);
+
 
   const profilePath = "/mi-perfil";
   const misDonacionesPath = "/mis-donaciones";
