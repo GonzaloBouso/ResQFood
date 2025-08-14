@@ -3,56 +3,94 @@ import { useAuth } from '@clerk/clerk-react';
 import { Search, Edit } from 'lucide-react';
 import API_BASE_URL from '../api/config';
 
-
 const UserTable = ({ users, onEditUser }) => {
     if (!users || users.length === 0) {
         return <p className="text-center text-gray-500 py-10">No se encontraron usuarios con los filtros actuales.</p>;
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="min-w-full bg-white text-sm">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="text-left font-semibold px-4 py-3 text-gray-600">Nombre</th>
-                        <th className="text-left font-semibold px-4 py-3 text-gray-600">Email</th>
-                        <th className="text-left font-semibold px-4 py-3 text-gray-600">Rol</th>
-                        <th className="text-left font-semibold px-4 py-3 text-gray-600">Estado</th>
-                        <th className="text-left font-semibold px-4 py-3 text-gray-600">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                    {users.map(user => (
-                        <tr key={user._id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 whitespace-nowrap">{user.nombre || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap">{user.email}</td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                                <span className={`px-2 py-1 text-xs font-bold rounded-full ${
+        <div>
+            {/* --- Vista de Tabla para Escritorio (Visible en 'md' y superior) --- */}
+            <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full bg-white text-sm">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="text-left font-semibold px-4 py-3 text-gray-600">Nombre</th>
+                            <th className="text-left font-semibold px-4 py-3 text-gray-600">Email</th>
+                            <th className="text-left font-semibold px-4 py-3 text-gray-600">Rol</th>
+                            <th className="text-left font-semibold px-4 py-3 text-gray-600">Estado</th>
+                            <th className="text-left font-semibold px-4 py-3 text-gray-600">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                        {users.map(user => (
+                            <tr key={user._id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 whitespace-nowrap">{user.nombre || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">{user.email}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                    <span className={`px-2 py-1 text-xs font-bold rounded-full ${
+                                        user.rol === 'ADMIN' ? 'bg-red-100 text-red-800' : 
+                                        user.rol === 'LOCAL' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                    }`}>
+                                        {user.rol || 'Incompleto'}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                    <span className={`font-medium ${user.activo ? 'text-green-600' : 'text-red-600'}`}>
+                                        {user.activo ? 'Activo' : 'Suspendido'}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                    <button onClick={() => onEditUser(user)} className="text-primary hover:text-brandPrimaryDarker font-medium flex items-center gap-1">
+                                        <Edit size={14} /> Editar
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* --- Vista de Tarjetas para Móvil (Oculto en 'md' y superior) --- */}
+            <div className="md:hidden space-y-4">
+                {users.map(user => (
+                    <div key={user._id} className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="font-bold text-base text-gray-800">{user.nombre || '-'}</p>
+                                <p className="text-xs text-gray-500">{user.email}</p>
+                            </div>
+                            <button onClick={() => onEditUser(user)} className="text-primary hover:text-brandPrimaryDarker font-medium flex items-center gap-1 text-sm">
+                                <Edit size={14} /> Editar
+                            </button>
+                        </div>
+                        <div className="border-t my-3"></div>
+                        <div className="flex justify-between items-center text-xs">
+                            <div>
+                                <span className="font-semibold text-gray-600">Rol: </span>
+                                <span className={`px-2 py-1 font-bold rounded-full ${
                                     user.rol === 'ADMIN' ? 'bg-red-100 text-red-800' : 
                                     user.rol === 'LOCAL' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                                 }`}>
                                     {user.rol || 'Incompleto'}
                                 </span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
+                            </div>
+                            <div>
+                                <span className="font-semibold text-gray-600">Estado: </span>
                                 <span className={`font-medium ${user.activo ? 'text-green-600' : 'text-red-600'}`}>
                                     {user.activo ? 'Activo' : 'Suspendido'}
                                 </span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                                <button onClick={() => onEditUser(user)} className="text-primary hover:text-brandPrimaryDarker font-medium flex items-center gap-1">
-                                    <Edit size={14} /> Editar
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
 
-// --- Sub-componente para la Paginación ---
+
+
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
