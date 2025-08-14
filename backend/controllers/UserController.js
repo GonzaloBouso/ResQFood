@@ -184,5 +184,14 @@ export class UserController {
             res.status(500).json({ message: 'Error interno del servidor al actualizar el avatar.' });
         }
     }
-    
+    static async getAllUsers(req, res) {
+        try {
+            // Busca todos los usuarios y los ordena por fecha de creación descendente
+            const users = await User.find({}).sort({ createdAt: -1 });
+            res.status(200).json({ users });
+        } catch (error) {
+            console.error("Error al obtener todos los usuarios:", error);
+            res.status(500).json({ message: "Error interno del servidor." });
+        }
+    }
 }

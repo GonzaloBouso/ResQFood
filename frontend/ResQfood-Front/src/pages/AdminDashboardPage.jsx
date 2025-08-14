@@ -1,37 +1,90 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/clerk-react';
+import API_BASE_URL from '../api/config';
+
+// Componente para la tabla de usuarios (lo añadimos aquí mismo por simplicidad)
+const UserTable = ({ users }) => (
+  <div className="overflow-x-auto">
+    <table className="min-w-full bg-white text-sm">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="text-left font-semibold px-4 py-2">Nombre</th>
+          <th className="text-left font-semibold px-4 py-2">Email</th>
+          <th className="text-left font-semibold px-4 py-2">Rol</th>
+          <th className="text-left font-semibold px-4 py-2">Estado</th>
+          <th className="text-left font-semibold px-4 py-2">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {users.map(user => (
+          <tr key={user._id} className="border-b hover:bg-gray-50">
+            <td className="px-4 py-2">{user.nombre || '-'}</td>
+            <td className="px-4 py-2">{user.email}</td>
+            <td className="px-4 py-2">
+              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                user.rol === 'ADMIN' ? 'bg-red-100 text-red-700' : 
+                user.rol === 'LOCAL' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+              }`}>
+                {user.rol || 'Incompleto'}
+              </span>
+            </td>
+            <td className="px-4 py-2">
+              <span className={user.activo ? 'text-green-600' : 'text-red-600'}>
+                {user.activo ? 'Activo' : 'Suspendido'}
+              </span>
+            </td>
+            <td className="px-4 py-2">
+              <button className="text-blue-500 hover:underline">Editar</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
 const AdminDashboardPage = () => {
+  const { getToken } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const token = await getToken();
+        // Llamamos al nuevo endpoint GET /api/usuario
+        const response = await fetch(`${API_BASE_URL}/api/usuario`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.message || 'Error al cargar los usuarios.');
+        }
+        const data = await response.json();
+        setUsers(data.users);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsers();
+  }, [getToken]);
+
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-4xl font-bold mb-4">Panel de Administrador</h1>
-      <p className="text-gray-600 mb-8">
-        Bienvenido al área de gestión de ResQFood.
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Ejemplo de tarjetas de estadísticas que podemos implementar después */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="font-semibold text-lg">Usuarios Registrados</h3>
-          <p className="text-3xl font-bold mt-2">123</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="font-semibold text-lg">Donaciones Activas</h3>
-          <p className="text-3xl font-bold mt-2">45</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="font-semibold text-lg">Reportes Pendientes</h3>
-          <p className="text-3xl font-bold mt-2 text-red-500">8</p>
-        </div>
-      </div>
+      <h1 className="text-4xl font-bold mb-8">Panel de Administrador</h1>
       
-      {/* Aquí irían las tablas de gestión */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Próximamente:</h2>
-        <ul className="list-disc list-inside bg-white p-6 rounded-lg shadow">
-          <li>Tabla de gestión de usuarios (suspender, cambiar rol)</li>
-          <li>Tabla de gestión de reportes</li>
-          <li>Visor de historial de cambios (Bitácora)</li>
-        </ul>
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h2 className="text-2xl font-semibold mb-4">Gestión de Usuarios ({users.length})</h2>
+        
+        {isLoading && <p className="text-center py-4">Cargando usuarios...</p>}
+        {error && <p className="text-center py-4 text-red-500"><strong>Error:</strong> {error}</p>}
+        
+        {!isLoading && !error && <UserTable users={users} />}
       </div>
     </div>
   );

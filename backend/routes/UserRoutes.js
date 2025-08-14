@@ -2,8 +2,12 @@ import express from 'express';
 import { UserController } from '../controllers/UserController.js';
 import { requireAuth } from '../middlewares/autMiddleware.js';
 import { uploadAvatar } from '../middlewares/uploadMiddleware.js';
+import { requireAdmin } from '../middlewares/auth/requireAdmin.js';
+
 
 const router = express.Router();
+
+router.get('/', requireAuth, requireAdmin, UserController.getAllUsers);
 
 // Obtener el perfil del usuario actual (GET /me)
 router.get('/me', requireAuth, UserController.getCurrentUserProfile);
