@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
 
+// --- Tus componentes y páginas ---
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
 import Footer from './components/layout/Footer';
@@ -22,15 +23,17 @@ import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
-import AdminRoute from './components/auth/AdminRoute.jsx';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
+// Ya no necesitamos AdminRoute.jsx, por lo que la importación se elimina.
 
+// --- Contexto y Configuración ---
 import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
+// --- Componente para gestionar la ruta raíz (sin cambios) ---
 const RootRedirector = () => {
   const { isSignedIn, isLoaded } = useAuth();
   if (!isLoaded) { return <div className="text-center py-20">Cargando...</div>; }
@@ -38,6 +41,7 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
+// --- Hook personalizado para gestionar el estado global (sin cambios) ---
 const useUserProfileAndLocation = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
@@ -96,17 +100,26 @@ const useUserProfileAndLocation = () => {
     };
 };
 
-const ProtectedLayout = () => {
-    const { isLoadingUserProfile, isComplete, updateProfileState } = useContext(ProfileStatusContext);
+//  único "Layout Guardián" que maneja todos los roles
+const ProtectedLayout = ({ adminOnly = false }) => {
+    const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
 
+    // 1. Siempre esperamos a que el perfil se cargue.
     if (isLoadingUserProfile) {
         return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
     }
 
+    // 2. Si el perfil no está completo, SIEMPRE se muestra la página para completarlo.
     if (!isComplete) {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
     
+    // 3. Si esta ruta requiere ser admin Y el usuario NO es admin, se le redirige.
+    if (adminOnly && currentUserRole !== 'ADMIN') {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    // 4. Si todas las comprobaciones pasan, se muestra el contenido solicitado.
     return <Outlet />;
 };
 
@@ -116,7 +129,7 @@ const AppContent = () => {
   const contextValueForProvider = useMemo(() => ({
     isLoadingUserProfile: appStateHook.isLoadingUserProfile,
     isComplete: appStateHook.isComplete,
-    currentUserRole: appStateHook.userRole,
+    currentUserRole: appStateHook.currentUserRole,
     currentUserDataFromDB: appStateHook.userDataFromDB,
     currentClerkUserId: appStateHook.currentClerkUserId,
     updateProfileState: appStateHook.updateProfileState,
@@ -137,23 +150,28 @@ const AppContent = () => {
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             <ClerkLoaded>
                 <Routes>
+                    {/* --- Rutas Públicas y de Autenticación --- */}
                     <Route path="/" element={<RootRedirector />} />
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
+                    {/* La página de completar perfil ahora es manejada por ProtectedLayout */}
 
+                    {/* --- Grupo de Rutas para USUARIOS NORMALES --- */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
-                       
                         <Route path="/mis-donaciones" element={<MyDonationsPage />} />
+                        <Route path="/mi-perfil" element={<MiPerfilPage />} />
+                        <Route path="/perfil/:id" element={<UserProfilePage />} />
+                    </Route>
+                    
+                    {/* --- Grupo de Rutas para ADMINS --- */}
+                    <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
+                        <Route path="/admin" element={<AdminDashboardPage />} />
+                        {/* Aquí puedes añadir más rutas de admin en el futuro */}
                     </Route>
 
-                    <Route path="/mi-perfil" element={<SignedIn><MiPerfilPage /></SignedIn>} />
-                    <Route path="/perfil/:id" element={<SignedIn><UserProfilePage /></SignedIn>} />
-
-                    <Route path="/admin" element={<SignedIn><AdminRoute><AdminDashboardPage /></AdminRoute></SignedIn>} />
-
-
+                    {/* --- Rutas Públicas de Contenido Estático --- */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
@@ -161,8 +179,6 @@ const AppContent = () => {
                     <Route path="/sobreNosotros" element={<SobreNosotros />} />
                     <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
                     <Route path="/formulario-voluntario" element={<FormularioVoluntario />} />
-                    
-
                 </Routes>
             </ClerkLoaded>
             </main>
