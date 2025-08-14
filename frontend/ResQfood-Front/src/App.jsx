@@ -22,6 +22,7 @@ import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
+import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 
 import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
@@ -156,6 +157,12 @@ const AppContent = () => {
                     <Route path="/sobreNosotros" element={<SobreNosotros />} />
                     <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
                     <Route path="/formulario-voluntario" element={<FormularioVoluntario />} />
+
+                     <Route element={<SignedIn><AdminRoute /></SignedIn>}>
+                         <Route path="/admin" element={<AdminDashboardPage />} />
+                         {/* En el futuro, aquí podrías añadir más rutas de admin, ej: /admin/users, /admin/reports */}
+                     </Route>
+
                 </Routes>
             </ClerkLoaded>
             </main>
