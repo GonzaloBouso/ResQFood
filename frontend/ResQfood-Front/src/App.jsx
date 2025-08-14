@@ -40,7 +40,9 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
-// --- Hook personalizado para gestionar el estado global (sin cambios) ---
+// ==================================================================
+// LA SOLUCIÓN FINAL ESTÁ AQUÍ
+// ==================================================================
 const useUserProfileAndLocation = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
@@ -88,8 +90,13 @@ const useUserProfileAndLocation = () => {
         fetchUserProfileFunction();
     }, [isAuthLoaded, isSignedIn]);
 
+    // 1. Devolvemos un objeto "plano" con todas las propiedades,
+    //    extrayéndolas del estado 'profileStatus'.
     return { 
-        ...profileStatus, 
+        isLoadingUserProfile: profileStatus.isLoadingUserProfile,
+        isComplete: profileStatus.isComplete,
+        userRole: profileStatus.userRole,
+        userDataFromDB: profileStatus.userDataFromDB,
         updateProfileState, 
         currentClerkUserId: userId,
         activeSearchLocation,
@@ -99,26 +106,22 @@ const useUserProfileAndLocation = () => {
     };
 };
 
-//  único "Layout Guardián" que maneja todos los roles
+// --- Layout Guardián (ahora usa 'currentUserRole') ---
 const ProtectedLayout = ({ adminOnly = false }) => {
     const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
 
-    // 1. Siempre esperamos a que el perfil se cargue.
     if (isLoadingUserProfile) {
         return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
     }
 
-    // 2. Si el perfil no está completo, SIEMPRE se muestra la página para completarlo.
     if (!isComplete) {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
     
-    // 3. Si esta ruta requiere ser admin Y el usuario NO es admin, se le redirige.
     if (adminOnly && currentUserRole !== 'ADMIN') {
         return <Navigate to="/dashboard" replace />;
     }
 
-    // 4. Si todas las comprobaciones pasan, se muestra el contenido solicitado.
     return <Outlet />;
 };
 
@@ -126,10 +129,12 @@ const AppContent = () => {
   const appStateHook = useUserProfileAndLocation();
   
   const contextValueForProvider = useMemo(() => ({
-    isLoadingUserProfile: appStateHook.profileStatus.isLoadingUserProfile,
-    isComplete: appStateHook.profileStatus.isComplete,
-    currentUserRole: appStateHook.profileStatus.userRole,
-    currentUserDataFromDB: appStateHook.profileStatus.userDataFromDB,
+    // 2. Ahora podemos acceder a las propiedades directamente desde el hook,
+    //    lo que resuelve el error 'undefined'.
+    isLoadingUserProfile: appStateHook.isLoadingUserProfile,
+    isComplete: appStateHook.isComplete,
+    currentUserRole: appStateHook.userRole,
+    currentUserDataFromDB: appStateHook.userDataFromDB,
     currentClerkUserId: appStateHook.currentClerkUserId,
     updateProfileState: appStateHook.updateProfileState,
     activeSearchLocation: appStateHook.activeSearchLocation,
@@ -149,13 +154,11 @@ const AppContent = () => {
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             <ClerkLoaded>
                 <Routes>
-                    {/* --- Rutas Públicas y de Autenticación --- */}
                     <Route path="/" element={<RootRedirector />} />
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
-                    {/* La página de completar perfil ahora es manejada por ProtectedLayout */}
-
-                    {/* --- Grupo de Rutas para USUARIOS NORMALES --- */}
+                    
+                    {/* Grupo de Rutas para USUARIOS NORMALES */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
@@ -164,13 +167,12 @@ const AppContent = () => {
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
                     </Route>
                     
-                    {/* --- Grupo de Rutas para ADMINS --- */}
+                    {/* Grupo de Rutas para ADMINS */}
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
-                        {/* Aquí puedes añadir más rutas de admin en el futuro */}
                     </Route>
 
-                    {/* --- Rutas Públicas de Contenido Estático --- */}
+                    {/* Rutas Públicas de Contenido Estático */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
