@@ -151,6 +151,9 @@ const AppContent = () => {
                     <Route path="/mi-perfil" element={<SignedIn><MiPerfilPage /></SignedIn>} />
                     <Route path="/perfil/:id" element={<SignedIn><UserProfilePage /></SignedIn>} />
 
+                    <Route path="/admin" element={<SignedIn><AdminRoute><AdminDashboardPage /></AdminRoute></SignedIn>} />
+
+
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
@@ -158,11 +161,7 @@ const AppContent = () => {
                     <Route path="/sobreNosotros" element={<SobreNosotros />} />
                     <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
                     <Route path="/formulario-voluntario" element={<FormularioVoluntario />} />
-
-                     <Route element={<SignedIn><AdminRoute /></SignedIn>}>
-                         <Route path="/admin" element={<AdminDashboardPage />} />
-                         {/* En el futuro, aquí podrías añadir más rutas de admin, ej: /admin/users, /admin/reports */}
-                     </Route>
+                    
 
                 </Routes>
             </ClerkLoaded>
