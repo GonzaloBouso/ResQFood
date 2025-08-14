@@ -1,10 +1,7 @@
 import React from 'react';
-import DropdownSolicitudes from './DropdownSolicitudes';
-import SolicitudAceptada from './SolicitudAceptada';
 
-const CardDonacion = ({ donacion, showManagement = false }) => {
+const CardDonacion = ({ donacion }) => {
   const {
-    _id,
     titulo,
     descripcion,
     imagenesUrl = [],
@@ -13,13 +10,11 @@ const CardDonacion = ({ donacion, showManagement = false }) => {
     ubicacionRetiro,
     fechaVencimientoProducto,
     fechaElaboracion,
-    solicitudes = [],
-    solicitudAceptada = null,
   } = donacion || {};
 
   if (!donacion) return null;
 
-  const img = imagenesUrl[0] || '/placeholder.png';
+  const img = imagenesUrl[0] || 'https://via.placeholder.com/150?text=Sin+Imagen';
   const dir = ubicacionRetiro?.direccion || '';
   const ciudadProv = [ubicacionRetiro?.ciudad, ubicacionRetiro?.provincia]
     .filter(Boolean)
@@ -51,19 +46,6 @@ const CardDonacion = ({ donacion, showManagement = false }) => {
           </button>
         </div>
       </div>
-      
-      {showManagement && (
-        <div className="p-4 border-t border-gray-100 space-y-2">
-          <DropdownSolicitudes 
-            solicitudes={solicitudes} 
-            solicitudAceptada={solicitudAceptada} 
-            donacionId={_id} 
-          />
-          {solicitudAceptada && (
-            <SolicitudAceptada solicitud={solicitudAceptada} />
-          )}
-        </div>
-      )}
     </article>
   );
 };
