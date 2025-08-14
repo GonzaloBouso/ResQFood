@@ -184,7 +184,7 @@ export class UserController {
             res.status(500).json({ message: 'Error interno del servidor al actualizar el avatar.' });
         }
     }
-    
+
    static async getAllUsers(req, res) {
     try {
         // --- 1. Paginación ---
@@ -233,4 +233,38 @@ export class UserController {
         res.status(500).json({ message: "Error interno del servidor." });
     }
 }
+ static async manageUser(req, res) {
+        try {
+            const { id } = req.params; // ID del usuario a modificar
+            const { rol, activo } = req.body; // Nuevos datos
+
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                return res.status(400).json({ message: "ID de usuario inválido." });
+            }
+
+            const userToManage = await User.findById(id);
+            if (!userToManage) {
+                return res.status(404).json({ message: "Usuario no encontrado." });
+            }
+
+            // Aplicamos los cambios si se proporcionaron
+            if (rol !== undefined) {
+                userToManage.rol = rol;
+            }
+            if (activo !== undefined) {
+                userToManage.activo = activo;
+            }
+
+            await userToManage.save(); // El hook pre('save') se ejecutará si el rol cambia
+
+            res.status(200).json({ 
+                message: 'Usuario actualizado por el administrador.', 
+                user: userToManage.toJSON() 
+            });
+
+        } catch (error) {
+            console.error("Error en manageUser:", error);
+            res.status(500).json({ message: "Error interno del servidor al gestionar el usuario." });
+        }
+    }
 }

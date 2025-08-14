@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Search, Edit } from 'lucide-react';
 import API_BASE_URL from '../api/config';
+import ManageUserModal from '../components/modals/ManageUserModal'; // Asegúrate de que esta importación sea correcta
 
+// --- Sub-componente para la Tabla de Usuarios (Ahora Responsivo) ---
 const UserTable = ({ users, onEditUser }) => {
     if (!users || users.length === 0) {
         return <p className="text-center text-gray-500 py-10">No se encontraron usuarios con los filtros actuales.</p>;
@@ -60,7 +62,7 @@ const UserTable = ({ users, onEditUser }) => {
                                 <p className="font-bold text-base text-gray-800">{user.nombre || '-'}</p>
                                 <p className="text-xs text-gray-500">{user.email}</p>
                             </div>
-                            <button onClick={() => onEditUser(user)} className="text-primary hover:text-brandPrimaryDarker font-medium flex items-center gap-1 text-sm">
+                            <button onClick={() => onEditUser(user)} className="text-primary hover:text-brandPrimaryDarker font-medium flex items-center gap-1 text-sm p-1 -mt-1 -mr-1">
                                 <Edit size={14} /> Editar
                             </button>
                         </div>
@@ -89,8 +91,7 @@ const UserTable = ({ users, onEditUser }) => {
     );
 };
 
-
-
+// --- Sub-componente para la Paginación ---
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -125,6 +126,9 @@ const AdminDashboardPage = () => {
     const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalUsers: 0 });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    // <<< 1. NUEVO ESTADO: para guardar el usuario que se está editando y mostrar el modal >>>
+    const [editingUser, setEditingUser] = useState(null);
 
     // Estados para los filtros y la paginación
     const [filters, setFilters] = useState({ rol: '', search: '' });
@@ -162,18 +166,22 @@ const AdminDashboardPage = () => {
 
     // useEffect para llamar a fetchUsers cuando cambie la página o los filtros
     useEffect(() => {
-        // Usamos un timeout para no hacer una llamada a la API en cada tecla presionada en la búsqueda
         const debounceTimer = setTimeout(() => {
             fetchUsers(page, filters);
-        }, 300); // Espera 300ms después de que el usuario deja de escribir
-
-        return () => clearTimeout(debounceTimer); // Limpia el timeout si el componente se desmonta
+        }, 300);
+        return () => clearTimeout(debounceTimer);
     }, [page, filters, fetchUsers]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setPage(1); // Resetea a la página 1 cada vez que un filtro cambia
+        setPage(1);
         setFilters(prev => ({ ...prev, [name]: value }));
+    };
+    
+    // <<< 2. NUEVA FUNCIÓN: Se ejecuta cuando el modal guarda los cambios con éxito >>>
+    const handleUpdateAndRefresh = () => {
+        setEditingUser(null); // Cierra el modal
+        fetchUsers(page, filters); // Vuelve a cargar los usuarios para ver los cambios
     };
 
     return (
@@ -207,13 +215,24 @@ const AdminDashboardPage = () => {
                     ? <p className="text-center py-10">Cargando usuarios...</p>
                     : error 
                         ? <p className="text-center py-10 text-red-500"><strong>Error:</strong> {error}</p>
-                        : <UserTable users={users} onEditUser={(user) => console.log("Abrir modal para editar:", user)} />
+                        // <<< 3. Conectamos onEditUser para que establezca el usuario a editar >>>
+                        : <UserTable users={users} onEditUser={setEditingUser} />
                 }
                 
                 {!isLoading && !error && (
                     <Pagination currentPage={page} totalPages={pagination.totalPages} onPageChange={setPage} />
                 )}
             </div>
+
+            {/* <<< 4. RENDERIZADO CONDICIONAL DEL MODAL >>> */}
+            {/* Si 'editingUser' no es null, se muestra el modal */}
+            {editingUser && (
+                <ManageUserModal 
+                    user={editingUser}
+                    onClose={() => setEditingUser(null)}
+                    onUpdate={handleUpdateAndRefresh}
+                />
+            )}
         </div>
     );
 };

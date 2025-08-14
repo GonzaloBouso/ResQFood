@@ -15,6 +15,10 @@ router.get('/me', requireAuth, UserController.getCurrentUserProfile);
 // Actualizar el perfil del usuario actual (PUT /me)
 router.put('/me', requireAuth, UserController.updateCurrentUserProfile);
 
+// Usado por el Administrador
+router.put('/:id/manage', requireAuth, requireAdmin, UserController.manageUser);
+
+
 router.post('/me/avatar', requireAuth, uploadAvatar, UserController.updateAvatar);
 
 // --- LA SOLUCIÓN: Nueva ruta para que el frontend cree el perfil ---
