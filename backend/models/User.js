@@ -107,14 +107,7 @@ userSchema.pre('save', function(next) {
                 puedeGestionarRoles: true,
                 puedeAccederEstadisticasGlobales: true,
             };
-        } else if (this.rol === 'MODERADOR') {
-            this.permisos = {
-                puedeSuspenderUsuarios: false,
-                puedeEliminarPublicaciones: true,
-                puedeGestionarReportes: true,
-                puedeGestionarRoles: false,
-                puedeAccederEstadisticasGlobales: false,
-            };
+
         } else {
             this.permisos = null;
         }
