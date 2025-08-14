@@ -24,7 +24,6 @@ import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
-// Ya no necesitamos AdminRoute.jsx, por lo que la importación se elimina.
 
 // --- Contexto y Configuración ---
 import { ProfileStatusContext } from './context/ProfileStatusContext';

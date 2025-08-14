@@ -19,6 +19,8 @@ const Header = () => {
     setActiveSearchLocation 
   } = useContext(ProfileStatusContext) || {};
   
+  console.log("Rol actual en el Header:", currentUserRole);
+
   const profilePath = "/mi-perfil";
   const misDonacionesPath = "/mis-donaciones";
   const authButtonBaseClasses = "text-xs sm:text-sm font-medium py-1.5 px-2 sm:px-3 rounded-md transition-colors duration-150 ease-in-out whitespace-nowrap";
