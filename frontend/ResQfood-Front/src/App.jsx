@@ -22,6 +22,7 @@ import PreguntasFrecuentes from './pages/PreguntasFrecuentes';
 import SobreNosotros from './pages/SobreNosotros';
 import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
+import AdminRoute from './components/auth/AdminRoute.jsx';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 
 import { ProfileStatusContext } from './context/ProfileStatusContext';

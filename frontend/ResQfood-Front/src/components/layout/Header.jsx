@@ -10,10 +10,11 @@ const Header = () => {
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
-  
+
   const { 
     isLoadingUserProfile, 
     isComplete, 
+    currentUserRole, 
     activeSearchLocation,
     setActiveSearchLocation 
   } = useContext(ProfileStatusContext) || {};
@@ -123,6 +124,23 @@ const Header = () => {
                 {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">
+                      {/* ================================================================== */}
+                      {/* LA SOLUCIÓN: */}
+                      {/* 2. Este bloque Link solo se renderiza si el rol del usuario es 'ADMIN'. */}
+                      {/* ================================================================== */}
+                      {currentUserRole === 'ADMIN' && (
+                        <>
+                          <Link
+                            to="/admin"
+                            className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left font-semibold"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            Panel de Admin
+                          </Link>
+                          <div className="border-t border-gray-100 my-1"></div> {/* Separador visual */}
+                        </>
+                      )}
+                      
                       <Link
                         to={profilePath}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
