@@ -126,10 +126,10 @@ const AppContent = () => {
   const appStateHook = useUserProfileAndLocation();
   
   const contextValueForProvider = useMemo(() => ({
-    isLoadingUserProfile: appStateHook.isLoadingUserProfile,
-    isComplete: appStateHook.isComplete,
-    currentUserRole: appStateHook.currentUserRole,
-    currentUserDataFromDB: appStateHook.userDataFromDB,
+    isLoadingUserProfile: appStateHook.profileStatus.isLoadingUserProfile,
+    isComplete: appStateHook.profileStatus.isComplete,
+    currentUserRole: appStateHook.profileStatus.userRole,
+    currentUserDataFromDB: appStateHook.profileStatus.userDataFromDB,
     currentClerkUserId: appStateHook.currentClerkUserId,
     updateProfileState: appStateHook.updateProfileState,
     activeSearchLocation: appStateHook.activeSearchLocation,
