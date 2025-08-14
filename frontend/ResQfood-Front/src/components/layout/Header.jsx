@@ -18,9 +18,7 @@ const Header = () => {
     setActiveSearchLocation 
   } = useContext(ProfileStatusContext) || {};
   
-  // ==================================================================
-  // LA SOLUCIÓN: Eliminamos la lógica de la variable `profilePath`
-  // ==================================================================
+  const profilePath = "/mi-perfil";
   const misDonacionesPath = "/mis-donaciones";
   const authButtonBaseClasses = "text-xs sm:text-sm font-medium py-1.5 px-2 sm:px-3 rounded-md transition-colors duration-150 ease-in-out whitespace-nowrap";
   
@@ -125,17 +123,13 @@ const Header = () => {
                 {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">
-                      {/* ================================================================== */}
-                      {/* LA SOLUCIÓN: El enlace ahora apunta directamente a "/perfil" */}
-                      {/* ================================================================== */}
                       <Link
-                        to="/mi-perfil"
+                        to={profilePath}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                         onClick={() => setIsProfileMenuOpen(false)}
                       >
                         Ir a mi perfil
                       </Link>
-                      
                       <Link
                         to={misDonacionesPath}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"

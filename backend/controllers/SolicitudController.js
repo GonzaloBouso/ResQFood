@@ -182,7 +182,7 @@ export class SolicitudController {
             const solicitudes = await Solicitud.find({ donanteId: donante._id })
                 .populate({
                     path: 'donacionId',
-                    select: 'titulo imagenesUrl _id' 
+                    select: 'titulo imagenesUrl _id'
                 })
                 .populate('solicitanteId', 'nombre fotoDePerfilUrl')
                 .sort({ createdAt: -1 });
