@@ -174,24 +174,37 @@ export class SolicitudController {
         }
     }
 
-    static async getSolicitudesRecibidas(req, res) {
-        try {
-            const donanteClerkId = req.auth?.userId;
-            const donante = await User.findOne({ clerkUserId: donanteClerkId });
-            if (!donante) return res.status(404).json({ message: "Usuario no encontrado." });
-            const solicitudes = await Solicitud.find({ donanteId: donante._id })
-                .populate({
-                    path: 'donacionId',
-                    select: 'titulo imagenesUrl _id'
-                })
-                .populate('solicitanteId', 'nombre fotoDePerfilUrl')
-                .sort({ createdAt: -1 });
-            res.status(200).json({ solicitudes });
-        } catch (error) {
-            console.error('Error al obtener solicitudes recibidas:', error);
-            res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
+
+
+   static async getSolicitudesRecibidas(req, res) {
+    try {
+        const donanteClerkId = req.auth?.userId;
+        const donante = await User.findOne({ clerkUserId: donanteClerkId });
+        if (!donante) {
+            return res.status(404).json({ message: "Usuario donante no encontrado." });
         }
+      
+        const misDonacionesIds = await Donacion.find({ donanteId: donante._id }).distinct('_id');
+
+       
+        const solicitudes = await Solicitud.find({
+            donacionId: { $in: misDonacionesIds }
+        })
+        .populate({
+            path: 'donacionId',
+            select: 'titulo imagenesUrl _id'
+        })
+        .populate('solicitanteId', 'nombre fotoDePerfilUrl')
+        .sort({ createdAt: -1 });
+
+        res.status(200).json({ solicitudes });
+    } catch (error) {
+        console.error('Error al obtener solicitudes recibidas:', error);
+        res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
     }
+}
+
+
 
     static async cancelarSolicitud(req, res) {
         try {
