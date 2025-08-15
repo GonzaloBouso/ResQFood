@@ -11,7 +11,7 @@ const SolicitudAceptada = ({ solicitud }) => {
   const haySolicitud = 1;
 
   const handleVerificar = () => {
-    
+    // Lógica futura para conectar al backend
     alert('Funcionalidad de completar entrega en desarrollo.');
   };
 
@@ -29,7 +29,6 @@ const SolicitudAceptada = ({ solicitud }) => {
         <div className="px-4 pb-4 pt-3 border-t text-sm space-y-4">
           <div>
             <p className="font-semibold">Usuario:</p>
-            
             <p>{solicitud.solicitanteId?.nombre || 'Usuario desconocido'}</p>
           </div>
           <div>

@@ -118,7 +118,7 @@ export class SolicitudController {
         }
     }
 
-    static async rechazarSolicitud(req, res){ 
+    static async rechazarSolicitud(req, res){
         const {solicitudId} = req.params;
         const {motivoRechazo} = req.body;
         const donanteClerkId = req.auth?.userId;
