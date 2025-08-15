@@ -3,19 +3,19 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import API_BASE_URL from '../api/config';
-import CardDonacion from '../components/donaciones/CardDonacion';
+import ListaDonaciones from '../components/donaciones/ListaDonaciones';
 
 const MyDonationsPage = () => {
   const { getToken } = useAuth();
-  const { currentUserDataFromDB, isLoadingUserProfile } = useContext(ProfileStatusContext);
+  const { isLoadingUserProfile } = useContext(ProfileStatusContext);
 
-  const [donacionesConSolicitudes, setDonacionesConSolicitudes] = useState([]);
+  const [donaciones, setDonaciones] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (isLoadingUserProfile || !currentUserDataFromDB?._id) {
-      if (!isLoadingUserProfile) setIsLoading(false);
+    
+    if (isLoadingUserProfile) {
       return;
     }
 
@@ -24,45 +24,18 @@ const MyDonationsPage = () => {
       setError(null);
       try {
         const token = await getToken();
-        const userId = currentUserDataFromDB._id;
         
-        const [donacionesRes, solicitudesRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/donacion/usuario/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/api/solicitud/recibidas`, { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
-
-        if (!donacionesRes.ok) throw new Error('No se pudieron cargar tus donaciones.');
-        if (!solicitudesRes.ok) throw new Error('No se pudieron cargar las solicitudes.');
-
-        const donacionesData = await donacionesRes.json();
-        const solicitudesData = await solicitudesRes.json();
-        
-        const donaciones = donacionesData.donaciones || [];
-        const solicitudes = solicitudesData.solicitudes || [];
-        
-        console.log("Donaciones recibidas del backend:", donaciones);
-        console.log("Solicitudes recibidas del backend:", solicitudes);
-
-        const donacionesConDatos = donaciones.map(donacion => {
-            
-            const solicitudesParaEstaDonacion = solicitudes.filter(s => s.donacionId?._id === donacion._id);
-
-
-            if (solicitudesParaEstaDonacion.length > 0) {
-                console.log(`Para la donación "${donacion.titulo}", se encontraron ${solicitudesParaEstaDonacion.length} solicitudes.`);
-            }
-            
-
-            const solicitudAceptada = solicitudesParaEstaDonacion.find(s => s.estadoSolicitud === 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO');
-            
-            return {
-                ...donacion,
-                solicitudes: solicitudesParaEstaDonacion.filter(s => s.estadoSolicitud === 'PENDIENTE_APROBACION'),
-                solicitudAceptada: solicitudAceptada || null,
-            };
+       
+        const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones-activas`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        setDonacionesConSolicitudes(donacionesConDatos);
+        if (!response.ok) {
+          throw new Error('No se pudieron cargar tus donaciones.');
+        }
+
+        const data = await response.json();
+        setDonaciones(data.donaciones || []);
 
       } catch (err) {
         setError(err.message);
@@ -72,8 +45,7 @@ const MyDonationsPage = () => {
     };
 
     fetchDatos();
-  }, [currentUserDataFromDB, isLoadingUserProfile, getToken]);
-
+  }, [isLoadingUserProfile, getToken]); 
   const renderContent = () => {
     if (isLoading || isLoadingUserProfile) {
       return <p className="text-center py-10 text-gray-500">Cargando tus donaciones...</p>;
@@ -83,7 +55,7 @@ const MyDonationsPage = () => {
       return <p className="text-center py-10 text-red-600"><strong>Error:</strong> {error}</p>;
     }
 
-    if (donacionesConSolicitudes.length === 0) {
+    if (donaciones.length === 0) {
       return (
         <div className="text-center py-10">
           <p className="text-gray-600 mb-4">No tienes donaciones activas en este momento.</p>
@@ -97,13 +69,8 @@ const MyDonationsPage = () => {
       );
     }
 
-    return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        {donacionesConSolicitudes.map(donacion => (
-          <CardDonacion key={donacion._id} donacion={donacion} showManagement={true} />
-        ))}
-      </div>
-    );
+   
+    return <ListaDonaciones donaciones={donaciones} showManagement={true} />;
   };
 
   return (
