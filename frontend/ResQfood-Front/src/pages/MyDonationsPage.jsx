@@ -40,9 +40,19 @@ const MyDonationsPage = () => {
         const donaciones = donacionesData.donaciones || [];
         const solicitudes = solicitudesData.solicitudes || [];
         
+        console.log("Donaciones recibidas del backend:", donaciones);
+        console.log("Solicitudes recibidas del backend:", solicitudes);
+
         const donacionesConDatos = donaciones.map(donacion => {
             
             const solicitudesParaEstaDonacion = solicitudes.filter(s => s.donacionId?._id === donacion._id);
+
+
+            if (solicitudesParaEstaDonacion.length > 0) {
+                console.log(`Para la donación "${donacion.titulo}", se encontraron ${solicitudesParaEstaDonacion.length} solicitudes.`);
+            }
+            
+
             const solicitudAceptada = solicitudesParaEstaDonacion.find(s => s.estadoSolicitud === 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO');
             
             return {
