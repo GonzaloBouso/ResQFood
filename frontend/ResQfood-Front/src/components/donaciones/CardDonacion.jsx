@@ -32,7 +32,6 @@ const CardDonacion = ({ donacion, showManagement = false }) => {
               <h3 className="font-semibold text-gray-900 mt-1">{titulo}</h3>
               <p className="text-sm text-gray-500">{categoria}</p>
             </div>
-           
             {showManagement && (
               <button className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md transition-colors">
                 Eliminar
@@ -40,7 +39,6 @@ const CardDonacion = ({ donacion, showManagement = false }) => {
             )}
           </div>
           
-       
           {showManagement && (
             <div className="mt-4 space-y-2">
               <DropdownSolicitudes 

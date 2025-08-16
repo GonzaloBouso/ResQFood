@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import API_BASE_URL from '../api/config';
-import CardDonacion from '../components/donaciones/CardDonacion';
+import ListaDonaciones from '../components/donaciones/ListaDonaciones';
 
 const MyDonationsPage = () => {
   const { getToken } = useAuth();
@@ -40,19 +40,8 @@ const MyDonationsPage = () => {
         const donaciones = donacionesData.donaciones || [];
         const solicitudes = solicitudesData.solicitudes || [];
         
-        console.log("Donaciones recibidas del backend:", donaciones);
-        console.log("Solicitudes recibidas del backend:", solicitudes);
-
         const donacionesConDatos = donaciones.map(donacion => {
-            
             const solicitudesParaEstaDonacion = solicitudes.filter(s => s.donacionId?._id === donacion._id);
-
-
-            if (solicitudesParaEstaDonacion.length > 0) {
-                console.log(`Para la donación "${donacion.titulo}", se encontraron ${solicitudesParaEstaDonacion.length} solicitudes.`);
-            }
-            
-
             const solicitudAceptada = solicitudesParaEstaDonacion.find(s => s.estadoSolicitud === 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO');
             
             return {
@@ -63,7 +52,6 @@ const MyDonationsPage = () => {
         });
 
         setDonacionesConSolicitudes(donacionesConDatos);
-
       } catch (err) {
         setError(err.message);
       } finally {
@@ -97,13 +85,7 @@ const MyDonationsPage = () => {
       );
     }
 
-    return (
-      <div className="max-w-4xl mx-auto space-y-6">
-        {donacionesConSolicitudes.map(donacion => (
-          <CardDonacion key={donacion._id} donacion={donacion} showManagement={true} />
-        ))}
-      </div>
-    );
+    return <ListaDonaciones donaciones={donacionesConSolicitudes} showManagement={true} />;
   };
 
   return (
