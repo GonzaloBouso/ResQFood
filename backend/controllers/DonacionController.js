@@ -98,7 +98,7 @@ export class DonacionController {
         }
     }
 
-    static async getDonacionesByUsuario(req, res) {
+ static async getDonacionesByUsuario(req, res) {
     try {
         const userId = req.params.id;
         if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -108,7 +108,9 @@ export class DonacionController {
        
         const donaciones = await Donacion.find({ 
             donanteId: userId,
-            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] } 
+            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] },
+            
+            fechaExpiracionPublicacion: { $gte: new Date() } 
         })
         .populate('donanteId', 'nombre fotoDePerfilUrl') 
         .sort({ createdAt: -1 });
