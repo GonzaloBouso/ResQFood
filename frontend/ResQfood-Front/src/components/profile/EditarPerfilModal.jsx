@@ -20,16 +20,22 @@ const opcionesHora = generarOpcionesHora();
 const EditarPerfilModal = ({ userData, onClose, onProfileUpdate }) => {
   const { getToken } = useAuth();
   
+  // 1. El estado del formulario ahora incluye todos los campos necesarios
   const [formData, setFormData] = useState({
     nombre: userData.nombre || '',
     telefono: userData.telefono || '',
+    ubicacion: {
+        direccion: userData.ubicacion?.direccion || '',
+        ciudad: userData.ubicacion?.ciudad || '',
+        provincia: userData.ubicacion?.provincia || '',
+        pais: userData.ubicacion?.pais || '',
+    },
     localData: {
       tipoNegocio: userData.localData?.tipoNegocio || '',
       descripcionEmpresa: userData.localData?.descripcionEmpresa || '',
     },
   });
   
-  // --- Estados para el Horario ---
   const [diaInicio, setDiaInicio] = useState('LUNES');
   const [diaFin, setDiaFin] = useState('VIERNES');
   const [horaApertura, setHoraApertura] = useState('09:00');
@@ -41,7 +47,6 @@ const EditarPerfilModal = ({ userData, onClose, onProfileUpdate }) => {
   // Efecto para parsear y establecer el horario existente al abrir el modal
   useEffect(() => {
       if (userData.rol === 'LOCAL' && userData.localData?.horarioAtencion) {
-          // Lógica simple de parsing (se puede mejorar si los formatos son más complejos)
           const parts = userData.localData.horarioAtencion.split(' ');
           if (parts.length >= 5) { // ej: LUNES a VIERNES de 09:00 a 18:00
             setDiaInicio(parts[0]);
@@ -57,6 +62,11 @@ const EditarPerfilModal = ({ userData, onClose, onProfileUpdate }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleUbicacionChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, ubicacion: { ...prev.ubicacion, [name]: value } }));
+  };
+
   const handleLocalDataChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, localData: { ...prev.localData, [name]: value } }));
@@ -67,9 +77,11 @@ const EditarPerfilModal = ({ userData, onClose, onProfileUpdate }) => {
     setError(null);
     try {
       const token = await getToken();
+      
       const payload = {
         nombre: formData.nombre,
         telefono: formData.telefono,
+        ubicacion: formData.ubicacion,
       };
       
       if (userData.rol === 'LOCAL') {
@@ -106,7 +118,7 @@ const EditarPerfilModal = ({ userData, onClose, onProfileUpdate }) => {
       <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
         <div className="p-4 border-b flex justify-between items-center flex-shrink-0">
           <h3 className="text-lg font-semibold">Editar Información del Perfil</h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><X size={20} /></button>
+          <button onClick={onClose} className="p-1 rounded-full text-gray-500 hover:bg-gray-100"><X size={20} /></button>
         </div>
 
         <div className="p-6 space-y-4 overflow-y-auto">
@@ -119,8 +131,30 @@ const EditarPerfilModal = ({ userData, onClose, onProfileUpdate }) => {
             <input type="tel" name="telefono" id="telefono" value={formData.telefono} onChange={handleInputChange} className="mt-1 block w-full input-style"/>
           </div>
 
+          <fieldset className="border p-4 rounded-md">
+            <legend className="text-sm font-medium text-textMain px-1">Ubicación</legend>
+            <div className="space-y-4 mt-2">
+                <div>
+                    <label htmlFor="direccion" className="block text-xs font-medium text-textMuted">Dirección</label>
+                    <input type="text" name="direccion" id="direccion" value={formData.ubicacion.direccion} onChange={handleUbicacionChange} className="mt-1 block w-full input-style" />
+                </div>
+                <div>
+                    <label htmlFor="ciudad" className="block text-xs font-medium text-textMuted">Ciudad</label>
+                    <input type="text" name="ciudad" id="ciudad" value={formData.ubicacion.ciudad} onChange={handleUbicacionChange} className="mt-1 block w-full input-style" />
+                </div>
+                <div>
+                    <label htmlFor="provincia" className="block text-xs font-medium text-textMuted">Provincia</label>
+                    <input type="text" name="provincia" id="provincia" value={formData.ubicacion.provincia} onChange={handleUbicacionChange} className="mt-1 block w-full input-style" />
+                </div>
+                <div>
+                    <label htmlFor="pais" className="block text-xs font-medium text-textMuted">País</label>
+                    <input type="text" name="pais" id="pais" value={formData.ubicacion.pais} onChange={handleUbicacionChange} className="mt-1 block w-full input-style" />
+                </div>
+            </div>
+          </fieldset>
+
           {userData.rol === 'LOCAL' && (
-            <fieldset className="border p-4 rounded-md mt-4">
+            <fieldset className="border p-4 rounded-md">
               <legend className="text-sm font-medium text-textMain px-1">Información del Local</legend>
               <div className="space-y-4 mt-2">
                 <div>
