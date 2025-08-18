@@ -15,7 +15,8 @@ const DashboardPage = () => {
     currentUserDataFromDB, 
     activeSearchLocation, 
     setActiveSearchLocation,
-    donationCreationTimestamp 
+    donationCreationTimestamp,
+    searchQuery
   } = useContext(ProfileStatusContext);
 
   const [donaciones, setDonaciones] = useState([]);
@@ -25,7 +26,6 @@ const DashboardPage = () => {
 
   useEffect(() => {
     if (isLoadingUserProfile || activeSearchLocation) return;
-
     if (currentUserDataFromDB?.ubicacion?.coordenadas?.coordinates?.length === 2) {
       const [lon, lat] = currentUserDataFromDB.ubicacion.coordenadas.coordinates;
       if (lat !== 0 || lon !== 0) {
@@ -33,7 +33,6 @@ const DashboardPage = () => {
         return;
       }
     }
-
     if (navigator.geolocation) {
       setMensajeUbicacion('Solicitando tu ubicación actual...');
       navigator.geolocation.getCurrentPosition(
@@ -72,12 +71,12 @@ const DashboardPage = () => {
         const token = await getToken();
         const { lat, lng } = activeSearchLocation;
         const distanciaMaxKm = 50;
-        const apiUrl = `${API_BASE_URL}/api/donacion/cercanas?lat=${lat}&lon=${lng}&distanciaMaxKm=${distanciaMaxKm}`;
-        
+        let apiUrl = `${API_BASE_URL}/api/donacion/cercanas?lat=${lat}&lon=${lng}&distanciaMaxKm=${distanciaMaxKm}`;
+        if (searchQuery && searchQuery.trim() !== '') {
+          apiUrl += `&q=${encodeURIComponent(searchQuery.trim())}`;
+        }
         const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
-        
         if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
-        
         const data = await response.json();
         setDonaciones(data.donaciones || []);
       } catch (error) {
@@ -90,7 +89,7 @@ const DashboardPage = () => {
     };
 
     fetchDonacionesCercanas();
-  }, [activeSearchLocation, donationCreationTimestamp, getToken]);
+  }, [activeSearchLocation, donationCreationTimestamp, getToken, searchQuery]);
   
   const userName = currentUserDataFromDB?.nombre?.split(' ')[0] || 'Usuario';
 
@@ -112,7 +111,6 @@ const DashboardPage = () => {
         {errorDonaciones && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center" role="alert"><strong className="font-bold">Error:</strong> {errorDonaciones}</div>}
         
         {!isLoadingDonaciones && !errorDonaciones && donaciones.length > 0 && (
-          // --- ESTA ES TU LÓGICA ORIGINAL RESTAURADA ---
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {donaciones.map(d => <CardDonacion key={d._id} donacion={d} />)}
           </div>

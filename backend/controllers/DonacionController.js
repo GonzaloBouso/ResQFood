@@ -145,7 +145,7 @@ export class DonacionController {
     }
 
     static async getDonacionesCercanas(req, res) {
-        const { lat, lon, distanciaMaxKm = 20 } = req.query;
+        const { lat, lon, distanciaMaxKm = 20, q} = req.query;
 
         if (!lat || !lon) {
             return res.status(400).json({ message: "Latitud y longitud son requeridas." });
@@ -160,21 +160,34 @@ export class DonacionController {
         }
 
         try {
-            const donacionesCercanas = await Donacion.find({
+            const filter = {
                 'ubicacionRetiro.coordenadas': {
-                    $nearSphere: {
-                        $geometry: {
-                            type: "Point",
-                            coordinates: [longitud, latitud]
-                        },
-                        $maxDistance: maxDistanciaMetros
-                    }
-                },
-                estadoPublicacion: 'DISPONIBLE',
-                fechaExpiracionPublicacion: { $gte: new Date() }
-            })
-            .populate('donanteId', 'nombre fotoDePerfilUrl');
+                $nearSphere: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: [longitud, latitud]
+                    },
+                    $maxDistance: maxDistanciaMetros
+                }
+            },
+             estadoPublicacion: 'DISPONIBLE',
+             fechaExpiracionPublicacion: { $gte: new Date() }
+            }
 
+            //si la busqueda existe añadimos un filtro de texto
+
+             if (q && q.trim() !== '') {
+            const regex = new RegExp(q.trim(), 'i');
+            filter.$or = [
+                { titulo: { $regex: regex } },
+                { descripcion: { $regex: regex } },
+                { categoria: { $regex: regex } }
+            ];
+        }
+
+            const donacionesCercanas = await Donacion.find(filter)
+                .populate('donanteId', 'nombre fotoDePerfilUrl')
+                .sort({ createdAt: -1 });
             res.status(200).json({ donaciones: donacionesCercanas });
 
         } catch (error) {

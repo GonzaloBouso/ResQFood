@@ -25,14 +25,14 @@ import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 
-// --- Contexto y Configuración ---
+
 import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
-// --- Componente para gestionar la ruta raíz (sin cambios) ---
+
 const RootRedirector = () => {
   const { isSignedIn, isLoaded } = useAuth();
   if (!isLoaded) { return <div className="text-center py-20">Cargando...</div>; }
@@ -40,15 +40,15 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
-// ==================================================================
-// LA SOLUCIÓN FINAL ESTÁ AQUÍ
-// ==================================================================
-const useUserProfileAndLocation = () => {
+
+
+const useGlobalState= () => {// Antes useUserProfileAndLocation
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
 
+    const [searchQuery, setSearchQuery] = useState(''); //estado para la busqueda
     const updateProfileState = (userData) => {
         setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, userRole: userData?.rol || null, userDataFromDB: userData });
     };
@@ -102,7 +102,10 @@ const useUserProfileAndLocation = () => {
         activeSearchLocation,
         setActiveSearchLocation,
         donationCreationTimestamp,
-        triggerDonationReFetch
+        triggerDonationReFetch,
+        searchQuery,
+        setSearchQuery,
+
     };
 };
 
@@ -126,11 +129,10 @@ const ProtectedLayout = ({ adminOnly = false }) => {
 };
 
 const AppContent = () => {
-  const appStateHook = useUserProfileAndLocation();
+  const appStateHook = useGlobalState();
   
   const contextValueForProvider = useMemo(() => ({
-    // 2. Ahora podemos acceder a las propiedades directamente desde el hook,
-    //    lo que resuelve el error 'undefined'.
+    
     isLoadingUserProfile: appStateHook.isLoadingUserProfile,
     isComplete: appStateHook.isComplete,
     currentUserRole: appStateHook.userRole,
@@ -140,7 +142,9 @@ const AppContent = () => {
     activeSearchLocation: appStateHook.activeSearchLocation,
     setActiveSearchLocation: appStateHook.setActiveSearchLocation,
     donationCreationTimestamp: appStateHook.donationCreationTimestamp,
-    triggerDonationReFetch: appStateHook.triggerDonationReFetch
+    triggerDonationReFetch: appStateHook.triggerDonationReFetch,
+    searchQuery: appStateHook.searchQuery,
+    setSearchQuery: appStateHook.setSearchQuery,
   }), [appStateHook]);
 
   const handleDonationCreated = () => {
