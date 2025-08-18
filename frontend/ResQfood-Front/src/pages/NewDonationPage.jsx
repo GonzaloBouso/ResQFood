@@ -1,4 +1,3 @@
-// src/pages/NewDonationPage.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
@@ -6,6 +5,7 @@ import { X } from 'lucide-react';
 import { GoogleMap, Marker, Autocomplete } from '@react-google-maps/api'; 
 import API_BASE_URL from '../api/config.js';
 
+// --- Constantes para el mapa ---
 const mapContainerStyle = {
   width: '100%',
   height: '300px',
@@ -27,6 +27,7 @@ const NewDonationPage = ({ onDonationCreated }) => {
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
+  // --- Estados del Componente ---
   const [formData, setFormData] = useState({
     titulo: '',
     descripcion: '',
@@ -48,31 +49,29 @@ const NewDonationPage = ({ onDonationCreated }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
-
+  const [validationErrors, setValidationErrors] = useState({}); 
   const [map, setMap] = useState(null);
   const [markerPosition, setMarkerPosition] = useState(null);
   const autocompleteInputRef = useRef(null);
   const [autocomplete, setAutocomplete] = useState(null);
 
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({...prev, [name]: null}));
+    }
   };
 
   const handleUbicacionTextoChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      ubicacionRetiro: { ...prev.ubicacionRetiro, [name]: value }
-    }));
+    setFormData(prev => ({ ...prev, ubicacionRetiro: { ...prev.ubicacionRetiro, [name]: value } }));
   };
 
   const handleContactoAltChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      informacionContactoAlternativa: { ...prev.informacionContactoAlternativa, [name]: value }
-    }));
+    setFormData(prev => ({ ...prev, informacionContactoAlternativa: { ...prev.informacionContactoAlternativa, [name]: value } }));
   };
 
   const handleFileChange = (e) => {
@@ -102,7 +101,8 @@ const NewDonationPage = ({ onDonationCreated }) => {
     setSelectedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
     setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
   };
-  
+
+
   useEffect(() => {
     return () => imagePreviews.forEach(url => URL.revokeObjectURL(url));
   }, [imagePreviews]);
@@ -163,15 +163,14 @@ const NewDonationPage = ({ onDonationCreated }) => {
     }
   };
 
+  // --- Lógica de Envío del Formulario ---
   const handleSubmit = async (e) => {
     e.preventDefault(); 
     setLoading(true); 
     setError(null); 
+    setValidationErrors({});
     setSuccessMessage('');
 
-    // --- INICIO DE LAS VALIDACIONES ---
-
-    // 1. Validaciones existentes (obligatorias)
     if (selectedFiles.length === 0) { 
         setError("Sube al menos una imagen."); 
         setLoading(false); 
@@ -187,25 +186,16 @@ const NewDonationPage = ({ onDonationCreated }) => {
         setLoading(false); 
         return; 
     }
-
-    // 2. --- NUEVA VALIDACIÓN DE FECHAS ---
-    // Solo se ejecuta si el usuario ha introducido una fecha de vencimiento del producto.
     if (formData.fechaVencimientoProducto) {
       const fechaExpiracionPub = new Date(formData.fechaExpiracionPublicacion);
       const fechaVencimientoProd = new Date(formData.fechaVencimientoProducto);
-
-      // El input 'date' no tiene hora, así que para una comparación justa,
-      // ajustamos la fecha de vencimiento al final de ese día.
       fechaVencimientoProd.setHours(23, 59, 59, 999);
-
       if (fechaVencimientoProd < fechaExpiracionPub) {
         setError("Error de lógica: La fecha de vencimiento del producto no puede ser anterior a la fecha en que expira la publicación.");
         setLoading(false);
-        return; // Detiene el envío del formulario
+        return;
       }
     }
-
-    // --- FIN DE LAS VALIDACIONES ---
 
     const formDataPayload = new FormData();
     Object.keys(formData).forEach(key => {
@@ -226,11 +216,23 @@ const NewDonationPage = ({ onDonationCreated }) => {
       const token = await getToken();
       const response = await fetch(`${API_BASE_URL}/api/donacion`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`}, body: formDataPayload });
       const responseData = await response.json();
+      
       if (!response.ok) {
-        console.error("NewDonationPage: Error del backend:", responseData);
-        setError(responseData.message || `Error: ${response.status}`);
-        setLoading(false); return;
+        if (response.status === 400 && responseData.errors) {
+          const errors = {};
+          responseData.errors.forEach(err => {
+            const field = err.path[0]; 
+            errors[field] = err.message;
+          });
+          setValidationErrors(errors);
+          setError("Por favor, corrige los errores en el formulario.");
+        } else {
+          setError(responseData.message || `Error del servidor: ${response.status}`);
+        }
+        setLoading(false); 
+        return;
       }
+      
       setSuccessMessage("¡Donación publicada exitosamente! Redirigiendo...");
       if (onDonationCreated) {
           onDonationCreated();
@@ -243,18 +245,26 @@ const NewDonationPage = ({ onDonationCreated }) => {
     }
   };
 
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-textMain mb-6 text-center">Publicar Nueva Donación</h1>
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6 bg-white p-6 sm:p-8 rounded-lg shadow-xl">
+        
+       
         <div>
           <label htmlFor="titulo" className="block text-sm font-medium text-gray-700">Título <span className="text-red-500">*</span></label>
           <input type="text" name="titulo" id="titulo" value={formData.titulo} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"/>
+          {validationErrors.titulo && <p className="text-red-500 text-xs mt-1">{validationErrors.titulo}</p>}
         </div>
+        
         <div>
           <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">Descripción <span className="text-red-500">*</span></label>
           <textarea name="descripcion" id="descripcion" rows="3" value={formData.descripcion} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"></textarea>
+          {validationErrors.descripcion && <p className="text-red-500 text-xs mt-1">{validationErrors.descripcion}</p>}
         </div>
+        
+        
         <div>
           <label htmlFor="categoria" className="block text-sm font-medium text-gray-700">Categoría <span className="text-red-500">*</span></label>
           <select name="categoria" id="categoria" value={formData.categoria} onChange={handleInputChange} required className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
@@ -358,8 +368,11 @@ const NewDonationPage = ({ onDonationCreated }) => {
             </div>
           )}
         </div>
+        
+        {/* Mensaje de error general */}
         {error && <p className="text-red-600 text-sm text-center py-2">{error}</p>}
         {successMessage && <p className="text-green-600 text-sm text-center py-2">{successMessage}</p>}
+        
         <button type="submit" disabled={loading || selectedFiles.length === 0} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-brandPrimaryDarker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50">
           {loading ? 'Publicando...' : 'Publicar Donación'}
         </button>

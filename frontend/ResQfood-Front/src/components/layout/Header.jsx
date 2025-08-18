@@ -16,7 +16,10 @@ const Header = () => {
     isComplete, 
     currentUserRole, 
     activeSearchLocation,
-    setActiveSearchLocation 
+    setActiveSearchLocation,
+    searchQuery,
+    setSearchQuery
+
   } = useContext(ProfileStatusContext) || {};
 
 
@@ -84,6 +87,8 @@ const Header = () => {
                   type="text"
                   placeholder="Buscar alguna donacion"
                   className="w-full h-full bg-transparent text-sm text-gray-700 placeholder-gray-500 focus:outline-none px-2"
+                  value={searchQuery || ''}
+                  onChange={(e)=>setSearchQuery(e.target.value)}
                 />
                 <div className="pr-4 pl-2 flex items-center justify-center">
                   <SearchIcon size={18} className="text-gray-500 hover:text-gray-700 cursor-pointer" />

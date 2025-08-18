@@ -17,42 +17,60 @@ const generarCodigo = (length = 6)=>{
 
 export class SolicitudController {
     static async createSolicitud(req, res) {
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
-            const { donacionId } = req.params;
-            const { mensajeSolicitante } = req.body;
-            const solicitanteClerkId = req.auth?.userId; 
-            const donacion = await Donacion.findById(donacionId).session(session);
-            if (!donacion) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: "Donación no encontrada." }); }
-            const solicitante = await User.findOne({ clerkUserId: solicitanteClerkId }).session(session);
-            if (!solicitante) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: "Usuario solicitante no encontrado." }); }
-            if (donacion.donanteId.toString() === solicitante._id.toString()) { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: "No puedes solicitar tu propia donación." }); }
-            if (donacion.estadoPublicacion !== 'DISPONIBLE') { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: "Esta donación ya no está disponible." }); }
-            const existeSolicitud = await Solicitud.findOne({ donacionId, solicitanteId: solicitante._id }).session(session);
-            if (existeSolicitud) { await session.abortTransaction(); session.endSession(); return res.status(409).json({ message: "Ya has enviado una solicitud para esta donación." }); }
-            const donante = await User.findById(donacion.donanteId).session(session);
-            const nuevaSolicitud = new Solicitud({ donacionId, donanteId: donacion.donanteId, solicitanteId: solicitante._id, mensajeSolicitante });
-            await nuevaSolicitud.save({ session });
-            const notificacion = new Notificacion({
-                destinatarioId: donante._id, tipoNotificacion: 'SOLICITUD',
-                mensaje: `${solicitante.nombre} ha solicitado tu donación "${donacion.titulo}".`,
-                referenciaId: nuevaSolicitud._id, tipoReferencia: 'Solicitud'
-            });
-            await notificacion.save({ session });
-            const io = getIoInstance();
-            const donanteSocketId = getSocketIdForUser(donante.clerkUserId);
-            if (donanteSocketId) { io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject()); }
-            await session.commitTransaction();
-            res.status(201).json({ message: "Solicitud enviada exitosamente.", solicitud: nuevaSolicitud });
-        } catch (error) {
-            await session.abortTransaction();
-            console.error('Error al crear la solicitud:', error);
-            res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
-        } finally {
-            session.endSession();
-        }
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { donacionId } = req.params;
+        const { mensajeSolicitante } = req.body;
+        const solicitanteClerkId = req.auth?.userId; 
+
+        const donacion = await Donacion.findById(donacionId).session(session);
+        if (!donacion) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: "Donación no encontrada." }); }
+
+        const solicitante = await User.findOne({ clerkUserId: solicitanteClerkId }).session(session);
+        if (!solicitante) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: "Usuario solicitante no encontrado." }); }
+
+        if (donacion.donanteId.toString() === solicitante._id.toString()) { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: "No puedes solicitar tu propia donación." }); }
+        if (donacion.estadoPublicacion !== 'DISPONIBLE') { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: "Esta donación ya no está disponible." }); }
+
+        const existeSolicitud = await Solicitud.findOne({ donacionId, solicitanteId: solicitante._id }).session(session);
+        if (existeSolicitud) { await session.abortTransaction(); session.endSession(); return res.status(409).json({ message: "Ya has enviado una solicitud para esta donación." }); }
+        
+        const donante = await User.findById(donacion.donanteId).session(session);
+
+        const nuevaSolicitud = new Solicitud({
+            donacionId: donacion._id, 
+            donanteId: donacion.donanteId, 
+            
+            solicitanteId: solicitante._id,
+            mensajeSolicitante
+        });
+        await nuevaSolicitud.save({ session });
+
+        const notificacion = new Notificacion({
+            destinatarioId: donante._id,
+            tipoNotificacion: 'SOLICITUD',
+            mensaje: `${solicitante.nombre} ha solicitado tu donación "${donacion.titulo}".`,
+            referenciaId: nuevaSolicitud._id,
+            tipoReferencia: 'Solicitud'
+        });
+        await notificacion.save({ session });
+        
+        const io = getIoInstance();
+        const donanteSocketId = getSocketIdForUser(donante.clerkUserId);
+        if (donanteSocketId) { io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject()); }
+
+        await session.commitTransaction();
+        res.status(201).json({ message: "Solicitud enviada exitosamente.", solicitud: nuevaSolicitud });
+
+    } catch (error) {
+        await session.abortTransaction();
+        console.error('Error al crear la solicitud:', error);
+        res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
+    } finally {
+        session.endSession();
     }
+}
 
     static async aceptarSolicitudYProponerHorario(req, res) {
         const { solicitudId } = req.params;
@@ -118,7 +136,7 @@ export class SolicitudController {
         }
     }
 
-    static async rechazarSolicitud(req, res){ 
+    static async rechazarSolicitud(req, res){
         const {solicitudId} = req.params;
         const {motivoRechazo} = req.body;
         const donanteClerkId = req.auth?.userId;
@@ -174,24 +192,37 @@ export class SolicitudController {
         }
     }
 
-    static async getSolicitudesRecibidas(req, res) {
-        try {
-            const donanteClerkId = req.auth?.userId;
-            const donante = await User.findOne({ clerkUserId: donanteClerkId });
-            if (!donante) return res.status(404).json({ message: "Usuario no encontrado." });
-            const solicitudes = await Solicitud.find({ donanteId: donante._id })
-                .populate({
-                    path: 'donacionId',
-                    select: 'titulo imagenesUrl _id'
-                })
-                .populate('solicitanteId', 'nombre fotoDePerfilUrl')
-                .sort({ createdAt: -1 });
-            res.status(200).json({ solicitudes });
-        } catch (error) {
-            console.error('Error al obtener solicitudes recibidas:', error);
-            res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
+
+
+   static async getSolicitudesRecibidas(req, res) {
+    try {
+        const donanteClerkId = req.auth?.userId;
+        const donante = await User.findOne({ clerkUserId: donanteClerkId });
+        if (!donante) {
+            return res.status(404).json({ message: "Usuario donante no encontrado." });
         }
+      
+        const misDonacionesIds = await Donacion.find({ donanteId: donante._id }).distinct('_id');
+
+       
+        const solicitudes = await Solicitud.find({
+            donacionId: { $in: misDonacionesIds }
+        })
+        .populate({
+            path: 'donacionId',
+            select: 'titulo imagenesUrl _id'
+        })
+        .populate('solicitanteId', 'nombre fotoDePerfilUrl')
+        .sort({ createdAt: -1 });
+
+        res.status(200).json({ solicitudes });
+    } catch (error) {
+        console.error('Error al obtener solicitudes recibidas:', error);
+        res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
     }
+}
+
+
 
     static async cancelarSolicitud(req, res) {
         try {
