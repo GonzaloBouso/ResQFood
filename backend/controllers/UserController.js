@@ -233,10 +233,10 @@ export class UserController {
         res.status(500).json({ message: "Error interno del servidor." });
     }
 }
- static async manageUser(req, res) {
+static async manageUser(req, res) {
         try {
-            const { id } = req.params; // ID del usuario a modificar
-            const { rol, activo } = req.body; // Nuevos datos
+            const { id } = req.params;
+            const { rol, activo } = req.body;
 
             if (!mongoose.Types.ObjectId.isValid(id)) {
                 return res.status(400).json({ message: "ID de usuario inválido." });
@@ -247,15 +247,25 @@ export class UserController {
                 return res.status(404).json({ message: "Usuario no encontrado." });
             }
 
-            // Aplicamos los cambios si se proporcionaron
-            if (rol !== undefined) {
-                userToManage.rol = rol;
-            }
-            if (activo !== undefined) {
-                userToManage.activo = activo;
+            // --- SINCRONIZACIÓN CON CLERK ---
+            // Si el estado 'activo' ha cambiado...
+            if (activo !== undefined && userToManage.activo !== activo) {
+                if (activo === false) {
+                    // Si lo estamos suspendiendo, lo "baneamos" en Clerk
+                    await clerk.users.banUser(userToManage.clerkUserId);
+                    console.log(`Usuario ${userToManage.clerkUserId} baneado en Clerk.`);
+                } else {
+                    // Si lo estamos reactivando, le quitamos el "baneo" en Clerk
+                    await clerk.users.unbanUser(userToManage.clerkUserId);
+                    console.log(`Usuario ${userToManage.clerkUserId} desbaneado en Clerk.`);
+                }
             }
 
-            await userToManage.save(); // El hook pre('save') se ejecutará si el rol cambia
+            // --- ACTUALIZACIÓN EN NUESTRA DB ---
+            if (rol !== undefined) userToManage.rol = rol;
+            if (activo !== undefined) userToManage.activo = activo;
+
+            await userToManage.save();
 
             res.status(200).json({ 
                 message: 'Usuario actualizado por el administrador.', 
