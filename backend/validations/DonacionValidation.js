@@ -12,7 +12,7 @@ const ubicacionSchemaObligatoria = z.object({
 });
 
 export const createDonacionSchema = z.object({
-    titulo: z.string().min(5, 'El título debe tener al menos 5 caracteres').max(100, 'El título no puede exceder los 100 caracteres'),
+    titulo: z.string().min(3, 'El título debe tener al menos 3 caracteres').max(100, 'El título no puede exceder los 100 caracteres'),
     descripcion: z.string().min(10, 'La descripción debe tener al menos 10 caracteres').max(1000, 'La descripción no puede exceder los 1000 caracteres'),
     categoria: z.string().min(1, "La categoría es obligatoria"),
     
