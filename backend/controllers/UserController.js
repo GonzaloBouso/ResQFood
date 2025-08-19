@@ -77,37 +77,21 @@ export class UserController {
     // Método para ACTUALIZAR el perfil de un usuario que YA EXISTE
     static async updateCurrentUserProfile(req, res) {
         const clerkUserId = req.auth?.userId;
-        if (!clerkUserId) {
-            return res.status(401).json({ message: 'No autenticado.' });
-        }
+        if (!clerkUserId) { return res.status(401).json({ message: 'No autenticado.' }); }
 
         try {
             const userToUpdate = await User.findOne({ clerkUserId });
-            if (!userToUpdate) {
-                return res.status(404).json({ message: 'Usuario no encontrado.' });
-            }
+            if (!userToUpdate) { return res.status(404).json({ message: 'Usuario no encontrado.' }); }
 
             const validatedData = updateUserSchema.parse(req.body);
 
-            // --- Actualización Manual y Segura ---
-            // Asignamos cada propiedad principal si existe en los datos validados.
-            if (validatedData.nombre !== undefined) {
-                userToUpdate.nombre = validatedData.nombre;
-            }
-            if (validatedData.telefono !== undefined) {
-                userToUpdate.telefono = validatedData.telefono;
-            }
-
-            // Para los objetos anidados, los fusionamos de forma segura.
-            if (validatedData.ubicacion) {
-                userToUpdate.ubicacion = { ...userToUpdate.ubicacion.toObject(), ...validatedData.ubicacion };
-            }
-            if (validatedData.localData) {
-                userToUpdate.localData = { ...userToUpdate.localData.toObject(), ...validatedData.localData };
-            }
+            // --- Actualización Manual y Segura (Evita errores de Object.assign) ---
+            if (validatedData.nombre !== undefined) userToUpdate.nombre = validatedData.nombre;
+            if (validatedData.telefono !== undefined) userToUpdate.telefono = validatedData.telefono;
+            if (validatedData.ubicacion) userToUpdate.ubicacion = { ...userToUpdate.ubicacion?.toObject(), ...validatedData.ubicacion };
+            if (validatedData.localData) userToUpdate.localData = { ...userToUpdate.localData?.toObject(), ...validatedData.localData };
             
             await userToUpdate.save();
-
             return res.status(200).json({ message: 'Perfil actualizado exitosamente', user: userToUpdate.toJSON() });
 
         } catch (error) {
@@ -115,7 +99,6 @@ export class UserController {
                 console.error('ERROR DE VALIDACIÓN ZOD:', JSON.stringify(error.errors, null, 2));
                 return res.status(400).json({ message: 'Error de validación.', errors: error.errors });
             }
-            // Añadimos un log aquí para cualquier otro error
             console.error('Error GENÉRICO al actualizar perfil:', error);
             return res.status(500).json({ message: 'Error interno del servidor.', errorDetails: error.message });
         }
@@ -263,45 +246,33 @@ export class UserController {
             const { id } = req.params;
             const { rol, activo } = req.body;
 
-            if (!mongoose.Types.ObjectId.isValid(id)) {
-                return res.status(400).json({ message: "ID de usuario inválido." });
-            }
-
+            if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "ID de usuario inválido." });
+            
             const userToManage = await User.findById(id);
-            if (!userToManage) {
-                return res.status(404).json({ message: "Usuario no encontrado." });
-            }
+            if (!userToManage) return res.status(404).json({ message: "Usuario no encontrado." });
 
             if (activo !== undefined && userToManage.activo !== activo) {
-                if (activo === false) {
-                  // Suspender usuario en Clerk
-                await clerkClient.users.updateUser(userToManage.clerkUserId, { banned: true });
-                console.log(`Usuario ${userToManage.clerkUserId} suspendido en Clerk.`);
-            } else {
-                // Reactivar usuario en Clerk
-                await clerkClient.users.updateUser(userToManage.clerkUserId, { banned: false });
-                console.log(`Usuario ${userToManage.clerkUserId} reactivado en Clerk.`);
-             }
-         }
-
-
-            // --- ACTUALIZACIÓN EN NUESTRA DB (sin cambios) ---
+                try {
+                    if (activo === false) {
+                        await clerkClient.users.updateUser(userToManage.clerkUserId, { banned: true });
+                    } else {
+                        await clerkClient.users.updateUser(userToManage.clerkUserId, { banned: false });
+                    }
+                } catch (clerkError) {
+                    console.error("Error de Clerk al actualizar estado 'banned':", clerkError);
+                    return res.status(502).json({ message: "Error al actualizar estado en el servicio de autenticación." });
+                }
+            }
+            
             if (rol !== undefined) userToManage.rol = rol;
-            if (activo !== undefined) userToManage.activo = activo;
+            userToManage.activo = activo; // Asignamos siempre el estado activo que llega
 
             await userToManage.save();
-
-            res.status(200).json({ 
-                message: 'Usuario actualizado por el administrador.', 
-                user: userToManage.toJSON() 
-            });
+            res.status(200).json({ message: 'Usuario actualizado por el administrador.', user: userToManage.toJSON() });
 
         } catch (error) {
             console.error("Error en manageUser:", error);
-            if (error.clerkError) {
-                 return res.status(502).json({ message: 'Error de Clerk:', details: error.errors });
-            }
             res.status(500).json({ message: "Error interno del servidor al gestionar el usuario." });
         }
     }
-} 
+}
