@@ -47,10 +47,10 @@ const localDataUpdateSchema = localDataSchemaObligatoria.deepPartial();
 export const updateUserSchema = z.object({
     nombre: z.string().min(3, 'El nombre debe tener al menos 3 caracteres').optional(),
     telefono: z.string().regex(/^\d{7,15}$/, 'El teléfono no es válido (7-15 dígitos)').optional().nullable(),
-    ubicacion: ubicacionUpdateSchema.optional(),
+    ubicacion: z.any().optional(), // Acepta cualquier cosa para 'ubicacion'
     fotoDePerfilUrl: z.string().url("URL de foto inválida").optional().nullable(),
     rol: z.enum(['GENERAL', 'LOCAL', 'ADMIN']).optional(), // Se elimina 'MODERADOR'
-    localData: localDataUpdateSchema.optional(), // Se mantiene una sola definición de localData
+    localData: z.any().optional(), // Acepta cualquier cosa para 'localData'
 });
 
 
