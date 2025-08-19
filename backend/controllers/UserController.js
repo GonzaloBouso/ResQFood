@@ -80,20 +80,44 @@ export class UserController {
         if (!clerkUserId) {
             return res.status(401).json({ message: 'No autenticado.' });
         }
+
         try {
             const userToUpdate = await User.findOne({ clerkUserId });
             if (!userToUpdate) {
                 return res.status(404).json({ message: 'Usuario no encontrado.' });
             }
+
             const validatedData = updateUserSchema.parse(req.body);
-            Object.assign(userToUpdate, validatedData);
+
+            // --- Actualización Manual y Segura ---
+            // Asignamos cada propiedad principal si existe en los datos validados.
+            if (validatedData.nombre !== undefined) {
+                userToUpdate.nombre = validatedData.nombre;
+            }
+            if (validatedData.telefono !== undefined) {
+                userToUpdate.telefono = validatedData.telefono;
+            }
+
+            // Para los objetos anidados, los fusionamos de forma segura.
+            if (validatedData.ubicacion) {
+                userToUpdate.ubicacion = { ...userToUpdate.ubicacion.toObject(), ...validatedData.ubicacion };
+            }
+            if (validatedData.localData) {
+                userToUpdate.localData = { ...userToUpdate.localData.toObject(), ...validatedData.localData };
+            }
+            
             await userToUpdate.save();
+
             return res.status(200).json({ message: 'Perfil actualizado exitosamente', user: userToUpdate.toJSON() });
+
         } catch (error) {
             if (error instanceof z.ZodError) {
+                console.error('ERROR DE VALIDACIÓN ZOD:', JSON.stringify(error.errors, null, 2));
                 return res.status(400).json({ message: 'Error de validación.', errors: error.errors });
             }
-            return res.status(500).json({ message: 'Error interno del servidor.' });
+            // Añadimos un log aquí para cualquier otro error
+            console.error('Error GENÉRICO al actualizar perfil:', error);
+            return res.status(500).json({ message: 'Error interno del servidor.', errorDetails: error.message });
         }
     }
 
