@@ -247,21 +247,20 @@ static async manageUser(req, res) {
                 return res.status(404).json({ message: "Usuario no encontrado." });
             }
 
-            // --- SINCRONIZACIÓN CON CLERK ---
-            // Si el estado 'activo' ha cambiado...
+            // --- SINCRONIZACIÓN CON CLERK (CORREGIDO) ---
             if (activo !== undefined && userToManage.activo !== activo) {
                 if (activo === false) {
-                    // Si lo estamos suspendiendo, lo "baneamos" en Clerk
-                    await clerk.users.banUser(userToManage.clerkUserId);
+                    // LA SOLUCIÓN: La función correcta es 'ban'
+                    await clerk.users.ban(userToManage.clerkUserId);
                     console.log(`Usuario ${userToManage.clerkUserId} baneado en Clerk.`);
                 } else {
-                    // Si lo estamos reactivando, le quitamos el "baneo" en Clerk
-                    await clerk.users.unbanUser(userToManage.clerkUserId);
+                    // LA SOLUCIÓN: La función correcta es 'unban'
+                    await clerk.users.unban(userToManage.clerkUserId);
                     console.log(`Usuario ${userToManage.clerkUserId} desbaneado en Clerk.`);
                 }
             }
 
-            // --- ACTUALIZACIÓN EN NUESTRA DB ---
+            // --- ACTUALIZACIÓN EN NUESTRA DB (sin cambios) ---
             if (rol !== undefined) userToManage.rol = rol;
             if (activo !== undefined) userToManage.activo = activo;
 
@@ -277,4 +276,4 @@ static async manageUser(req, res) {
             res.status(500).json({ message: "Error interno del servidor al gestionar el usuario." });
         }
     }
-}
+ }
