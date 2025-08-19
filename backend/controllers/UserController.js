@@ -1,7 +1,8 @@
 import User from '../models/User.js';
 import { updateUserSchema, completeInitialProfileSchema, createUserSchema } from '../validations/UserValidation.js';
 import { z } from 'zod';
-import clerk from '@clerk/clerk-sdk-node'; // Importa el SDK de Clerk para obtener datos del usuario
+import clerk from '@clerk/clerk-sdk-node'; 
+import clerkClient from '@clerk/clerk-sdk-node';
 import mongoose from 'mongoose';
 
 export class UserController {
@@ -247,15 +248,15 @@ static async manageUser(req, res) {
                 return res.status(404).json({ message: "Usuario no encontrado." });
             }
 
-            // --- SINCRONIZACIÓN CON CLERK (CORREGIDO) ---
+            // --- SINCRONIZACIÓN CON CLERK  ---
             if (activo !== undefined && userToManage.activo !== activo) {
                 if (activo === false) {
-                    // LA SOLUCIÓN: La función correcta es 'ban'
-                    await clerk.users.ban(userToManage.clerkUserId);
+                    // Usamos 'clerkClient.users.banUser'
+                    await clerkClient.users.banUser(userToManage.clerkUserId);
                     console.log(`Usuario ${userToManage.clerkUserId} baneado en Clerk.`);
                 } else {
-                    // LA SOLUCIÓN: La función correcta es 'unban'
-                    await clerk.users.unban(userToManage.clerkUserId);
+                    // Usamos 'clerkClient.users.unbanUser'
+                    await clerkClient.users.unbanUser(userToManage.clerkUserId);
                     console.log(`Usuario ${userToManage.clerkUserId} desbaneado en Clerk.`);
                 }
             }
@@ -273,7 +274,11 @@ static async manageUser(req, res) {
 
         } catch (error) {
             console.error("Error en manageUser:", error);
+            // Capturamos errores específicos de la API de Clerk
+            if (error.clerkError) {
+                 return res.status(502).json({ message: 'Error de comunicación con el servicio de autenticación.', details: error.errors });
+            }
             res.status(500).json({ message: "Error interno del servidor al gestionar el usuario." });
         }
-    }
+     }
  }
