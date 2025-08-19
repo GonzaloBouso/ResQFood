@@ -248,7 +248,6 @@ export class UserController {
                 return res.status(404).json({ message: "Usuario no encontrado." });
             }
 
-            // --- SINCRONIZACIÓN CON CLERK (LA SINTAXIS CORRECTA) ---
             if (activo !== undefined && userToManage.activo !== activo) {
                 if (activo === false) {
                   // Suspender usuario en Clerk

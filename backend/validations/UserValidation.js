@@ -1,4 +1,3 @@
-// src/validations/UserValidation.js
 import { z } from 'zod';
 
 // --- Esquema para Ubicación (cuando es obligatoria) ---
@@ -8,7 +7,7 @@ const ubicacionSchemaObligatoria = z.object({
     provincia: z.string().min(1, 'La provincia es obligatoria'),
     pais: z.string().min(1, 'El país es obligatorio'),
     coordenadas: z.object({
-        type: z.literal('Point').optional(), // El tipo es 'Point'
+        type: z.literal('Point').optional(),
         coordinates: z.array(z.number()).length(2, "El array de coordenadas debe tener 2 números (longitud, latitud)")
     })
 });
@@ -18,49 +17,45 @@ const localDataSchemaObligatoria = z.object({
     tipoNegocio: z.string().min(1, 'El tipo de negocio es obligatorio'),
     horarioAtencion: z.string().min(1, 'El horario de atención es obligatorio'),
     descripcionEmpresa: z.string().min(1, 'La descripción de la empresa es obligatoria'),
-    // Las estadísticas (totalDonacionesHechas, etc.) NO se validan aquí,
-    // ya que se inicializan con defaults en el modelo Mongoose y se actualizan por lógica de la app.
 });
 
 // --- Esquema para COMPLETAR PERFIL INICIAL (cuando el rol es null y se establece por primera vez) ---
 export const completeInitialProfileSchema = z.discriminatedUnion("rol", [
     z.object({
         rol: z.literal("GENERAL"),
-        nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres").optional(), // Puede venir de Clerk o ser actualizado aquí
-        telefono: z.string().regex(/^\d{7,15}$/, 'El teléfono no es válido (7-15 dígitos)').optional().nullable(), // Opcional para GENERAL
-        ubicacion: ubicacionSchemaObligatoria, // ubicacionSchemaObligatoria requiere todos sus campos
-        fotoDePerfilUrl: z.string().url("URL de foto inválida").optional().nullable(),
+        nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+        telefono: z.string().regex(/^\d{7,15}$/, 'El teléfono no es válido (7-15 dígitos)').optional().nullable(),
+        ubicacion: ubicacionSchemaObligatoria,
     }),
     z.object({
         rol: z.literal("LOCAL"),
-        nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres").optional(),
-        telefono: z.string().regex(/^\d{7,15}$/, 'El teléfono es obligatorio y debe tener entre 7-15 dígitos'), // Obligatorio para LOCAL
-        ubicacion: ubicacionSchemaObligatoria, // ubicacionSchemaObligatoria requiere todos sus campos
-        fotoDePerfilUrl: z.string().url("URL de foto inválida").optional().nullable(),
-        localData: localDataSchemaObligatoria, // localDataSchemaObligatoria y sus campos son obligatorios para LOCAL
+        nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+        telefono: z.string().regex(/^\d{7,15}$/, 'El teléfono es obligatorio y debe tener entre 7-15 dígitos'),
+        ubicacion: ubicacionSchemaObligatoria,
+        localData: localDataSchemaObligatoria,
     })
-    // No se permite establecer roles de ADMIN/MODERADOR a través de este flujo de usuario.
 ]);
 
 // --- Esquema para ACTUALIZACIONES PARCIALES (cuando el rol ya está establecido) ---
-const ubicacionUpdateSchema = ubicacionSchemaObligatoria.deepPartial(); // Hace todos los campos de ubicación opcionales
-const localDataUpdateSchema = localDataSchemaObligatoria.deepPartial(); // Hace todos los campos de localData opcionales
+const ubicacionUpdateSchema = ubicacionSchemaObligatoria.deepPartial();
+const localDataUpdateSchema = localDataSchemaObligatoria.deepPartial();
 
+// ==================================================================
+// LA SOLUCIÓN:
+// Se elimina la línea duplicada de `localData` y se actualiza el `enum` de roles.
+// ==================================================================
 export const updateUserSchema = z.object({
     nombre: z.string().min(3, 'El nombre debe tener al menos 3 caracteres').optional(),
     telefono: z.string().regex(/^\d{7,15}$/, 'El teléfono no es válido (7-15 dígitos)').optional().nullable(),
-    ubicacion: ubicacionUpdateSchema.optional(), // Permite actualizar partes de la ubicación o no enviarla
+    ubicacion: ubicacionUpdateSchema.optional(),
     fotoDePerfilUrl: z.string().url("URL de foto inválida").optional().nullable(),
-    rol: z.enum(['GENERAL', 'LOCAL', 'MODERADOR', 'ADMIN']).optional(), 
-    localData: localDataUpdateSchema.optional(), 
-    localData: localDataUpdateSchema.optional(), // Permite actualizar partes de localData o no enviarlo
+    rol: z.enum(['GENERAL', 'LOCAL', 'ADMIN']).optional(), // Se elimina 'MODERADOR'
+    localData: localDataUpdateSchema.optional(), // Se mantiene una sola definición de localData
 });
 
-// --- Tu createUserSchema (revisar su uso actual, ya que webhooks manejan la creación inicial del registro básico) ---
-// Si este schema es para que un ADMIN cree un usuario completo desde cero, necesitaría ser más robusto,
-// posiblemente también un discriminatedUnion por 'rol' para datos obligatorios.
-// Por ahora, lo dejamos como lo tenías, pero ten en cuenta su propósito.
-const estadisticasGeneralesSchema = z.object({ // Lo necesitas si createUserSchema lo usa
+
+// --- Esquemas auxiliares para createUserSchema (restaurados de tu versión original) ---
+const estadisticasGeneralesSchema = z.object({
     totalDonacionesHechas: z.number().min(0).default(0),
     calificacionPromedioComoDonante: z.number().min(0).max(5).nullable().default(null),
     numeroCalificacionesComoDonante: z.number().min(0).default(0),
@@ -69,7 +64,7 @@ const estadisticasGeneralesSchema = z.object({ // Lo necesitas si createUserSche
     numeroCalificacionesComoReceptor: z.number().min(0).default(0)
 });
 
-const permisosSchema = z.object({ // Lo necesitas si createUserSchema lo usa
+const permisosSchema = z.object({
     puedeSuspenderUsuarios: z.boolean().default(false),
     puedeEliminarPublicaciones: z.boolean().default(false),
     puedeGestionarReportes: z.boolean().default(false),
@@ -77,17 +72,16 @@ const permisosSchema = z.object({ // Lo necesitas si createUserSchema lo usa
     puedeAccederEstadisticasGlobales: z.boolean().default(false),
 });
 
-
+// --- Esquema para CREACIÓN DE USUARIO (restaurado de tu versión original) ---
 export const createUserSchema = z.object({
   clerkUserId: z.string().nonempty('El ID de Clerk es obligatorio'),
   email: z.string().email('El email no es válido'),
-  nombre: z.string().min(3).optional(), // Ya debería venir del webhook, pero puede ser para creación manual
-  rol: z.enum(['GENERAL', 'LOCAL', 'MODERADOR', 'ADMIN']).nullable().default(null),
+  nombre: z.string().min(3).optional(),
+  rol: z.enum(['GENERAL', 'LOCAL', 'ADMIN']).nullable().default(null), // Se elimina 'MODERADOR'
   activo: z.boolean().default(true),
-  // Para creación directa, estos serían opcionales porque el pre('save') los maneja si el rol se setea
   estadisticasGenerales: estadisticasGeneralesSchema.optional().nullable(),
-  localData: localDataSchemaObligatoria.deepPartial().optional().nullable(), // Si es local, los datos podrían ser obligatorios
-  ubicacion: ubicacionSchemaObligatoria.optional().nullable(), // Si tiene rol, la ubicación es obligatoria
+  localData: localDataSchemaObligatoria.deepPartial().optional().nullable(),
+  ubicacion: ubicacionSchemaObligatoria.optional().nullable(),
   telefono: z.string().regex(/^\d{7,15}$/, 'El número de teléfono debe contener entre 7 y 15 dígitos').optional().nullable(),
   permisos: permisosSchema.optional().nullable(),
   fotoDePerfilUrl: z.string().url().optional().nullable(),
