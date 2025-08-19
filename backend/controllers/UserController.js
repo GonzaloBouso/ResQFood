@@ -252,15 +252,11 @@ export class UserController {
             // --- SINCRONIZACIÓN CON CLERK (LA SINTAXIS CORRECTA) ---
             if (activo !== undefined && userToManage.activo !== activo) {
                 if (activo === false) {
-                    // ==================================================================
-                    // LA SOLUCIÓN:
-                    // La función es clerkClient.users.banUser(userId)
-                    // ==================================================================
-                    await clerkClient.users.banUser(userToManage.clerkUserId);
+                    await clerkClient.users.disableUser(userToManage.clerkUserId);
                     console.log(`Usuario ${userToManage.clerkUserId} baneado en Clerk.`);
                 } else {
                     // Y para desbanear es clerkClient.users.unbanUser(userId)
-                    await clerkClient.users.unbanUser(userToManage.clerkUserId);
+                    await clerkClient.users.enableUser(userToManage.clerkUserId);
                     console.log(`Usuario ${userToManage.clerkUserId} desbaneado en Clerk.`);
                 }
             }
@@ -284,4 +280,4 @@ export class UserController {
             res.status(500).json({ message: "Error interno del servidor al gestionar el usuario." });
         }
     }
-}
+} 
