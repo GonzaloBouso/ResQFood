@@ -1,8 +1,7 @@
 import User from '../models/User.js';
 import { updateUserSchema, completeInitialProfileSchema, createUserSchema } from '../validations/UserValidation.js';
 import { z } from 'zod';
-import clerk from '@clerk/clerk-sdk-node'; 
-import clerkClient from '@clerk/clerk-sdk-node';
+import { clerkClient } from '@clerk/clerk-sdk-node';
 
 import mongoose from 'mongoose';
 
@@ -252,14 +251,16 @@ export class UserController {
             // --- SINCRONIZACIÓN CON CLERK (LA SINTAXIS CORRECTA) ---
             if (activo !== undefined && userToManage.activo !== activo) {
                 if (activo === false) {
-                    await clerkClient.users.disableUser(userToManage.clerkUserId);
-                    console.log(`Usuario ${userToManage.clerkUserId} baneado en Clerk.`);
-                } else {
-                    // Y para desbanear es clerkClient.users.unbanUser(userId)
-                    await clerkClient.users.enableUser(userToManage.clerkUserId);
-                    console.log(`Usuario ${userToManage.clerkUserId} desbaneado en Clerk.`);
-                }
-            }
+                  // Suspender usuario en Clerk
+                await clerkClient.users.updateUser(userToManage.clerkUserId, { banned: true });
+                console.log(`Usuario ${userToManage.clerkUserId} suspendido en Clerk.`);
+            } else {
+                // Reactivar usuario en Clerk
+                await clerkClient.users.updateUser(userToManage.clerkUserId, { banned: false });
+                console.log(`Usuario ${userToManage.clerkUserId} reactivado en Clerk.`);
+             }
+         }
+
 
             // --- ACTUALIZACIÓN EN NUESTRA DB (sin cambios) ---
             if (rol !== undefined) userToManage.rol = rol;
