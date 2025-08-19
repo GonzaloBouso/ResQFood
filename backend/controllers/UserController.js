@@ -3,6 +3,7 @@ import { updateUserSchema, completeInitialProfileSchema, createUserSchema } from
 import { z } from 'zod';
 import clerk from '@clerk/clerk-sdk-node'; 
 import clerkClient from '@clerk/clerk-sdk-node';
+
 import mongoose from 'mongoose';
 
 export class UserController {
@@ -234,7 +235,7 @@ export class UserController {
         res.status(500).json({ message: "Error interno del servidor." });
     }
 }
-static async manageUser(req, res) {
+ static async manageUser(req, res) {
         try {
             const { id } = req.params;
             const { rol, activo } = req.body;
@@ -248,14 +249,17 @@ static async manageUser(req, res) {
                 return res.status(404).json({ message: "Usuario no encontrado." });
             }
 
-            // --- SINCRONIZACIÓN CON CLERK  ---
+            // --- SINCRONIZACIÓN CON CLERK (LA SINTAXIS CORRECTA) ---
             if (activo !== undefined && userToManage.activo !== activo) {
                 if (activo === false) {
-                    // Usamos 'clerkClient.users.banUser'
+                    // ==================================================================
+                    // LA SOLUCIÓN:
+                    // La función es clerkClient.users.banUser(userId)
+                    // ==================================================================
                     await clerkClient.users.banUser(userToManage.clerkUserId);
                     console.log(`Usuario ${userToManage.clerkUserId} baneado en Clerk.`);
                 } else {
-                    // Usamos 'clerkClient.users.unbanUser'
+                    // Y para desbanear es clerkClient.users.unbanUser(userId)
                     await clerkClient.users.unbanUser(userToManage.clerkUserId);
                     console.log(`Usuario ${userToManage.clerkUserId} desbaneado en Clerk.`);
                 }
@@ -274,11 +278,10 @@ static async manageUser(req, res) {
 
         } catch (error) {
             console.error("Error en manageUser:", error);
-            // Capturamos errores específicos de la API de Clerk
             if (error.clerkError) {
-                 return res.status(502).json({ message: 'Error de comunicación con el servicio de autenticación.', details: error.errors });
+                 return res.status(502).json({ message: 'Error de Clerk:', details: error.errors });
             }
             res.status(500).json({ message: "Error interno del servidor al gestionar el usuario." });
         }
-     }
- }
+    }
+}
