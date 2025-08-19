@@ -16,83 +16,83 @@ const generarCodigo = (length = 6)=>{
 };
 
 export class SolicitudController {
+    
     static async createSolicitud(req, res) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-        const { donacionId } = req.params;
-        const { mensajeSolicitante } = req.body;
-        const solicitanteClerkId = req.auth?.userId; 
-
-        const donacion = await Donacion.findById(donacionId).session(session);
-        if (!donacion) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: "Donación no encontrada." }); }
-
-        const solicitante = await User.findOne({ clerkUserId: solicitanteClerkId }).session(session);
-        if (!solicitante) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: "Usuario solicitante no encontrado." }); }
-
-        if (donacion.donanteId.toString() === solicitante._id.toString()) { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: "No puedes solicitar tu propia donación." }); }
-        if (donacion.estadoPublicacion !== 'DISPONIBLE') { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: "Esta donación ya no está disponible." }); }
-
-        const existeSolicitud = await Solicitud.findOne({ donacionId, solicitanteId: solicitante._id }).session(session);
-        if (existeSolicitud) { await session.abortTransaction(); session.endSession(); return res.status(409).json({ message: "Ya has enviado una solicitud para esta donación." }); }
-        
-        const donante = await User.findById(donacion.donanteId).session(session);
-
-        const nuevaSolicitud = new Solicitud({
-            donacionId: donacion._id, 
-            donanteId: donacion.donanteId, 
-            
-            solicitanteId: solicitante._id,
-            mensajeSolicitante
-        });
-        await nuevaSolicitud.save({ session });
-
-        const notificacion = new Notificacion({
-            destinatarioId: donante._id,
-            tipoNotificacion: 'SOLICITUD',
-            mensaje: `${solicitante.nombre} ha solicitado tu donación "${donacion.titulo}".`,
-            referenciaId: nuevaSolicitud._id,
-            tipoReferencia: 'Solicitud'
-        });
-        await notificacion.save({ session });
-        
-        const io = getIoInstance();
-        const donanteSocketId = getSocketIdForUser(donante.clerkUserId);
-        if (donanteSocketId) { io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject()); }
-
-        await session.commitTransaction();
-        res.status(201).json({ message: "Solicitud enviada exitosamente.", solicitud: nuevaSolicitud });
-
-    } catch (error) {
-        await session.abortTransaction();
-        console.error('Error al crear la solicitud:', error);
-        res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
-    } finally {
-        session.endSession();
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
+            const { donacionId } = req.params;
+            const { mensajeSolicitante } = req.body;
+            const solicitanteClerkId = req.auth?.userId; 
+            const donacion = await Donacion.findById(donacionId).session(session);
+            if (!donacion) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: "Donación no encontrada." }); }
+            const solicitante = await User.findOne({ clerkUserId: solicitanteClerkId }).session(session);
+            if (!solicitante) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: "Usuario solicitante no encontrado." }); }
+            if (donacion.donanteId.toString() === solicitante._id.toString()) { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: "No puedes solicitar tu propia donación." }); }
+            if (donacion.estadoPublicacion !== 'DISPONIBLE') { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: "Esta donación ya no está disponible." }); }
+            const existeSolicitud = await Solicitud.findOne({ donacionId, solicitanteId: solicitante._id }).session(session);
+            if (existeSolicitud) { await session.abortTransaction(); session.endSession(); return res.status(409).json({ message: "Ya has enviado una solicitud para esta donación." }); }
+            const donante = await User.findById(donacion.donanteId).session(session);
+            const nuevaSolicitud = new Solicitud({
+                donacionId: donacion._id,
+                donanteId: donacion.donanteId,
+                solicitanteId: solicitante._id,
+                mensajeSolicitante
+            });
+            await nuevaSolicitud.save({ session });
+            const notificacion = new Notificacion({
+                destinatarioId: donante._id,
+                tipoNotificacion: 'SOLICITUD',
+                mensaje: `${solicitante.nombre} ha solicitado tu donación "${donacion.titulo}".`,
+                referenciaId: nuevaSolicitud._id,
+                tipoReferencia: 'Solicitud'
+            });
+            await notificacion.save({ session });
+            const io = getIoInstance();
+            const donanteSocketId = getSocketIdForUser(donante.clerkUserId);
+            if (donanteSocketId) { io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject()); }
+            await session.commitTransaction();
+            res.status(201).json({ message: "Solicitud enviada exitosamente.", solicitud: nuevaSolicitud });
+        } catch (error) {
+            await session.abortTransaction();
+            console.error('Error al crear la solicitud:', error);
+            res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
+        } finally {
+            session.endSession();
+        }
     }
-}
 
     static async aceptarSolicitudYProponerHorario(req, res) {
         const { solicitudId } = req.params;
         const donanteClerkId = req.auth?.userId;
         const { horarioEntregaPropuestaPorDonante, fechaPropuesto } = req.body;
         if (!horarioEntregaPropuestaPorDonante || !fechaPropuesto) { return res.status(400).json({ message: "Debe proporcionar una propuesta de fecha y hora." }); }
+        
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
             const solicitudAceptada = await Solicitud.findById(solicitudId).session(session);
             if (!solicitudAceptada) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: 'Solicitud no encontrada.' }); }
             if (solicitudAceptada.estadoSolicitud !== 'PENDIENTE_APROBACION') { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: 'Esta solicitud ya ha sido gestionada.' }); }
+            
             const donante = await User.findById(solicitudAceptada.donanteId).session(session);
             if (donante.clerkUserId !== donanteClerkId) { await session.abortTransaction(); session.endSession(); return res.status(403).json({ message: 'No tienes permiso.' }); }
+
             await Donacion.findByIdAndUpdate(solicitudAceptada.donacionId, { estadoPublicacion: 'PENDIENTE-ENTREGA' }, { session });
-            solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
-            solicitudAceptada.fechaAprobacion = new Date();
+            
             const nuevaEntrega = new Entrega({
                 solicitudId: solicitudAceptada._id, donacionId: solicitudAceptada.donacionId, donanteId: solicitudAceptada.donanteId,
                 receptorId: solicitudAceptada.solicitanteId, horarioEntregaPropuestaPorDonante, fechaPropuesto,
                 codigoConfirmacionReceptor: generarCodigo(),
             });
+            await nuevaEntrega.save({ session });
+            
+           
+            solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
+            solicitudAceptada.fechaAprobacion = new Date();
+            solicitudAceptada.entregaId = nuevaEntrega._id;
+            await solicitudAceptada.save({ session });
+            
             const receptor = await User.findById(solicitudAceptada.solicitanteId).session(session);
             const donacion = await Donacion.findById(solicitudAceptada.donacionId).select('titulo').session(session);
             const notificacionAprobacion = new Notificacion({
@@ -100,22 +100,24 @@ export class SolicitudController {
                 mensaje: `¡Tu solicitud para "${donacion.titulo}" fue aprobada! Confirma el horario de retiro.`,
                 referenciaId: nuevaEntrega._id, tipoReferencia: 'Entrega'
             });
-            await solicitudAceptada.save({ session });
-            await nuevaEntrega.save({ session });
             await notificacionAprobacion.save({ session });
+            
             const io = getIoInstance();
             const receptorSocketId = getSocketIdForUser(receptor.clerkUserId);
             if (receptorSocketId) { io.to(receptorSocketId).emit('nueva_notificacion', notificacionAprobacion.toObject()); }
+
             const otrasSolicitudes = await Solicitud.find({
                 donacionId: solicitudAceptada.donacionId,
                 _id: { $ne: solicitudAceptada._id },
                 estadoSolicitud: 'PENDIENTE_APROBACION'
             }).session(session);
+
             for (const otraSolicitud of otrasSolicitudes) {
                 otraSolicitud.estadoSolicitud = 'RECHAZADA_DONANTE';
                 otraSolicitud.motivoRechazo = 'La donación fue asignada a otro solicitante.';
                 otraSolicitud.fechaRechazo = new Date();
                 await otraSolicitud.save({ session });
+
                 const otroReceptor = await User.findById(otraSolicitud.solicitanteId).session(session);
                 const notificacionRechazo = new Notificacion({
                     destinatarioId: otroReceptor._id, tipoNotificacion: 'RECHAZO',
@@ -123,9 +125,11 @@ export class SolicitudController {
                     referenciaId: otraSolicitud._id, tipoReferencia: 'Solicitud'
                 });
                 await notificacionRechazo.save({ session });
+                
                 const otroReceptorSocketId = getSocketIdForUser(otroReceptor.clerkUserId);
                 if (otroReceptorSocketId) { io.to(otroReceptorSocketId).emit('nueva_notificacion', notificacionRechazo.toObject()); }
             }
+            
             await session.commitTransaction();
             res.status(200).json({ message: 'Solicitud aprobada y otras rechazadas.', entrega: nuevaEntrega });
         } catch (error) {
@@ -135,7 +139,8 @@ export class SolicitudController {
             session.endSession();
         }
     }
-
+    
+   
     static async rechazarSolicitud(req, res){
         const {solicitudId} = req.params;
         const {motivoRechazo} = req.body;
@@ -171,8 +176,9 @@ export class SolicitudController {
         }finally {
             session.endSession();
         }
-    }   
+    }
 
+  
     static async getMisSolicitudes(req, res) {
         try {
             const solicitanteClerkId = req.auth?.userId;
@@ -191,39 +197,28 @@ export class SolicitudController {
             res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
         }
     }
+    
+   
+    static async getSolicitudesRecibidas(req, res) {
+        try {
+            const donanteClerkId = req.auth?.userId;
+            const donante = await User.findOne({ clerkUserId: donanteClerkId });
+            if (!donante) { return res.status(404).json({ message: "Usuario donante no encontrado." }); }
+            
+            const solicitudes = await Solicitud.find({ donanteId: donante._id })
+                .populate({ path: 'donacionId', select: 'titulo imagenesUrl _id' })
+                .populate('solicitanteId', 'nombre fotoDePerfilUrl')
+                .populate('entregaId') 
+                .sort({ createdAt: -1 });
 
-
-
-   static async getSolicitudesRecibidas(req, res) {
-    try {
-        const donanteClerkId = req.auth?.userId;
-        const donante = await User.findOne({ clerkUserId: donanteClerkId });
-        if (!donante) {
-            return res.status(404).json({ message: "Usuario donante no encontrado." });
+            res.status(200).json({ solicitudes });
+        } catch (error) {
+            console.error('Error al obtener solicitudes recibidas:', error);
+            res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
         }
-      
-        const misDonacionesIds = await Donacion.find({ donanteId: donante._id }).distinct('_id');
-
-       
-        const solicitudes = await Solicitud.find({
-            donacionId: { $in: misDonacionesIds }
-        })
-        .populate({
-            path: 'donacionId',
-            select: 'titulo imagenesUrl _id'
-        })
-        .populate('solicitanteId', 'nombre fotoDePerfilUrl')
-        .sort({ createdAt: -1 });
-
-        res.status(200).json({ solicitudes });
-    } catch (error) {
-        console.error('Error al obtener solicitudes recibidas:', error);
-        res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
     }
-}
 
-
-
+   
     static async cancelarSolicitud(req, res) {
         try {
             const { solicitudId } = req.params;
