@@ -1,11 +1,14 @@
 import express from 'express';
 import { UserController } from '../controllers/UserController.js';
 import { requireAuth } from '../middlewares/autMiddleware.js';
+import { verifyClerkToken } from '../middlewares/auth/verifyClerkToken.js';
 import { uploadAvatar } from '../middlewares/uploadMiddleware.js';
 import { requireAdmin } from '../middlewares/auth/requireAdmin.js';
 
 
 const router = express.Router();
+// Ruta para crear el perfil por primera vez.
+router.post('/create-profile', verifyClerkToken, UserController.createProfileFromFrontend);
 
 router.get('/', requireAuth, requireAdmin, UserController.getAllUsers);
 
