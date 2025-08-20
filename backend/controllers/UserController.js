@@ -13,47 +13,66 @@ export class UserController {
         if (!clerkUserId) {
             return res.status(401).json({ message: 'No autenticado.' });
         }
+         console.log(`[createProfile] Iniciando para clerkUserId: ${clerkUserId}`);
+         console.log("[createProfile] Body recibido:", req.body);
 
         try {
-            // 1. Verifica si ya existe un perfil para este usuario para evitar duplicados.
+           // 1. Valida los datos del formulario primero. Si falla, no hacemos nada más.
+            const validatedData = completeInitialProfileSchema.parse(req.body);
+
+            // 2. Verifica si el usuario ya tiene un perfil COMPLETO (con rol).
             const existingUser = await User.findOne({ clerkUserId });
-            if (existingUser) {
+            if (existingUser && existingUser.rol) {
+                console.warn(`[createProfile] Conflicto: Perfil para ${clerkUserId} ya está completo.`);
                 return res.status(409).json({ message: 'El perfil para este usuario ya ha sido creado.' });
             }
-
-            // 2. Valida los datos que vienen del formulario.
-            const validatedData = completeInitialProfileSchema.parse(req.body);
             
-            // 3. Obtiene los datos restantes (email, imagen) directamente desde la API de Clerk.
-            const clerkUser = await clerk.users.getUser(clerkUserId);
+            // 3. Obtiene datos frescos de la API de Clerk.
+            console.log(`[createProfile] Obteniendo datos de Clerk API para ${clerkUserId}...`);
+            
+
+            const clerkUser = await clerkClient.users.getUser(clerkUserId);
+            
+
+            console.log("[createProfile] Datos de Clerk API obtenidos.");
+
             const primaryEmail = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress;
 
             if (!primaryEmail) {
               return res.status(400).json({ message: 'No se pudo encontrar un email principal para este usuario en Clerk.' });
             }
 
-            // 4. Combina todos los datos y crea el nuevo usuario.
-            const newUser = new User({
+            // 4. Prepara el objeto de datos completo para la base de datos.
+            const userProfileData = {
                 ...validatedData, // Datos del formulario (rol, nombre, ubicación, etc.)
                 clerkUserId: clerkUserId,
                 email: primaryEmail,
                 fotoDePerfilUrl: clerkUser.imageUrl,
-            });
+            };
 
-            // 5. Guarda el nuevo usuario en la base de datos.
-            await newUser.save();
-            return res.status(201).json({ message: 'Perfil creado exitosamente', user: newUser.toJSON() });
+            // 5. Utiliza findOneAndUpdate con upsert. Es la forma más robusta.
+            //    - Si el webhook creó un usuario básico, esto lo ACTUALIZARÁ.
+            //    - Si el webhook falló, esto lo CREARÁ.
+            console.log("[createProfile] Guardando perfil en la base de datos con upsert...", userProfileData);
+            const updatedOrCreatedUser = await User.findOneAndUpdate(
+                { clerkUserId: clerkUserId },   // Condición de búsqueda
+                { $set: userProfileData },      // Datos para establecer/actualizar
+                { new: true, upsert: true, runValidators: true } // Opciones
+            );
+            
+            console.log(`[createProfile] ¡Éxito! Perfil para ${clerkUserId} guardado en DB.`);
+            return res.status(201).json({ message: 'Perfil creado exitosamente', user: updatedOrCreatedUser.toJSON() });
 
         } catch (error) {
             if (error instanceof z.ZodError) {
                 return res.status(400).json({ message: 'Error de validación al crear el perfil.', errors: error.errors });
             }
-            console.error('Error al crear el perfil desde el frontend:', error);
-            return res.status(500).json({ message: 'Error interno del servidor.', errorDetails: error.message });
+             // Logueamos el error completo para verlo en Render
+            console.error('ERROR CRÍTICO en createProfileFromFrontend:', error);
+            return res.status(500).json({ message: 'Error interno del servidor.' })
         }
     }
 
-    // --- MÉTODOS EXISTENTES (se mantienen para otras funcionalidades) ---
 
     // Método para obtener el perfil del usuario actual (usado por App.jsx)
     static async getCurrentUserProfile(req, res) {
