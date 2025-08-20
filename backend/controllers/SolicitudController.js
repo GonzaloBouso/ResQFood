@@ -62,6 +62,7 @@ export class SolicitudController {
         }
     }
 
+    
     static async aceptarSolicitudYProponerHorario(req, res) {
         const { solicitudId } = req.params;
         const donanteClerkId = req.auth?.userId;
@@ -87,10 +88,11 @@ export class SolicitudController {
             });
             await nuevaEntrega.save({ session });
             
-           
+            
             solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
             solicitudAceptada.fechaAprobacion = new Date();
-            solicitudAceptada.entregaId = nuevaEntrega._id;
+            solicitudAceptada.entregaId = nuevaEntrega._id; 
+
             await solicitudAceptada.save({ session });
             
             const receptor = await User.findById(solicitudAceptada.solicitanteId).session(session);
@@ -178,7 +180,7 @@ export class SolicitudController {
         }
     }
 
-  
+    
     static async getMisSolicitudes(req, res) {
         try {
             const solicitanteClerkId = req.auth?.userId;
@@ -198,7 +200,7 @@ export class SolicitudController {
         }
     }
     
-   
+    
     static async getSolicitudesRecibidas(req, res) {
         try {
             const donanteClerkId = req.auth?.userId;
@@ -208,7 +210,7 @@ export class SolicitudController {
             const solicitudes = await Solicitud.find({ donanteId: donante._id })
                 .populate({ path: 'donacionId', select: 'titulo imagenesUrl _id' })
                 .populate('solicitanteId', 'nombre fotoDePerfilUrl')
-                .populate('entregaId') 
+                .populate('entregaId')
                 .sort({ createdAt: -1 });
 
             res.status(200).json({ solicitudes });
@@ -218,7 +220,7 @@ export class SolicitudController {
         }
     }
 
-   
+    
     static async cancelarSolicitud(req, res) {
         try {
             const { solicitudId } = req.params;

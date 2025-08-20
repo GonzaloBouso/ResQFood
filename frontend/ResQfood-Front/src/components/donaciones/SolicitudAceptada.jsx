@@ -10,8 +10,8 @@ const SolicitudAceptada = ({ solicitud }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { getToken } = useAuth();
   
-  if (!solicitud || !solicitud.entregaId) return null; // No renderizar si no hay solicitud o entregaId
-
+  if (!solicitud || !solicitud.entregaId) return null; 
+  
   const handleVerificar = async () => {
     if (!codigoIngresado.trim()) {
         alert("Por favor, ingresa el código de confirmación.");
@@ -41,7 +41,8 @@ const SolicitudAceptada = ({ solicitud }) => {
 
         setVerificado(true);
         alert('¡Entrega completada exitosamente!');
-        // Espera un momento para que el usuario vea el mensaje de éxito y luego recarga
+      
+
         setTimeout(() => window.location.reload(), 1500);
 
     } catch(error) {
