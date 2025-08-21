@@ -258,43 +258,47 @@ export class DonacionController {
         }
     }
 
-   static async getMisDonacionesActivasConSolicitudes(req, res) {
-    try {
-        const donanteClerkId = req.auth?.userId;
-        const donante = await User.findOne({ clerkUserId: donanteClerkId });
+  static async getMisDonacionesActivasConSolicitudes(req, res) {
+        try {
+            const donanteClerkId = req.auth?.userId;
+            const donante = await User.findOne({ clerkUserId: donanteClerkId });
 
-        if (!donante) {
-            return res.status(404).json({ message: "Usuario donante no encontrado." });
+            if (!donante) {
+                return res.status(404).json({ message: "Usuario donante no encontrado." });
+            }
+
+            // 1. Busca las donaciones activas del donante
+            const donaciones = await Donacion.find({
+                donanteId: donante._id,
+                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
+            }).sort({ createdAt: -1 }).lean();
+
+            if (donaciones.length === 0) {
+                return res.status(200).json({ donaciones: [] });
+            }
+
+            const donacionIds = donaciones.map(d => d._id);
+
+            // 2. Busca TODAS las solicitudes para esas donaciones (sin filtrar por estado aquí)
+            const solicitudes = await Solicitud.find({
+                donacionId: { $in: donacionIds }
+            }).populate('solicitanteId', 'nombre fotoDePerfilUrl').lean();
+
+            // 3. Une los datos en JavaScript. Esta es la forma más segura.
+            const donacionesConSolicitudes = donaciones.map(donacion => {
+                return {
+                    ...donacion,
+                    solicitudes: solicitudes.filter(
+                        solicitud => solicitud.donacionId.toString() === donacion._id.toString()
+                    )
+                };
+            });
+            
+            res.status(200).json({ donaciones: donacionesConSolicitudes });
+
+        } catch (error) {
+            console.error("Error en getMisDonacionesActivasConSolicitudes:", error);
+            res.status(500).json({ message: "Error interno del servidor." });
         }
-
-        const donaciones = await Donacion.find({
-            donanteId: donante._id,
-            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
-        }).sort({ createdAt: -1 }).lean();
-
-        if (donaciones.length === 0) {
-            return res.status(200).json({ donaciones: [] });
-        }
-
-        const donacionIds = donaciones.map(d => d._id);
-
-        const solicitudes = await Solicitud.find({
-            donacionId: { $in: donacionIds },
-            estadoSolicitud: 'PENDIENTE_APROBACION'
-        }).populate('solicitanteId', 'nombre fotoDePerfilUrl');
-
-        const donacionesConSolicitudes = donaciones.map(donacion => ({
-            ...donacion,
-            solicitudes: solicitudes.filter(
-                solicitud => solicitud.donacionId.toString() === donacion._id.toString()
-            )
-        }));
-        
-        res.status(200).json({ donaciones: donacionesConSolicitudes });
-
-    } catch (error) {
-        console.error("Error en getMisDonacionesActivasConSolicitudes:", error);
-        res.status(500).json({ message: "Error interno del servidor." });
     }
-}
  }
