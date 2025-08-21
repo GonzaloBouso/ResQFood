@@ -51,6 +51,7 @@ const MyDonationsPage = () => {
             });
             if (!response.ok) throw new Error('No se pudieron cargar tus donaciones.');
             const data = await response.json();
+            console.log("Datos recibidos del backend:", JSON.stringify(data, null, 2));
             setDonaciones(data.donaciones);
         } catch (err) {
             setError(err.message);
