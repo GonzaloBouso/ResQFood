@@ -279,7 +279,7 @@ export class DonacionController {
             res.status(500).json({ message: 'Error interno al obtener historial', errorDetails: error.message });
         }
     }
-    static async getMisDonacionesActivasConSolicitudes(req, res) {
+     static async getMisDonacionesActivasConSolicitudes(req, res) {
         try {
             const donanteClerkId = req.auth?.userId;
             const donante = await User.findOne({ clerkUserId: donanteClerkId });
@@ -289,21 +289,56 @@ export class DonacionController {
             }
 
             const donacionesConSolicitudes = await Donacion.aggregate([
+                // 1. Filtra las donaciones para obtener solo las activas del donante actual
                 {
                     $match: {
                         donanteId: donante._id,
                         estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
                     }
                 },
+                // 2. Ordena por las más recientes
                 {
                     $sort: { createdAt: -1 }
                 },
+                // 3. Realiza un "JOIN" con la colección de solicitudes
                 {
                     $lookup: {
-                        from: 'solicituds', 
-                        localField: '_id', 
-                        foreignField: 'donacionId', 
+                        from: 'solicituds', // <<< VERIFICA QUE ESTE ES EL NOMBRE CORRECTO DE TU COLECCIÓN
+                        localField: '_id',
+                        foreignField: 'donacionId',
                         as: 'solicitudes'
+                    }
+                },
+                // 4. (OPCIONAL PERO RECOMENDADO) "Desenrollamos" el array de solicitudes para poder poblar cada una
+                {
+                    $unwind: {
+                        path: '$solicitudes',
+                        preserveNullAndEmptyArrays: true // Mantiene las donaciones que no tienen solicitudes
+                    }
+                },
+                // 5. Hacemos un segundo "JOIN" para obtener los datos del solicitante
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'solicitudes.solicitanteId',
+                        foreignField: '_id',
+                        as: 'solicitudes.solicitanteId'
+                    }
+                },
+                // 6. Volvemos a "enrollar" todo, agrupando por donación
+                {
+                    $group: {
+                        _id: '$_id',
+                        // Copiamos todos los campos originales de la donación
+                        doc: { $first: '$$ROOT' },
+                        // Creamos un nuevo array de solicitudes, ahora con el solicitante poblado
+                        solicitudes: { $push: '$solicitudes' }
+                    }
+                },
+                // 7. Limpiamos el formato final
+                {
+                    $replaceRoot: {
+                        newRoot: { $mergeObjects: ['$doc', { solicitudes: '$solicitudes' }] }
                     }
                 }
             ]);
@@ -315,4 +350,4 @@ export class DonacionController {
             res.status(500).json({ message: "Error interno del servidor." });
         }
     }
-}
+ }
