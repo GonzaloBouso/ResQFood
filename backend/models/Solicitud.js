@@ -5,6 +5,8 @@ const SolicitudSchema = new Schema(
         donacionId: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
         donanteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         solicitanteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        
+        entregaId: { type: Schema.Types.ObjectId, ref: 'Entrega', default: null },
         mensajeSolicitante: { type: String, default: null },
         estadoSolicitud: {
             type: String,

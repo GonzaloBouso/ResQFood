@@ -9,7 +9,6 @@ import { initSockets } from './socket.js';
 import connectDB from './config/db.js';
 import UserRoutes from './routes/UserRoutes.js';
 import DonacionRoutes from './routes/DonacionRoutes.js';
-import webhookRoutes from './routes/webhookRoutes.js';
 import SolicitudRoutes from './routes/SolicitudRoutes.js';
 import CalificacionRoutes from './routes/CalificacionRoutes.js';
 import NotificacionRoutes from './routes/NotificacionRoutes.js';
@@ -21,6 +20,8 @@ if (!process.env.CLERK_SECRET_KEY) {
     console.error("ERROR: CLERK_SECRET_KEY no está definida.");
     process.exit(1);
 }
+
+import { handleClerkWebhook } from './controllers/webhookController.js';
 
 const app = express();
 const server = http.createServer(app); 
@@ -38,7 +39,10 @@ initSockets(io);
 // CONFIGURACIÓN DE MIDDLEWARES
 // ==================================================================
 app.use(cors());
-app.use('/api/webhooks', webhookRoutes);
+
+
+app.post('/api/webhooks/clerk', express.raw({ type: 'application/json' }), handleClerkWebhook);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
