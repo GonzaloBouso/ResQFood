@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { ChevronDown, Loader2 } from 'lucide-react';
 
-// --- Sub-componente para la lista de solicitudes (con lógica corregida) ---
+// --- Sub-componente para la lista de solicitudes ---
+// Ahora filtra correctamente por 'estadoSolicitud' y 'PENDIENTE_APROBACION'.
 const SolicitudesList = ({ solicitudes, onAccept, onReject, isSubmitting }) => {
-    // LA SOLUCIÓN: Filtramos por el estado correcto 'PENDIENTE_APROBACION'
+    // LA SOLUCIÓN: Usamos el nombre de campo y el valor correctos.
     const pendientes = solicitudes.filter(s => s.estadoSolicitud === 'PENDIENTE_APROBACION');
 
     if (pendientes.length === 0) {
-        return <p className="text-xs text-gray-500 italic px-4 py-3 bg-gray-50">No hay nuevas solicitudes pendientes.</p>;
+        return <p className="text-xs text-gray-500 italic px-4 py-3 bg-gray-50 border-t">No hay nuevas solicitudes pendientes.</p>;
     }
 
     return (
@@ -62,25 +63,73 @@ const MyDonationsPage = () => {
         fetchDonations();
     }, [fetchDonations]);
     
-    // ... (Tus funciones handleAccept y handleReject se mantienen igual, son correctas) ...
+    const handleAccept = async (solicitudId) => {
+        setIsSubmitting(true);
+        try {
+            const token = await getToken();
+            const horario = prompt("Por favor, sugiere un horario de entrega (ej: Mañana de 10 a 12hs):");
+            if (!horario || horario.trim() === '') {
+                setIsSubmitting(false);
+                return;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/aceptar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ horarioSugerido: horario }),
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "Error al aceptar la solicitud.");
+            }
+            fetchDonations(); // Refresca toda la lista para ver los cambios
+        } catch (err) {
+            alert("Error al aceptar la solicitud: " + err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
     
+    const handleReject = async (solicitudId) => {
+        if (!window.confirm("¿Estás seguro de que quieres rechazar esta solicitud?")) return;
+        setIsSubmitting(true);
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/rechazar`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "Error al rechazar la solicitud.");
+            }
+            fetchDonations();
+        } catch (err) {
+            alert("Error al rechazar la solicitud: " + err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando tus donaciones...</div>;
-    if (error) return <div className="text-center py-20 text-red-600">Error: {error}</div>;
+    if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
 
     return (
-        <div className="max-w-4xl mx-auto py-10">
-            <h1 className="text-3xl font-bold mb-8">Gestionar Mis Donaciones Activas</h1>
+        <div className="max-w-4xl mx-auto py-10 px-4">
+            <h1 className="text-3xl font-bold text-gray-800 mb-8">Gestionar Mis Donaciones Activas</h1>
             {donaciones.length > 0 ? (
                 <div className="space-y-4">
                     {donaciones.map(donacion => (
                         <div key={donacion._id} className="border rounded-lg bg-white shadow-sm overflow-hidden">
                             <div className="p-4 flex justify-between items-center cursor-pointer" onClick={() => setExpandedDonationId(expandedDonationId === donacion._id ? null : donacion._id)}>
                                 <div>
-                                    <h3 className="font-semibold">{donacion.titulo}</h3>
+                                    <h3 className="font-semibold text-gray-900">{donacion.titulo}</h3>
                                     <p className="text-sm text-gray-500">{donacion.estadoPublicacion}</p>
                                 </div>
                                 <div className="flex items-center gap-1 text-sm text-primary font-medium">
-                                    {/* LA SOLUCIÓN: Calculamos el length usando el filtro correcto */}
+                                    {/* LA SOLUCIÓN: El contador ahora filtra correctamente */}
                                     <span>Solicitudes ({donacion.solicitudes.filter(s => s.estadoSolicitud === 'PENDIENTE_APROBACION').length})</span>
                                     <ChevronDown className={`transition-transform ${expandedDonationId === donacion._id ? 'rotate-180' : ''}`} size={16} />
                                 </div>
