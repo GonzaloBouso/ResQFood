@@ -24,12 +24,15 @@ const CardDonacion = ({ donacion }) => {
     if (!window.confirm(`¿Estás seguro de que quieres solicitar "${titulo}"?`)) {
       return;
     }
-
-    try {
+try {
       const token = await getToken();
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${_id}/solicitar`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({})
       });
 
       const data = await response.json();
