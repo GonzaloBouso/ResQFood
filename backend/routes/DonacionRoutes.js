@@ -5,7 +5,7 @@ import { uploadDonacionImages } from '../middlewares/uploadMiddleware.js';
 
 const router = express.Router();
 
-// --- Rutas Públicas ---
+// --- Rutas Públicas (van primero) ---
 router.get('/publicas', DonacionController.getPublicDonations);
 
 // --- Rutas Protegidas ---
@@ -15,11 +15,12 @@ router.get('/mis-donaciones-activas', requireAuth, DonacionController.getMisDona
 router.get('/usuario/:id', requireAuth, DonacionController.getDonacionesByUsuario);
 router.get('/usuario/:id/historial', requireAuth, DonacionController.getDonacionesFinalizadasByUsuario);
 
-// LA SOLUCIÓN: La ruta para obtener una donación por ID debe ir al final
-// para no confundir 'publicas', 'cercanas', etc. con un ID.
+// LA SOLUCIÓN:
+// 1. La ruta genérica GET '/' que causaba el error ha sido eliminada.
+// 2. La ruta dinámica '/:id' se coloca al final para evitar que "atrape" a las otras.
 router.get('/:id', requireAuth, DonacionController.getDonationById);
 
-// Rutas PUT y DELETE que deberías tener
+// Rutas PUT y DELETE que deberías tener (descomenta si las necesitas)
 // router.put('/:id', requireAuth, DonacionController.updateDonation);
 // router.delete('/:id', requireAuth, DonacionController.deleteDonation);
 
