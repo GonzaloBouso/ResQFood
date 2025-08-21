@@ -15,6 +15,7 @@ import NotificacionRoutes from './routes/NotificacionRoutes.js';
 import EntregaRoutes from './routes/EntregaRoutes.js';
 import ReporteRoutes from './routes/ReporteRoutes.js';
 import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
+import VoluntarioRoutes from './routes/VoluntarioRoutes.js'
 
 if (!process.env.CLERK_SECRET_KEY) {
     console.error("ERROR: CLERK_SECRET_KEY no está definida.");
@@ -28,16 +29,18 @@ const server = http.createServer(app);
 
 const io = new SocketIOServer(server, {
     cors: {
-        origin: "*", // En producción, deberías restringirlo a la URL de tu frontend
+        origin: "*", 
         methods: ["GET", "POST"]
     }
 });
 
 initSockets(io);
 
-// ==================================================================
+
+
+
 // CONFIGURACIÓN DE MIDDLEWARES
-// ==================================================================
+
 app.use(cors());
 
 
@@ -62,7 +65,7 @@ app.use('/api/donacion', DonacionRoutes);
 app.use('/api/solicitud', SolicitudRoutes);
 app.use('/api/entrega', EntregaRoutes);
 app.use('/api/notificacion', NotificacionRoutes);
-
+app.use('/api/voluntario', VoluntarioRoutes);
 
 // --- MANEJO DE ERRORES ---
 app.use((req, res, next) => {
