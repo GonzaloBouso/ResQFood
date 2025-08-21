@@ -5,17 +5,22 @@ import { uploadDonacionImages } from '../middlewares/uploadMiddleware.js';
 
 const router = express.Router();
 
+// --- Rutas Públicas ---
 router.get('/publicas', DonacionController.getPublicDonations);
 
-
-router.get('/mis-donaciones-activas', requireAuth, DonacionController.getMisDonacionesActivasConSolicitudes);
-
+// --- Rutas Protegidas ---
 router.post('/', requireAuth, uploadDonacionImages, DonacionController.createDonacion);
-router.get('/', requireAuth, DonacionController.getDonations); // Cambiado a requireAuth
 router.get('/cercanas', requireAuth, DonacionController.getDonacionesCercanas);
-router.get('/:id', requireAuth, DonacionController.getDonationById);
+router.get('/mis-donaciones-activas', requireAuth, DonacionController.getMisDonacionesActivasConSolicitudes);
 router.get('/usuario/:id', requireAuth, DonacionController.getDonacionesByUsuario);
 router.get('/usuario/:id/historial', requireAuth, DonacionController.getDonacionesFinalizadasByUsuario);
 
+// LA SOLUCIÓN: La ruta para obtener una donación por ID debe ir al final
+// para no confundir 'publicas', 'cercanas', etc. con un ID.
+router.get('/:id', requireAuth, DonacionController.getDonationById);
+
+// Rutas PUT y DELETE que deberías tener
+// router.put('/:id', requireAuth, DonacionController.updateDonation);
+// router.delete('/:id', requireAuth, DonacionController.deleteDonation);
 
 export default router;
