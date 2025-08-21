@@ -288,31 +288,25 @@ export class DonacionController {
                 return res.status(404).json({ message: "Usuario donante no encontrado." });
             }
 
-            // 1. Busca las donaciones activas del donante
-            const donaciones = await Donacion.find({
-                donanteId: donante._id,
-                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
-            }).sort({ createdAt: -1 }).lean();
-
-            if (donaciones.length === 0) {
-                return res.status(200).json({ donaciones: [] });
-            }
-
-            // 2. Obtiene los IDs de esas donaciones
-            const donacionIds = donaciones.map(d => d._id);
-
-            // 3. Busca todas las solicitudes para esas donaciones
-            const solicitudes = await Solicitud.find({
-                donacionId: { $in: donacionIds }
-            }).populate('solicitanteId', 'nombre fotoDePerfilUrl');
-
-            // 4. Une los datos: "adjunta" a cada donación su lista de solicitudes
-            const donacionesConSolicitudes = donaciones.map(donacion => ({
-                ...donacion,
-                solicitudes: solicitudes.filter(
-                    solicitud => solicitud.donacionId.toString() === donacion._id.toString()
-                )
-            }));
+            const donacionesConSolicitudes = await Donacion.aggregate([
+                {
+                    $match: {
+                        donanteId: donante._id,
+                        estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
+                    }
+                },
+                {
+                    $sort: { createdAt: -1 }
+                },
+                {
+                    $lookup: {
+                        from: 'solicituds', 
+                        localField: '_id', 
+                        foreignField: 'donacionId', 
+                        as: 'solicitudes'
+                    }
+                }
+            ]);
             
             res.status(200).json({ donaciones: donacionesConSolicitudes });
 
