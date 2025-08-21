@@ -69,6 +69,18 @@ export class DonacionController {
         }
     }
 
+    static async getDonations(req, res) {
+        try {
+            const donaciones = await Donacion.find({ estadoPublicacion: 'DISPONIBLE' })
+                .populate('donanteId', 'nombre fotoDePerfilUrl ubicacion.ciudad')
+                .sort({ createdAt: -1 });
+
+            res.status(200).json({ donaciones });
+        } catch (error) {
+            console.error('Error al obtener donaciones:', error);
+            res.status(500).json({ message: 'Error interno al obtener donaciones', errorDetails: error.message });
+        }
+    }
 
     static async getPublicDonations(req, res) {
         try {
