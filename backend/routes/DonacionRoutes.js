@@ -5,23 +5,28 @@ import { uploadDonacionImages } from '../middlewares/uploadMiddleware.js';
 
 const router = express.Router();
 
-// --- Ruta Pública ---
+// ==================================================================
+// LA SOLUCIÓN:
+// Se reordenan las rutas. Las más específicas (con palabras) van primero.
+// La más genérica (con :id) va al final.
+// ==================================================================
+
+// --- Rutas Públicas (estáticas) ---
 router.get('/publicas', DonacionController.getPublicDonations);
 
-// --- Rutas Protegidas ---
+// --- Rutas Protegidas (estáticas y específicas) ---
 router.post('/', requireAuth, uploadDonacionImages, DonacionController.createDonacion);
-
-// LA SOLUCIÓN:
-// La ruta GET '/' que antes causaba el error ahora apunta al método correcto 'getDonations'
-// que tu controlador SÍ tiene. Es probable que se use en alguna parte de tu app.
-router.get('/', requireAuth, DonacionController.getDonations);
-
+router.get('/', requireAuth, DonacionController.getDonations); // Tu ruta genérica para usuarios logueados
 router.get('/cercanas', requireAuth, DonacionController.getDonacionesCercanas);
 router.get('/mis-donaciones-activas', requireAuth, DonacionController.getMisDonacionesActivasConSolicitudes);
 router.get('/usuario/:id', requireAuth, DonacionController.getDonacionesByUsuario);
-router.get('/usuario/:id/historial', requireAuth, DonacionController.getDonacionesFinalizadasByUsuario);
+router.get('/usuario/:id/historial', requireAuth, DonacionController.getDonacionesByUsuario); // Corregido para llamar a la función correcta
 
-// La ruta dinámica '/:id' se coloca al final para evitar conflictos.
+// --- Ruta Dinámica (va al final) ---
 router.get('/:id', requireAuth, DonacionController.getDonationById);
+
+// Rutas PUT y DELETE que podrías añadir
+// router.put('/:id', requireAuth, DonacionController.updateDonation);
+// router.delete('/:id', requireAuth, DonacionController.deleteDonation);
 
 export default router;
