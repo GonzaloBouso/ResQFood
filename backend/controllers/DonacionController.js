@@ -258,41 +258,81 @@ export class DonacionController {
         }
     }
 
-  static async getMisDonacionesActivasConSolicitudes(req, res) {
+   static async getMisDonacionesActivasConSolicitudes(req, res) {
         try {
             const donanteClerkId = req.auth?.userId;
-            const donante = await User.findOne({ clerkUserId: donanteClerkId });
+            const donante = await User.findOne({ clerkUserId: donanteClirkId });
 
             if (!donante) {
                 return res.status(404).json({ message: "Usuario donante no encontrado." });
             }
 
-            // 1. Busca las donaciones activas del donante
-            const donaciones = await Donacion.find({
-                donanteId: donante._id,
-                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
-            }).sort({ createdAt: -1 }).lean();
+            const donacionesConSolicitudes = await Donacion.aggregate([
+                // 1. Filtra las donaciones del usuario actual
+                {
+                    $match: {
+                        donanteId: donante._id,
+                        estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
+                    }
+                },
+                // 2. Ordena
+                { $sort: { createdAt: -1 } },
+                // 3. "JOIN" con la colección de solicitudes
+                {
+                    $lookup: {
+                        from: 'solicituds',
+                        localField: '_id',
+                        foreignField: 'donacionId',
+                        as: 'solicitudes'
+                    }
+                },
+                // 4. (Opcional, pero bueno para rendimiento) "Desenvolvemos" el array de solicitudes
+                { $unwind: { path: '$solicitudes', preserveNullAndEmptyArrays: true } },
+                
+                // 5. Hacemos "JOIN" con los usuarios para obtener los datos del solicitante
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'solicitudes.solicitanteId',
+                        foreignField: '_id',
+                        as: 'solicitudes.solicitanteId' // Esto reemplaza el ObjectId por un array
+                    }
+                },
+                
+                // 6. LA CLAVE DE LA SOLUCIÓN: "Desenvolvemos" el array del solicitante para convertirlo en un objeto
+                {
+                    $unwind: { path: '$solicitudes.solicitanteId', preserveNullAndEmptyArrays: true }
+                },
 
-            if (donaciones.length === 0) {
-                return res.status(200).json({ donaciones: [] });
-            }
-
-            const donacionIds = donaciones.map(d => d._id);
-
-            // 2. Busca TODAS las solicitudes para esas donaciones (sin filtrar por estado aquí)
-            const solicitudes = await Solicitud.find({
-                donacionId: { $in: donacionIds }
-            }).populate('solicitanteId', 'nombre fotoDePerfilUrl').lean();
-
-            // 3. Une los datos en JavaScript. Esta es la forma más segura.
-            const donacionesConSolicitudes = donaciones.map(donacion => {
-                return {
-                    ...donacion,
-                    solicitudes: solicitudes.filter(
-                        solicitud => solicitud.donacionId.toString() === donacion._id.toString()
-                    )
-                };
-            });
+                // 7. Reagrupamos todo de vuelta
+                {
+                    $group: {
+                        _id: '$_id',
+                        doc: { $first: '$$ROOT' }, // Guardamos el documento original de la donación
+                        solicitudes: { $push: '$solicitudes' } // Agrupamos las solicitudes (ahora con el solicitante como objeto)
+                    }
+                },
+                // 8. Reconstruimos el documento final
+                {
+                    $replaceRoot: {
+                        newRoot: {
+                            $mergeObjects: [
+                                "$doc",
+                                { 
+                                  solicitudes: {
+                                    // Filtramos cualquier solicitud "vacía" que pudo crearse
+                                    $filter: {
+                                      input: "$solicitudes",
+                                      as: "solicitud",
+                                      cond: { $ifNull: ["$$solicitud._id", false] }
+                                    }
+                                  }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]);
             
             res.status(200).json({ donaciones: donacionesConSolicitudes });
 
@@ -301,4 +341,4 @@ export class DonacionController {
             res.status(500).json({ message: "Error interno del servidor." });
         }
     }
- }
+}
