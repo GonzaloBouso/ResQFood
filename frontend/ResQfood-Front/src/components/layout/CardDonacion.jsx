@@ -1,47 +1,46 @@
-import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
+import API_BASE_URL from '../../api/config'; 
 import DetallesCardDonacion from './DetallesCardDonacion';
 
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200.png?text=Sin+Imagen';
 
-const CardDonacion = ({ donacion, onSolicitar }) => {
-  const [mostrarModal, setMostrarModal] = useState(false);
+const CardDonacion = ({ donacion }) => { 
+  const [mostrarModal, setMostrarModal] = React.useState(false);
+  const { getToken } = useAuth(); 
 
-  // Verificación de seguridad: si no hay donación, no renderizamos nada para evitar errores.
-  if (!donacion) {
-    return null;
-  }
+  if (!donacion) return null;
 
-  const {
-    _id,
-    titulo,
-    imagenesUrl,
-    categoria,
-    ubicacionRetiro,
-    donanteId,
-  } = donacion;
+  const { _id, titulo, imagenesUrl, categoria, ubicacionRetiro, donanteId } = donacion;
 
- 
   const isDonantePopulated = donanteId && typeof donanteId === 'object';
-
   const imageUrl = imagenesUrl && imagenesUrl.length > 0 ? imagenesUrl[0] : FALLBACK_IMAGE_URL;
+  const ubicacionSimple = ubicacionRetiro ? `${ubicacionRetiro.ciudad || ''}${ubicacionRetiro.provincia ? ', ' + ubicacionRetiro.provincia : ''}`.trim() : 'Ubicación no especificada';
+  const nombreDonante = isDonantePopulated ? donanteId.nombre : 'Donante Anónimo';
+  const inicialesDonante = nombreDonante.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
-  const ubicacionSimple = ubicacionRetiro
-    ? `${ubicacionRetiro.ciudad || ''}${ubicacionRetiro.provincia ? ', ' + ubicacionRetiro.provincia : ''}`.trim()
-    : 'Ubicación no especificada';
+  const handleSolicitarClick = async () => {
+    if (!window.confirm(`¿Estás seguro de que quieres solicitar "${titulo}"?`)) {
+      return;
+    }
 
-  
-  const nombreDonante = isDonantePopulated ? donanteId.nombre : 'Donante';
-  const inicialesDonante = nombreDonante
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
+    try {
+      const token = await getToken();
+      const response = await fetch(`${API_BASE_URL}/api/solicitud/${_id}/solicitar`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-  const handleSolicitarClick = () => {
-    if (onSolicitar) {
-      onSolicitar(donacion);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'No se pudo enviar la solicitud.');
+      }
+      
+      alert('¡Solicitud enviada con éxito! El donante ha sido notificado.');
+
+    } catch (err) {
+      console.error("Error al solicitar donación:", err);
+      alert(`Error: ${err.message}`);
     }
   };
 
@@ -51,7 +50,6 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
   return (
     <>
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col h-full transition-shadow hover:shadow-lg">
-       
         {isDonantePopulated ? (
           <Link 
             to={`/perfil/${donanteId._id}`} 
@@ -73,7 +71,6 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
             </div>
           </Link>
         ) : (
-          // Si 'donanteId' no está poblado, muestra un estado genérico sin enlace.
           <div className="px-4 py-3 border-b border-gray-100">
              <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-sm flex-shrink-0">?</div>
@@ -82,7 +79,6 @@ const CardDonacion = ({ donacion, onSolicitar }) => {
           </div>
         )}
 
-        
         <div className="w-full h-48 bg-gray-100">
           <img
             className="w-full h-full object-cover"
