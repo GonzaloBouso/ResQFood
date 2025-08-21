@@ -5,23 +5,38 @@ import { uploadDonacionImages } from '../middlewares/uploadMiddleware.js';
 
 const router = express.Router();
 
-// --- Rutas Públicas (van primero) ---
+// --- Ruta Pública ---
+// Para la sección de "últimas donaciones" en la página de inicio.
 router.get('/publicas', DonacionController.getPublicDonations);
 
 // --- Rutas Protegidas ---
+
+// Crear una nueva donación
 router.post('/', requireAuth, uploadDonacionImages, DonacionController.createDonacion);
+
+// Obtener donaciones cercanas (para el dashboard principal de usuarios logueados)
 router.get('/cercanas', requireAuth, DonacionController.getDonacionesCercanas);
+
+// Obtener las donaciones del donante actual con sus solicitudes (para la página "Mis Donaciones")
 router.get('/mis-donaciones-activas', requireAuth, DonacionController.getMisDonacionesActivasConSolicitudes);
+
+// Obtener todas las donaciones de un usuario específico por su ID
 router.get('/usuario/:id', requireAuth, DonacionController.getDonacionesByUsuario);
-router.get('/usuario/:id/historial', requireAuth, DonacionController.getDonacionesFinalizadasByUsuario);
+
+// Obtener el historial de donaciones finalizadas de un usuario
+router.get('/usuario/:id/historial', DonacionController.getDonacionesFinalizadasByUsuario);
+
 
 // LA SOLUCIÓN:
-// 1. La ruta genérica GET '/' que causaba el error ha sido eliminada.
-// 2. La ruta dinámica '/:id' se coloca al final para evitar que "atrape" a las otras.
+// La ruta para obtener una donación específica por su ID se coloca al final
+// para evitar que Express confunda rutas como "publicas" o "cercanas" con un ID.
+// Esta ruta es la que usa el modal "Ver Detalles".
 router.get('/:id', requireAuth, DonacionController.getDonationById);
 
-// Rutas PUT y DELETE que deberías tener (descomenta si las necesitas)
+
+// (Opcional) Rutas para actualizar y eliminar que podrías necesitar en el futuro
 // router.put('/:id', requireAuth, DonacionController.updateDonation);
 // router.delete('/:id', requireAuth, DonacionController.deleteDonation);
+
 
 export default router;
