@@ -142,7 +142,7 @@ const AppContent = () => {
   
   useSocket(appStateHook.addNotification);
 
-  const contextValueForProvider = useMemo(() => ({
+   const contextValueForProvider = useMemo(() => ({
     isLoadingUserProfile: appStateHook.isLoadingUserProfile,
     isComplete: appStateHook.isComplete,
     currentUserRole: appStateHook.userRole,
@@ -155,17 +155,27 @@ const AppContent = () => {
     triggerDonationReFetch: appStateHook.triggerDonationReFetch,
     searchQuery: appStateHook.searchQuery,
     setSearchQuery: appStateHook.setSearchQuery,
-    // <<< 4. PASAMOS LOS VALORES DE NOTIFICACIÓN AL CONTEXTO >>>
     notifications: appStateHook.notifications,
     setNotifications: appStateHook.setNotifications,
-    unreadCount: appStateHook.unreadCount,
+    unreadCount: appStateHook.unreadCount, // <-- La propiedad clave
     addNotification: appStateHook.addNotification,
-  }), [appStateHook]);
+  }), [
+    // Ahora, cuando CUALQUIERA de estos valores cambie, el contexto se actualizará.
+    appStateHook.isLoadingUserProfile,
+    appStateHook.isComplete,
+    appStateHook.currentUserRole,
+    appStateHook.currentUserDataFromDB,
+    appStateHook.currentClerkUserId,
+    appStateHook.activeSearchLocation,
+    appStateHook.donationCreationTimestamp,
+    appStateHook.searchQuery,
+    appStateHook.notifications,
+    appStateHook.unreadCount, // <-- La dependencia clave
+  ]);
 
   const handleDonationCreated = () => {
     appStateHook.triggerDonationReFetch();
   };
-
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
         <div className="flex flex-col min-h-screen bg-gray-50">
