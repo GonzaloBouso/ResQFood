@@ -3,6 +3,8 @@ import React, { useState } from "react";
 
 import API_BASE_URL from '../api/config.js';
 
+const MIN_AGE = 18;
+const MAX_AGE = 65;
 const FormularioVoluntario = () => {
   const initialState = {
     nombre: "",
@@ -18,16 +20,40 @@ const FormularioVoluntario = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [ageError, setAgeError]=useState(null);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (e.target.name === 'nacimiento') {
+      setAgeError(null);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    
+   
     setError(null);
     setSuccess(null);
+    setAgeError(null);
+
+
+    const birthDate = new Date(form.nacimiento);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (age < MIN_AGE) {
+      setAgeError(`Lo sentimos, debes tener al menos ${MIN_AGE} años para ser voluntario.`);
+      return; 
+    }
+
+    if (age > MAX_AGE) {
+      setAgeError(`La edad máxima para registrarse como voluntario es de ${MAX_AGE} años.`);
+      return; 
+    }
+
+    setLoading(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/voluntario/inscribir`, {
@@ -41,12 +67,12 @@ const FormularioVoluntario = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        // Si el servidor responde con un error (4xx, 5xx)
+        
         throw new Error(data.message || 'Algo salió mal');
       }
 
       setSuccess(data.message);
-      setForm(initialState); // Resetea el formulario después del envío exitoso
+      setForm(initialState); 
 
     } catch (err) {
       setError(err.message);
@@ -70,6 +96,7 @@ const FormularioVoluntario = () => {
         <div>
           <label className="block mb-1">Fecha de nacimiento</label>
           <input type="date" name="nacimiento" value={form.nacimiento} onChange={handleChange} className="w-full px-3 py-2 rounded-md border bg-gray-50" required />
+          {ageError && <p className="text-red-600 text-xs mt-1">{ageError}</p>}
         </div>
         <div>
           <label className="block mb-1">Correo Electrónico</label>
