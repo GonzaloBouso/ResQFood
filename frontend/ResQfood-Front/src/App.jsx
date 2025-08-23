@@ -52,6 +52,7 @@ const useGlobalState = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    
 
     const updateProfileState = (userData) => {
         setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, userRole: userData?.rol || null, userDataFromDB: userData });
@@ -59,6 +60,21 @@ const useGlobalState = () => {
 
     const triggerDonationReFetch = () => {
         setDonationCreationTimestamp(Date.now());
+    };
+
+     const setNotificationsWithCount = (newNotifications) => {
+        let newUnreadCount = 0;
+        // Permite pasar un array o una función de actualización
+        const updatedNotifications = typeof newNotifications === 'function' 
+            ? newNotifications(notifications) 
+            : newNotifications;
+
+        updatedNotifications.forEach(n => {
+            if (!n.leida) newUnreadCount++;
+        });
+        
+        setNotifications(updatedNotifications);
+        setUnreadCount(newUnreadCount);
     };
     
     const addNotification = React.useCallback((newNotification) => {
@@ -117,7 +133,7 @@ const useGlobalState = () => {
         searchQuery,
         setSearchQuery,
         notifications,
-        setNotifications,
+        setNotifications: setNotificationsWithCount, 
         unreadCount,
         addNotification,
     };

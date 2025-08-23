@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, UserButton, useAuth } from '@clerk/clerk-react';
 import { Menu as MenuIcon, Search as SearchIcon, MoreVertical } from 'lucide-react';
 import logoResQFood from '../../assets/Logo-ResQfood.png';
 import { ProfileStatusContext } from '../../context/ProfileStatusContext';
 import { LocationModalWorkflow } from '../map/Location';
+import API_BASE_URL from '../../api/config';
 
 const Header = () => {
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -19,7 +21,8 @@ const Header = () => {
     setActiveSearchLocation,
     searchQuery,
     setSearchQuery,
-    unreadCount 
+    unreadCount,
+    setNotifications 
 
 
   } = useContext(ProfileStatusContext) || {};
@@ -56,6 +59,26 @@ const Header = () => {
     displayLocationText = latLngText;
     displayLocationTextShort = latLngText;
   }
+
+    const handleMarkAsRead = async () => {
+      if (unreadCount === 0) return; // No hace nada si no hay notificaciones nuevas
+
+      try {
+          const token = await getToken();
+          await fetch(`${API_BASE_URL}/api/notificacion/marcar-como-leidas`, {
+              method: 'PATCH',
+              headers: { 'Authorization': `Bearer ${token}` }
+          });
+          
+          // 2. Si la llamada al backend es exitosa, actualizamos el estado en el frontend.
+          //    Pasamos una función a setNotifications para modificar la lista actual.
+          setNotifications(prevNotifications => 
+              prevNotifications.map(notif => ({ ...notif, leida: true }))
+          );
+      } catch (error) {
+          console.error("Error al marcar notificaciones como leídas:", error);
+      }
+  };
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -161,7 +184,10 @@ const Header = () => {
                       <Link
                         to={misDonacionesPath}
                         className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
-                        onClick={() => setIsProfileMenuOpen(false)}
+                       onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      handleMarkAsRead();
+                  }}
                       >
                         <span>Mis donaciones</span>
                         {/* El punto rojo solo se muestra si hay notificaciones. */}

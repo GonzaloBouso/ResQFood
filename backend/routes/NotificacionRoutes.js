@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/', requireAuth, NotificacionController.getMisNotificaciones);
 
 // Marcar una notificación como leída
-router.patch('/:notificacionId/leida', requireAuth, NotificacionController.marcarComoLeida);
+
+router.patch('/marcar-como-leidas', requireAuth, NotificacionController.marcarNotificacionesComoLeidas);
 
 export default router;
