@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
@@ -53,6 +53,10 @@ const useGlobalState = () => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     
+        useEffect(() => {
+        const newUnreadCount = notifications.filter(n => !n.leida).length;
+        setUnreadCount(newUnreadCount);
+    }, [notifications]); 
 
     const updateProfileState = (userData) => {
         setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, userRole: userData?.rol || null, userDataFromDB: userData });
@@ -62,26 +66,8 @@ const useGlobalState = () => {
         setDonationCreationTimestamp(Date.now());
     };
 
-     const setNotificationsWithCount = (newNotifications) => {
-        let newUnreadCount = 0;
-        // Permite pasar un array o una función de actualización
-        const updatedNotifications = typeof newNotifications === 'function' 
-            ? newNotifications(notifications) 
-            : newNotifications;
-
-        updatedNotifications.forEach(n => {
-            if (!n.leida) newUnreadCount++;
-        });
-        
-        setNotifications(updatedNotifications);
-        setUnreadCount(newUnreadCount);
-    };
-    
-    const addNotification = React.useCallback((newNotification) => {
+    const addNotification = useCallback((newNotification) => {
         setNotifications(prev => [newNotification, ...prev]);
-        if (!newNotification.leida) {
-            setUnreadCount(prev => prev + 1);
-        }
     }, []);
 
     useEffect(() => {
@@ -133,7 +119,7 @@ const useGlobalState = () => {
         searchQuery,
         setSearchQuery,
         notifications,
-        setNotifications: setNotificationsWithCount, 
+        setNotifications, 
         unreadCount,
         addNotification,
     };
