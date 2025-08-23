@@ -5,7 +5,7 @@ import { Menu as MenuIcon, Search as SearchIcon, MoreVertical } from 'lucide-rea
 import logoResQFood from '../../assets/Logo-ResQfood.png';
 import { ProfileStatusContext } from '../../context/ProfileStatusContext';
 import { LocationModalWorkflow } from '../map/Location';
-import NotificationBell from '../layout/NotificationBell';
+
 const Header = () => {
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -18,7 +18,9 @@ const Header = () => {
     activeSearchLocation,
     setActiveSearchLocation,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    unreadCount 
+
 
   } = useContext(ProfileStatusContext) || {};
 
@@ -120,20 +122,22 @@ const Header = () => {
                 {!isLoadingUserProfile && isComplete && (
                   <button
                     onClick={toggleProfileMenu}
-                    className="p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
                     aria-label="Opciones de perfil"
                   >
                     <MoreVertical size={22} />
+                    {/* El punto rojo ahora vive aquí. Solo se muestra si hay notificaciones. */}
+                    {unreadCount > 0 && (
+                        <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                    )}
                   </button>
                 )}
-                <NotificationBell />
                 {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">
-                      {/* ================================================================== */}
-                      {/* LA SOLUCIÓN: */}
-                      {/* 2. Este bloque Link solo se renderiza si el rol del usuario es 'ADMIN'. */}
-                      {/* ================================================================== */}
                       {currentUserRole === 'ADMIN' && (
                         <>
                           <Link
@@ -156,10 +160,17 @@ const Header = () => {
                       </Link>
                       <Link
                         to={misDonacionesPath}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
                         onClick={() => setIsProfileMenuOpen(false)}
                       >
-                        Mis donaciones
+                        <span>Mis donaciones</span>
+                        {/* El punto rojo solo se muestra si hay notificaciones. */}
+                        {unreadCount > 0 && (
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                            </span>
+                        )}
                       </Link>
                     </div>
                   </div>
