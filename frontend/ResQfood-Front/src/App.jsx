@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
 
+// --- Tus componentes y páginas ---
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
 import Footer from './components/layout/Footer';
@@ -14,7 +15,7 @@ import CompleteProfilePage from './pages/CompleteProfilePage';
 import UserProfilePage from './pages/UserProfilePage';
 import MiPerfilPage from './pages/MiPerfilPage';
 import NewDonationPage from './pages/NewDonationPage';
-import MyDonationsPage from './pages/MyDonationsPage'; 
+import MyDonationsPage from './pages/MyDonationsPage';
 import PoliticaPrivacidad from './pages/PoliticaPrivacidad';
 import FormularioContacto from './pages/FormularioContacto';
 import PoliticaUsoDatos from './pages/PoliticaUsoDatos';
@@ -24,14 +25,17 @@ import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 
-import { useSocket } from './hooks/useSocket'; 
+// --- Hook de Sockets ---
+import { useSocket } from './hooks/useSocket';
 
+// --- Contexto y Configuración ---
 import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
+// --- Componente para gestionar la ruta raíz de forma segura ---
 const RootRedirector = () => {
   const { isSignedIn, isLoaded } = useAuth();
   if (!isLoaded) { return <div className="text-center py-20">Cargando...</div>; }
@@ -39,13 +43,13 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
+// --- Hook de estado global (mejorado con notificaciones) ---
 const useGlobalState = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
     const [searchQuery, setSearchQuery] = useState('');
-
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -57,7 +61,7 @@ const useGlobalState = () => {
         setDonationCreationTimestamp(Date.now());
     };
     
-    const addNotification = useCallback((newNotification) => {
+    const addNotification = React.useCallback((newNotification) => {
         setNotifications(prev => [newNotification, ...prev]);
         if (!newNotification.leida) {
             setUnreadCount(prev => prev + 1);
@@ -119,6 +123,7 @@ const useGlobalState = () => {
     };
 };
 
+// --- Layout Guardián (ahora usa 'currentUserRole') ---
 const ProtectedLayout = ({ adminOnly = false }) => {
     const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
 
@@ -142,7 +147,7 @@ const AppContent = () => {
   
   useSocket(appStateHook.addNotification);
 
-   const contextValueForProvider = useMemo(() => ({
+  const contextValueForProvider = useMemo(() => ({
     isLoadingUserProfile: appStateHook.isLoadingUserProfile,
     isComplete: appStateHook.isComplete,
     currentUserRole: appStateHook.userRole,
@@ -157,10 +162,9 @@ const AppContent = () => {
     setSearchQuery: appStateHook.setSearchQuery,
     notifications: appStateHook.notifications,
     setNotifications: appStateHook.setNotifications,
-    unreadCount: appStateHook.unreadCount, // <-- La propiedad clave
+    unreadCount: appStateHook.unreadCount,
     addNotification: appStateHook.addNotification,
   }), [
-    // Ahora, cuando CUALQUIERA de estos valores cambie, el contexto se actualizará.
     appStateHook.isLoadingUserProfile,
     appStateHook.isComplete,
     appStateHook.currentUserRole,
@@ -170,12 +174,13 @@ const AppContent = () => {
     appStateHook.donationCreationTimestamp,
     appStateHook.searchQuery,
     appStateHook.notifications,
-    appStateHook.unreadCount, // <-- La dependencia clave
+    appStateHook.unreadCount,
   ]);
 
   const handleDonationCreated = () => {
     appStateHook.triggerDonationReFetch();
   };
+
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
         <div className="flex flex-col min-h-screen bg-gray-50">
@@ -187,6 +192,7 @@ const AppContent = () => {
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
                     
+                    {/* Grupo de Rutas para USUARIOS NORMALES */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
@@ -195,10 +201,12 @@ const AppContent = () => {
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
                     </Route>
                     
+                    {/* Grupo de Rutas para ADMINS */}
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
                     </Route>
 
+                    {/* Rutas Públicas de Contenido Estático */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />

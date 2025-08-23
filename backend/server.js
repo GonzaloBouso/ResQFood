@@ -1,11 +1,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import http from 'http';
-import { Server as SocketIOServer } from 'socket.io';
-import { initSockets } from './socket.js';
+import { createServer } from 'http';
+import { initSocket } from './socket.js';
 
+// --- Tus importaciones de rutas ---
 import connectDB from './config/db.js';
 import UserRoutes from './routes/UserRoutes.js';
 import DonacionRoutes from './routes/DonacionRoutes.js';
@@ -15,37 +16,35 @@ import NotificacionRoutes from './routes/NotificacionRoutes.js';
 import EntregaRoutes from './routes/EntregaRoutes.js';
 import ReporteRoutes from './routes/ReporteRoutes.js';
 import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
-import VoluntarioRoutes from './routes/VoluntarioRoutes.js'
+import VoluntarioRoutes from './routes/VoluntarioRoutes.js';
+import { handleClerkWebhook } from './controllers/webhookController.js';
 
+// --- Verificación de clave ---
 if (!process.env.CLERK_SECRET_KEY) {
     console.error("ERROR: CLERK_SECRET_KEY no está definida.");
     process.exit(1);
 }
 
-import { handleClerkWebhook } from './controllers/webhookController.js';
+// ==================================================================
+// INICIALIZACIÓN DEL SERVIDOR
+// ==================================================================
 
 const app = express();
-const server = http.createServer(app); 
+const httpServer = createServer(app); // 1. Creamos el servidor HTTP a partir de Express
 
-const io = new SocketIOServer(server, {
-    cors: {
-        origin: "*", 
-        methods: ["GET", "POST"]
-    }
-});
+// 2. Inicializamos Socket.IO, pasándole el servidor HTTP.
+//    Toda la lógica de sockets (CORS, autenticación) ahora vive en socket.js.
+initSocket(httpServer);
 
-initSockets(io);
+// --- CONFIGURACIÓN DE MIDDLEWARES ---
 
+// 3. Configuración de CORS para las rutas HTTP (API REST).
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
 
-
-
-// CONFIGURACIÓN DE MIDDLEWARES
-
-app.use(cors());
-
-
+// 4. Ruta especial para el webhook de Clerk, que necesita el cuerpo "crudo".
 app.post('/api/webhooks/clerk', express.raw({ type: 'application/json' }), handleClerkWebhook);
 
+// 5. Middlewares de parseo de JSON para el resto de las rutas de la API.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -63,8 +62,11 @@ app.get('/healthz', (req, res) => {
 app.use('/api/usuario', UserRoutes);
 app.use('/api/donacion', DonacionRoutes);
 app.use('/api/solicitud', SolicitudRoutes);
-app.use('/api/entrega', EntregaRoutes);
+app.use('/api/calificacion', CalificacionRoutes);
 app.use('/api/notificacion', NotificacionRoutes);
+app.use('/api/entrega', EntregaRoutes);
+app.use('/api/reporte', ReporteRoutes);
+app.use('/api/bitacoraAdmin', BitacoraRoutes);
 app.use('/api/voluntario', VoluntarioRoutes);
 
 // --- MANEJO DE ERRORES ---
@@ -73,6 +75,8 @@ app.use((req, res, next) => {
 });
 
 // --- INICIO DEL SERVIDOR ---
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ Servidor listo y escuchando en el puerto ${PORT}`);
+// 6. Usamos 'httpServer.listen' para que tanto Express como Socket.IO
+//    escuchen en el mismo puerto.
+httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Servidor HTTP y Sockets listos y escuchando en el puerto ${PORT}`);
 });
