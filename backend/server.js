@@ -18,6 +18,7 @@ import EntregaRoutes from './routes/EntregaRoutes.js';
 import ReporteRoutes from './routes/ReporteRoutes.js';
 import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
 import VoluntarioRoutes from './routes/VoluntarioRoutes.js';
+import ContactoRoutes from './routes/ContactoRoutes.js'
 import { handleClerkWebhook } from './controllers/webhookController.js';
 
 // --- Verificación de clave (sin cambios) ---
@@ -78,6 +79,7 @@ app.use('/api/entrega', EntregaRoutes);
 app.use('/api/reporte', ReporteRoutes);
 app.use('/api/bitacoraAdmin', BitacoraRoutes);
 app.use('/api/voluntario', VoluntarioRoutes);
+app.use('/api/contacto', ContactoRoutes);
 
 // --- MANEJO DE ERRORES ---
 app.use((req, res, next) => {
