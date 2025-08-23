@@ -1,10 +1,10 @@
-
 import React, { useState } from "react";
-
 import API_BASE_URL from '../api/config.js';
+
 
 const MIN_AGE = 18;
 const MAX_AGE = 65;
+
 const FormularioVoluntario = () => {
   const initialState = {
     nombre: "",
@@ -20,10 +20,11 @@ const FormularioVoluntario = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [ageError, setAgeError]=useState(null);
+  const [ageError, setAgeError] = useState(null);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+   
     if (e.target.name === 'nacimiento') {
       setAgeError(null);
     }
@@ -31,28 +32,37 @@ const FormularioVoluntario = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
    
     setError(null);
     setSuccess(null);
     setAgeError(null);
 
-
+    
     const birthDate = new Date(form.nacimiento);
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDifference = today.getMonth() - birthDate.getMonth();
+    
+    
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+   
 
+    // Verificasi la edad calculada está dentro del rango
     if (age < MIN_AGE) {
       setAgeError(`Lo sentimos, debes tener al menos ${MIN_AGE} años para ser voluntario.`);
-      return; 
+      return; // Detiene el envío
     }
 
     if (age > MAX_AGE) {
       setAgeError(`La edad máxima para registrarse como voluntario es de ${MAX_AGE} años.`);
-      return; 
+      return; // Detiene el envío
     }
+  
 
+
+    // Si la edad es válida, envia el formulario
     setLoading(true);
 
     try {
@@ -67,7 +77,6 @@ const FormularioVoluntario = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        
         throw new Error(data.message || 'Algo salió mal');
       }
 
@@ -96,6 +105,7 @@ const FormularioVoluntario = () => {
         <div>
           <label className="block mb-1">Fecha de nacimiento</label>
           <input type="date" name="nacimiento" value={form.nacimiento} onChange={handleChange} className="w-full px-3 py-2 rounded-md border bg-gray-50" required />
+          {/* Muestra el error de edad */}
           {ageError && <p className="text-red-600 text-xs mt-1">{ageError}</p>}
         </div>
         <div>
@@ -133,14 +143,16 @@ const FormularioVoluntario = () => {
           </div>
         </div>
         
-        {/* Mensajes de estado para el usuario */}
+        {/*
+        mensajes de éxito o error del envío 
+        */}
         {success && <p className="text-center text-green-600 font-semibold">{success}</p>}
         {error && <p className="text-center text-red-600 font-semibold">{error}</p>}
         
         <div className="text-right mt-6">
           <button
             type="submit"
-            disabled={loading} // Deshabilita el botón mientras se envía
+            disabled={loading}
             className="bg-[#5A738E] hover:bg-[#4a6075] text-white px-5 py-2 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Enviando...' : 'Enviar'}
