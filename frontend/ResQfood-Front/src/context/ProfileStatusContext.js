@@ -10,6 +10,10 @@ const initialState = {
   updateProfileState: () => {},
   setActiveSearchLocation: () => {},
   donationCreationTimestamp: null,
+  notifications: [],
+  unreadCount: 0, 
+  addNotification: () => {}, 
+  setNotifications: () => {},
 };
 
 export const ProfileStatusContext = createContext(initialState);

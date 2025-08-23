@@ -5,7 +5,7 @@ import { Menu as MenuIcon, Search as SearchIcon, MoreVertical } from 'lucide-rea
 import logoResQFood from '../../assets/Logo-ResQfood.png';
 import { ProfileStatusContext } from '../../context/ProfileStatusContext';
 import { LocationModalWorkflow } from '../map/Location';
-
+import NotificationBell from '../layout/NotificationBell';
 const Header = () => {
   const navigate = useNavigate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -126,7 +126,7 @@ const Header = () => {
                     <MoreVertical size={22} />
                   </button>
                 )}
-                
+                <NotificationBell />
                 {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">

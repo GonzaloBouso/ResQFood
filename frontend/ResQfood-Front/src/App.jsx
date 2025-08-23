@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
 
-// --- Tus componentes y páginas ---
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
 import Footer from './components/layout/Footer';
@@ -25,13 +24,13 @@ import TerminosCondiciones from './pages/TerminosCondiciones';
 import FormularioVoluntario from './pages/FormularioVoluntario';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 
+import { useSocket } from './hooks/useSocket'; 
 
 import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
-
 
 const RootRedirector = () => {
   const { isSignedIn, isLoaded } = useAuth();
@@ -40,15 +39,16 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
-
-
-const useGlobalState= () => {// Antes useUserProfileAndLocation
+const useGlobalState = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const [searchQuery, setSearchQuery] = useState(''); //estado para la busqueda
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
     const updateProfileState = (userData) => {
         setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, userRole: userData?.rol || null, userDataFromDB: userData });
     };
@@ -56,6 +56,13 @@ const useGlobalState= () => {// Antes useUserProfileAndLocation
     const triggerDonationReFetch = () => {
         setDonationCreationTimestamp(Date.now());
     };
+    
+    const addNotification = useCallback((newNotification) => {
+        setNotifications(prev => [newNotification, ...prev]);
+        if (!newNotification.leida) {
+            setUnreadCount(prev => prev + 1);
+        }
+    }, []);
 
     useEffect(() => {
         if (!isAuthLoaded) return;
@@ -64,6 +71,8 @@ const useGlobalState= () => {// Antes useUserProfileAndLocation
             if (!isSignedIn) {
                 updateProfileState(null);
                 setActiveSearchLocation(null);
+                setNotifications([]);
+                setUnreadCount(0);
                 return;
             }
             if (profileStatus.isComplete && !profileStatus.isLoadingUserProfile) return;
@@ -90,8 +99,6 @@ const useGlobalState= () => {// Antes useUserProfileAndLocation
         fetchUserProfileFunction();
     }, [isAuthLoaded, isSignedIn]);
 
-    // 1. Devolvemos un objeto "plano" con todas las propiedades,
-    //    extrayéndolas del estado 'profileStatus'.
     return { 
         isLoadingUserProfile: profileStatus.isLoadingUserProfile,
         isComplete: profileStatus.isComplete,
@@ -105,11 +112,13 @@ const useGlobalState= () => {// Antes useUserProfileAndLocation
         triggerDonationReFetch,
         searchQuery,
         setSearchQuery,
-
+        notifications,
+        setNotifications,
+        unreadCount,
+        addNotification,
     };
 };
 
-// --- Layout Guardián (ahora usa 'currentUserRole') ---
 const ProtectedLayout = ({ adminOnly = false }) => {
     const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
 
@@ -131,8 +140,9 @@ const ProtectedLayout = ({ adminOnly = false }) => {
 const AppContent = () => {
   const appStateHook = useGlobalState();
   
+  useSocket(appStateHook.addNotification);
+
   const contextValueForProvider = useMemo(() => ({
-    
     isLoadingUserProfile: appStateHook.isLoadingUserProfile,
     isComplete: appStateHook.isComplete,
     currentUserRole: appStateHook.userRole,
@@ -145,6 +155,11 @@ const AppContent = () => {
     triggerDonationReFetch: appStateHook.triggerDonationReFetch,
     searchQuery: appStateHook.searchQuery,
     setSearchQuery: appStateHook.setSearchQuery,
+    // <<< 4. PASAMOS LOS VALORES DE NOTIFICACIÓN AL CONTEXTO >>>
+    notifications: appStateHook.notifications,
+    setNotifications: appStateHook.setNotifications,
+    unreadCount: appStateHook.unreadCount,
+    addNotification: appStateHook.addNotification,
   }), [appStateHook]);
 
   const handleDonationCreated = () => {
@@ -162,7 +177,6 @@ const AppContent = () => {
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
                     
-                    {/* Grupo de Rutas para USUARIOS NORMALES */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
@@ -171,12 +185,10 @@ const AppContent = () => {
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
                     </Route>
                     
-                    {/* Grupo de Rutas para ADMINS */}
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
                     </Route>
 
-                    {/* Rutas Públicas de Contenido Estático */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
