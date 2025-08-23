@@ -11,10 +11,49 @@ export class VoluntarioController {
     }
 
     try {
-      // 2. Enviamos un correo de confirmación al voluntario
+
+
+       const correoAlVoluntario = {
+        from: `"ResQFood Voluntariado" <${process.env.EMAIL_USER}>`,
+        to: email, 
+
+        subject: '¡Gracias por querer ser voluntario en ResQFood!',
+        html: `
+          <h1>¡Hola ${nombre}!</h1>
+          <p>Hemos recibido tu solicitud para unirte a nuestro equipo de voluntarios. ¡Estamos muy emocionados por tu interés!</p>
+          <p>Revisaremos tu información y nos pondremos en contacto contigo pronto.</p>
+          <p>¡Gracias de nuevo!</p>
+          <p>El equipo de ResQFood.</p>
+        `,
+      };
+
+      // B. Preparamos el correo de notificación para el administrador
+      const correoAlAdmin = {
+        from: `"Notificaciones ResQFood" <${process.env.EMAIL_USER}>`,
+        to: process.env.ADMIN_EMAIL, // <-- Usamos la nueva variable del .env
+        subject: `Nueva solicitud de voluntariado: ${nombre}`,
+        html: `
+          <h1>Nueva solicitud de voluntariado recibida</h1>
+          <p>Un nuevo voluntario ha llenado el formulario. Aquí están sus datos:</p>
+          <ul>
+            <li><strong>Nombre:</strong> ${nombre}</li>
+            <li><strong>Email:</strong> ${email}</li>
+            <li><strong>Fecha de Nacimiento:</strong> ${nacimiento}</li>
+            <li><strong>Teléfono:</strong> ${telefono || 'No proporcionado'}</li>
+            <li><strong>Ubicación:</strong> ${ciudad}, ${provincia}, ${pais}</li>
+          </ul>
+        `,
+      };
+
+      // C. Enviamos ambos correos en paralelo para mayor eficiencia
+      await Promise.all([
+        transporter.sendMail(correoAlVoluntario),
+        transporter.sendMail(correoAlAdmin)
+      ]);
+      //  Enviamos un correo de confirmación al voluntario
       await transporter.sendMail({
         from: `"ResQFood Voluntariado" <${process.env.EMAIL_USER}>`,
-        to: email, // El email que el usuario ingresó en el formulario
+        to: email, 
         subject: '¡Gracias por querer ser voluntario en ResQFood!',
         html: `
           <h1>¡Hola ${nombre}!</h1>
@@ -33,7 +72,7 @@ export class VoluntarioController {
       });
 
  
-      // 3. Enviamos una respuesta de éxito al frontend
+      // 2. Enviamos una respuesta de éxito al frontend
       res.status(200).json({ message: 'Solicitud de voluntariado enviada exitosamente. ¡Revisa tu correo!' });
 
     } catch (error) {
