@@ -192,7 +192,6 @@ export class SolicitudController {
                     select: 'titulo descripcion imagenesUrl categoria ubicacionRetiro fechaVencimientoProducto' 
                 })
                 .populate('donanteId', 'nombre fotoDePerfilUrl')
-                .populate('entregaId')
                 .sort({ createdAt: -1 });
             res.status(200).json({ solicitudes });
         } catch (error) {
