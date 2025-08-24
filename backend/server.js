@@ -5,9 +5,9 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io'; // Importa el servidor de Socket.IO
-import { configureSocket } from './socket.js'; // Importa la función de configuración
+import { configureSocket } from './socket.js';
 
-// --- Tus importaciones de rutas (sin cambios) ---
+
 import connectDB from './config/db.js';
 import UserRoutes from './routes/UserRoutes.js';
 import DonacionRoutes from './routes/DonacionRoutes.js';
@@ -21,20 +21,19 @@ import VoluntarioRoutes from './routes/VoluntarioRoutes.js';
 import ContactoRoutes from './routes/ContactoRoutes.js'
 import { handleClerkWebhook } from './controllers/webhookController.js';
 
-// --- Verificación de clave (sin cambios) ---
+
 if (!process.env.CLERK_SECRET_KEY) {
     console.error("ERROR: CLERK_SECRET_KEY no está definida.");
     process.exit(1);
 }
 
-// ==================================================================
-// INICIALIZACIÓN CANÓNICA Y A PRUEBA DE ERRORES
-// ==================================================================
+
 
 const app = express();
-const httpServer = createServer(app); // 1. Creamos el servidor HTTP a partir de Express
+const httpServer = createServer(app); //Servidor http
 
-// 2. Creamos la instancia de Socket.IO aquí mismo, adjuntándola al servidor HTTP
+
+// Creamos la instancia de Socket.IO aquí mismo, adjuntándola al servidor HTTP
 //    y configurando CORS para los WebSockets.
 const io = new SocketIOServer(httpServer, {
     cors: {
@@ -47,27 +46,34 @@ const io = new SocketIOServer(httpServer, {
 //    para que configure la lógica de autenticación y los eventos.
 configureSocket(io);
 
-// --- CONFIGURACIÓN DE MIDDLEWARES DE EXPRESS ---
 
-// Configuración de CORS para las rutas HTTP (API REST).
+
+//  CONFIGURACIÓN DE MIDDLEWARES DE EXPRESS 
+
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
 
-// Ruta especial para el webhook de Clerk, que va ANTES de express.json().
+
+// Ruta especial para el webhook de Clerk
 app.post('/api/webhooks/clerk', express.raw({ type: 'application/json' }), handleClerkWebhook);
+
 
 // Middlewares de parseo de JSON para el resto de las rutas de la API.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- CONEXIÓN A LA BASE DE DATOS ---
+
+// CONECIÓN A LA BASE DE DATOS
 connectDB();
+
 
 const PORT = process.env.PORT || 5000;
 
-// --- RUTAS DE LA APLICACIÓN ---
+
+//  RUTAS DE LA APLICACIÓN 
 app.get('/healthz', (req, res) => {
     res.status(200).send('OK');
 });
+
 
 // Rutas principales de la API
 app.use('/api/usuario', UserRoutes);
@@ -81,13 +87,13 @@ app.use('/api/bitacoraAdmin', BitacoraRoutes);
 app.use('/api/voluntario', VoluntarioRoutes);
 app.use('/api/contacto', ContactoRoutes);
 
-// --- MANEJO DE ERRORES ---
+//  MANEJO DE ERRORES 
 app.use((req, res, next) => {
     res.status(404).json({ message: `Ruta ${req.method} ${req.url} no encontrada.` });
 });
 
-// --- INICIO DEL SERVIDOR ---
-// Usamos 'httpServer.listen' para que tanto Express como Socket.IO escuchen en el mismo puerto.
+
+// INICIO DEL SERVIDOR
 httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Servidor HTTP y Sockets listos y escuchando en el puerto ${PORT}`);
 });
