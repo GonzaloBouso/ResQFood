@@ -21,21 +21,18 @@ import VoluntarioRoutes from './routes/VoluntarioRoutes.js';
 import ContactoRoutes from './routes/ContactoRoutes.js'
 import { handleClerkWebhook } from './controllers/webhookController.js';
 
-// --- Verificación de clave (sin cambios) ---
+
 if (!process.env.CLERK_SECRET_KEY) {
     console.error("ERROR: CLERK_SECRET_KEY no está definida.");
     process.exit(1);
 }
 
-// ==================================================================
-// INICIALIZACIÓN CANÓNICA Y A PRUEBA DE ERRORES
-// ==================================================================
 
 const app = express();
-const httpServer = createServer(app); // 1. Creamos el servidor HTTP a partir de Express
+const httpServer = createServer(app); // servidor HTTP 
 
-// 2. Creamos la instancia de Socket.IO aquí mismo, adjuntándola al servidor HTTP
-//    y configurando CORS para los WebSockets.
+// Creamos la instancia de Socket.IO aquí mismo, adjuntándola al servidor HTTP
+
 const io = new SocketIOServer(httpServer, {
     cors: {
         origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -43,8 +40,8 @@ const io = new SocketIOServer(httpServer, {
     }
 });
 
-// 3. Pasamos la instancia 'io' ya creada a nuestro archivo 'socket.js'
-//    para que configure la lógica de autenticación y los eventos.
+// Pasamos la instancia 'io' ya creada a nuestro archivo 'socket.js'
+
 configureSocket(io);
 
 // --- CONFIGURACIÓN DE MIDDLEWARES DE EXPRESS ---
@@ -52,7 +49,7 @@ configureSocket(io);
 // Configuración de CORS para las rutas HTTP (API REST).
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
 
-// Ruta especial para el webhook de Clerk, que va ANTES de express.json().
+// Ruta especial para el webhook de Clerk
 app.post('/api/webhooks/clerk', express.raw({ type: 'application/json' }), handleClerkWebhook);
 
 // Middlewares de parseo de JSON para el resto de las rutas de la API.
@@ -87,7 +84,7 @@ app.use((req, res, next) => {
 });
 
 // --- INICIO DEL SERVIDOR ---
-// Usamos 'httpServer.listen' para que tanto Express como Socket.IO escuchen en el mismo puerto.
+
 httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Servidor HTTP y Sockets listos y escuchando en el puerto ${PORT}`);
 });
