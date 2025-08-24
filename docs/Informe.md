@@ -1,90 +1,98 @@
 # ResQFood
 
 ## Equipo
-Gonzalo Bouso, Milagros Villafañe, Agustín Iturbe
+Gonzalo Bouso, Milagros Villafañe
 
 ---
+
 # Tabla de Contenido
 
-1. [Equipo de Trabajo](#equipo-de-trabajo)
-2. [Introducción](#introducción)  
-3. [Objetivo del Proyecto](#objetivo-del-proyecto)  
-4. [Problema Identificado](#problema-identificado)  
-5. [Descripción de la Solución](#descripción-de-la-solución)  
-6. [Impacto Esperado](#impacto-esperado)  
-7. [Características Principales](#características-principales)  
-8. [Requisitos de los Usuarios](#requisitos-de-los-usuarios)  
-9. [Requisitos de las Publicaciones](#requisitos-de-las-publicaciones)  
-10. [Flujo de Donaciones: Pasos y Detalles Funcionales](#flujo-de-donaciones-pasos-y-detalles-funcionales)  
-   - [Donación General](#donación-general)  
-11. [Justificación del Stack Tecnológico (MERN)](#justificación-del-stack-tecnológico-mern)  
-12. [Metodología de Trabajo](#metodología-de-trabajo)  
-    - [Uso de Scrum](#uso-de-scrum)
-13. [Herramientas](#herramientas)  
-14. [Arquitectura del Proyecto](#arquitectura-del-proyecto)  
-15. [Justificación del uso de Mongo DB para la base de Datos](justificacion-del-uso-de-mongo-db-para-la-base-de-datos)
-16. [Diseño](#diseño)  
-    - [Bocetos de la Aplicación](#bocetos-de-la-aplicación)  
-17. 📚 [Documentación de Diseño - ResQFood (Opción 2: Estética Minimalista)](#documentación-de-diseño---resqfood-opción-2-estética-minimalista)  
-    - [Introducción](#introducción-1)  
-    - [Paleta de Colores](#paleta-de-colores)  
-    - [Tipografía](#tipografía)  
-    - [Iconografía](#iconografía)  
-    - [Espaciado y Márgenes](#espaciado-y-márgenes)  
-    - [Elementos Interactivos](#elementos-interactivos)  
-    - [Otros Elementos Visuales](#otros-elementos-visuales)  
-18. [Modelado de la base de datos]
-19. [Prototipado]
-20. [Despliegue]
+1.  [Visión del Proyecto](#1-visión-del-proyecto)
+    -   [1.1. Introducción](#11-introducción)
+    -   [1.2. Problema Identificado](#12-problema-identificado)
+    -   [1.3. Objetivo del Proyecto](#13-objetivo-del-proyecto)
+    -   [1.4. Impacto Esperado](#14-impacto-esperado)
+2.  [Alcance y Funcionalidades](#2-alcance-y-funcionalidades)
+    -   [2.1. Descripción de la Solución](#21-descripción-de-la-solución)
+    -   [2.2. Flujo de Donaciones](#22-flujo-de-donaciones)
+    -   [2.3. Tipos de Usuario y Permisos](#23-tipos-de-usuario-y-permisos)
+    -   [2.4. Requisitos de las Publicaciones de Alimentos](#24-requisitos-de-las-publicaciones-de-alimentos)
+    -   [2.5. Otras Funcionalidades Clave](#25-otras-funcionalidades-clave)
+3.  [Metodología y Arquitectura Técnica](#3-especificaciones-técnicas-y-arquitectura)
+    -   [3.1. Metodología de Trabajo](#31-metodología-de-trabajo)
+    -   [3.2. Herramientas](#32-herramientas)
+    -   [3.3. Justificación del Stack Tecnológico (MERN)](#33-justificación-del-stack-tecnológico-mern)
+    -   [3.4. Arquitectura del proyecto](#34-arquitectura-del-proyecto)
+    -   [3.5. Base de Datos: MongoDB](#35-mongo-db-para-la-base-de-datos)
+    -   [3.6. Modelado de la base de datos](#36-modelado-de-la-base-de-datos)
+4.  [Diseño y Experiencia de Usuario (UX/UI)](#4-diseño-y-experiencia-de-usuario-uxui)
+    -   [4.1. Concepto de Diseño](#41-concepto-de-diseño)
+    -   [4.2. Guía de Estilo Visual](#42-guía-de-estilo-visual)
+    -   [4.3. Bocetos Iniciales](#43-bocetos-iniciales)
+    -   [4.4. Prototipo Interactivo](#44-prototipo-interactivo)
+5.  [Despliegue](#5-despliegue)
+
 
 ---
 
 ### Equipo de Trabajo
 - **Scrum Master:** Gonzalo Bouso
-- **Líder Frontend:** Agustín Iturbe
+- **Líder Frontend:** Gonzalo Bouso
 - **Líder Backend:** Milagros Villafañe
 - **Encargado de Testing:** Gonzalo Bouso
-- **Encargado de Documentación:** Milagros Villafañe
-- **Encargado del manejo de Trello:** Agustín Iturbe
+- **Encargado de Documentación:** Villafañe Milagros
+- **Encargado del manejo de Trello:** Villafañe Milagros
 
 ---
+## 1. Visión del Proyecto
 
-## Introducción
+
+## 1.1. Introducción
 El desperdicio de alimentos es un problema global con importantes implicancias económicas, sociales y ambientales. Se estima que diariamente se descartan grandes cantidades de alimentos en buen estado debido a su proximidad a la fecha de caducidad o por no ser utilizados. Este proyecto busca abordar esta problemática mediante el desarrollo de una plataforma que facilite la redistribución de alimentos no deseados, fomentando el aprovechamiento de los recursos y reduciendo el desperdicio.
 
----
 
-## Objetivo del Proyecto
+## 1.2. Problema Identificado
+Los alimentos cercanos a su fecha de caducidad suelen ser desechados innecesariamente en hogares y establecimientos como restaurantes y supermercados. Este desperdicio no solo impacta negativamente en el medio ambiente, sino que también representa una pérdida de recursos valiosos y una oportunidad desaprovechada de ayudar a quienes más lo necesitan.
+
+## 1.3. Objetivo del Proyecto
 Desarrollar una aplicación web intuitiva que permita:
 1. Publicar alimentos que ya no necesitan, especificando detalles como tipo, cantidad y fecha de caducidad.
 2. Localizar alimentos disponibles en su zona.
 3. Coordinar la recolección de dichos alimentos de manera sencilla y eficiente.
+
+
+### 1.4. Impacto Esperado
+1.  **Reducir** significativamente el desperdicio de alimentos en el ámbito doméstico y comercial.
+2.  **Contribuir** al fortalecimiento de una economía circular y sostenible.
+3.  **Ayudar** a personas en situación de necesidad a acceder a recursos alimentarios gratuitos.
+
+
 ---
 
-## Problema Identificado
-Los alimentos cercanos a su fecha de caducidad suelen ser desechados innecesariamente en hogares y establecimientos como restaurantes y supermercados. Este desperdicio no solo impacta negativamente en el medio ambiente, sino que también representa una pérdida de recursos valiosos y una oportunidad desaprovechada de ayudar a quienes más lo necesitan.
 
+## 2. Alcance y Funcionalidades
 
----
-
-## Descripción de la Solución
-La plataforma funcionará como un puente entre quienes tienen alimentos en buen estado que no planean consumir y personas o instituciones que puedan aprovecharlos.
+### 2.1 Descripción de la Solución
+La plataforma funciona como un puente entre quienes tienen alimentos en buen estado que no planean consumir y personas o instituciones que puedan aprovecharlos.
 - **Para los donantes:** Podrán registrar alimentos de manera rápida, cargando una breve descripción, fotografía y detalles de disponibilidad.
 - **Para los receptores:** Podrán buscar alimentos según su ubicación y necesidad, comunicándose directamente con los donantes a través de la aplicación.
 - **Geolocalización:** La app incluirá mapas interactivos para facilitar el contacto entre usuarios cercanos.
 
----
 
-## Impacto Esperado
-1. Reducir significativamente el desperdicio de alimentos en el ámbito doméstico y comercial.
-2. Contribuir al fortalecimiento de una economía circular y sostenible.
-3. Ayudar a personas en situación de necesidad a acceder a recursos alimentarios gratuitos.
+### 2.2. Flujo de Donaciones
+1.  **Publicación:** El donador publica una donación con todos los detalles requeridos.
+2.  **Visibilidad:** El producto aparece en el feed de receptores cercanos geográficamente.
+3.  **Solicitud:** Un receptor solicita el producto a través de la plataforma.
+4.  **Aceptación:** El donador recibe una notificación, acepta la solicitud y establece un horario de entrega.
+5.  **Confirmación:** El receptor confirma el horario y acepta los términos. El estado del producto cambia a **"Pendiente"**, haciéndolo no disponible para otras solicitudes.
+6.  **Código de Entrega:** Se genera un código ID único para el receptor, asociado a esa entrega específica.
+7.  **Validación:** En el momento del intercambio, el donador ingresa el código ID proporcionado por el receptor para confirmar la entrega.
+8.  **Finalización:** El producto se marca como **"Entregado"** y deja de estar visible. Las otras solicitudes para ese producto se cancelan.
+9.  **Calificación:** El receptor tiene la opción de puntuar al donador para construir un sistema de confianza.
 
----
 
-## Características Principales
 
-### 1. Tipo de Usuario
+### 2.3. Tipo de Usuario y Permisos
 - **Usuario General:** Puede ser receptor o donador.
 - **Usuario Local (Empresas o Restaurantes):** Solo puede ser donador, no receptor.
 
@@ -112,14 +120,9 @@ La plataforma funcionará como un puente entre quienes tienen alimentos en buen 
 | **Historial de cambios**| ❌ No aplica    | ❌ No aplica  | ❌ No      | ✅ Sí         | ✅ Sí      | ❌ No    |
 
 
-## 2. Registro y Autenticación
-Los usuarios deberán crear una cuenta para participar.
+ 
+### 2.4. Requisitos de las Publicaciones de Alimentos
 
-
-
-## 3. Publicación de Alimentos
-
-### Requisitos de las Publicaciones
 
 | Requisito               | Obligatorio | Descripción                                | Funciona | Visible en publicación |
 |-------------------------|-------------|--------------------------------------------|----------|-------------------------|
@@ -141,78 +144,20 @@ Los usuarios deberán crear una cuenta para participar.
 | **Botón solicitar donación** | ✅ Sí| Manifiesta interés en recibir la donación  | ✅ Sí    | ✅ Sí                  |
 
 
-## 4. Búsqueda y Filtrado
-Los receptores podrán buscar alimentos según categoría, ubicación o cercanía a la fecha de caducidad.
-
-
-
-## 5. Reservación de Alimentos
-El usuario receptor podrá seleccionar un alimento en una publicación. Al ser aprobado por el donante, el alimento dejará de estar disponible.
-
-
-
-## 6. Notificaciones
-Alertas para donantes y receptores sobre nuevas publicaciones o solicitudes.
-
-
-
-## 7. Sistema de Calificaciones
-Para garantizar la confianza y transparencia entre los usuarios.
+## 2.5. Otras Funcionalidades Clave
+- **Búsqueda y Filtrado:** Los receptores podrán buscar alimentos según categoría, ubicación o cercanía a la fecha de caducidad.
+- **Reservación de Alimentos:** El usuario receptor podrá seleccionar un alimento en una publicación. Al ser aprobado por el donante, el alimento dejará de estar disponible.
+- **Notificaciones:** Alertas para donantes y receptores sobre nuevas publicaciones o solicitudes.
+- **Sistema de Calificaciones:** Para garantizar la confianza y transparencia entre los usuarios.
 
 
 ---
 
 
-## Flujo de Donaciones: Pasos y Detalles Funcionales
-### Donación General
-
-1. El donador publica una donación con foto, información del producto y detalles relevantes.
-2. El producto aparece en el feed de receptores cercanos.
-3. Un receptor solicita el producto.
-4. El donador recibe una notificación, acepta la solicitud y establece un horario de entrega.
-5. El receptor confirma el horario y acepta los términos de entrega.
-   - El producto cambia su estado a **"pendiente"**, lo que significa que sigue visible pero no puede ser solicitado por otros receptores.
-   - Si la entrega no se completa y el donador no ingresa el código de confirmación, el producto volverá a estar disponible.
-6. Se genera un código ID para el receptor, referenciando al producto.
-7. El donador ingresa el código ID para confirmar la entrega.
-8. El producto deja de estar disponible en la plataforma.
-9. Se eliminan las otras solicitudes del producto.
-10. El receptor puede puntuar al donador.
+## 3. Especificaciones Técnicas y Arquitectura
 
 
-
----
-
-
-## Justificación del Stack Tecnológico (MERN)
-El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías más adecuadas para desarrollar una red social como ResQFood, que conecta a personas que desean donar alimentos con aquellas que los necesitan. La elección de este stack se basa en los siguientes factores:
-
-1. **Desarrollo Full-Stack con JavaScript**: El uso de JavaScript en todo el stack (frontend, backend y base de datos) simplifica el desarrollo, ya que permite mantener un único lenguaje de programación en toda la aplicación. Esto ofrece:
-✅ Código más limpio y reutilizable, evitando la necesidad de cambiar entre lenguajes.
-✅ Menor curva de aprendizaje, ya que todos los desarrolladores pueden trabajar tanto en frontend como en backend sin problemas.
-✅ Eficiencia en el desarrollo, permitiendo una mejor colaboración dentro del equipo.
-
-2. **Escalabilidad y Manejo de Datos en Tiempo Real**: Como la plataforma funcionará como una red social, es fundamental que maneje eficientemente un gran volumen de datos y usuarios. MERN ofrece ventajas clave:
-✅ MongoDB es una base de datos NoSQL altamente escalable y flexible. Permite almacenar publicaciones de donaciones, usuarios y comentarios de manera eficiente.
-✅ React.js facilita la actualización dinámica de la interfaz sin recargar la página, mejorando la experiencia del usuario.
-✅ Node.js y Express manejan múltiples solicitudes concurrentes sin perder rendimiento, asegurando un backend rápido y estable
-
-3. **Integración con Funcionalidades Clave para una Red Social**: El stack MERN se adapta perfectamente a los requerimientos de una red social como ResQFood, incluyendo:
-✅ Publicación y gestión de alimentos: MongoDB permite almacenar publicaciones con imágenes, descripciones y geolocalización.
-✅ Sistema de usuarios y autenticación: Node.js y JWT garantizan una autenticación segura y escalable.
-✅ Geolocalización en tiempo real: React puede integrarse con Google Maps API para mostrar las donaciones cercanas a cada usuario.
-✅ Notificaciones en tiempo real: WebSockets con Node.js pueden usarse para alertar a los usuarios sobre nuevas donaciones.
-
-4. **Comunidad y Soporte Activo**: ✅ MERN es una tecnología ampliamente adoptada, con una gran comunidad de desarrolladores y documentación disponible, lo que facilita la resolución de problemas y futuras mejoras en el sistema.
-
-### Conclusión :
- El MERN Stack ofrece una combinación ideal de velocidad, escalabilidad, facilidad de desarrollo e integración con funcionalidades clave para redes sociales. Su arquitectura basada en JavaScript en todo el stack, permite desarrollar ResQFood de manera eficiente y preparada para el crecimiento futuro. 🚀
-
-
----
-
-
-## Metodología de Trabajo
+## 3.1. Metodología de Trabajo
 Uso de **Scrum** para gestionar el desarrollo del proyecto.
 Para gestionar el desarrollo del proyecto, se empleará la metodología Scrum, que permitirá la entrega iterativa de funcionalidades y la mejora continua a través de la retroalimentación.
 
@@ -220,8 +165,6 @@ Para gestionar el desarrollo del proyecto, se empleará la metodología Scrum, q
 - **Sprint Review y Retrospective:** Jueves a las 10:30 AM.
 - **Sprint Planning:** Todos los miercoles.
 - **Daily Meetings:** Lunes a viernes a las 10:00 AM (15 min).
-
----
 
 ### Uso de Scrum
   Scrum es una metodología ágil para la gestión y desarrollo de proyectos complejos. Se utiliza comúnmente en el desarrollo de software, pero también puede aplicarse en otros contextos. Su objetivo es entregar productos de alta calidad mediante un enfoque iterativo e incremental, promoviendo la colaboración, la flexibilidad y la mejora continua.
@@ -265,20 +208,43 @@ o	Cada sprint produce un incremento funcional del producto, llamado Incremento.
 
 ![Diseño Home Page](img/Scrum.png)
 
----
 
-
-## Herramientas
+## 3.2 Herramientas
 1. **Trello:** Gestión de tareas.
 2. **Jira:** Seguimiento de bugs y testing.
 3. **GitHub:** Control de versiones.
 4. **Notion/Google Docs:** Documentación colaborativa.
 
 
----
+
+## 3.3. Justificación del Stack Tecnológico (MERN)
+El MERN Stack (MongoDB, Express.js, React, Node.js) es una de las tecnologías más adecuadas para desarrollar una red social como ResQFood, que conecta a personas que desean donar alimentos con aquellas que los necesitan. La elección de este stack se basa en los siguientes factores:
+
+1. **Desarrollo Full-Stack con JavaScript**: El uso de JavaScript en todo el stack (frontend, backend y base de datos) simplifica el desarrollo, ya que permite mantener un único lenguaje de programación en toda la aplicación. Esto ofrece:
+✅ Código más limpio y reutilizable, evitando la necesidad de cambiar entre lenguajes.
+✅ Menor curva de aprendizaje, ya que todos los desarrolladores pueden trabajar tanto en frontend como en backend sin problemas.
+✅ Eficiencia en el desarrollo, permitiendo una mejor colaboración dentro del equipo.
+
+2. **Escalabilidad y Manejo de Datos en Tiempo Real**: Como la plataforma funcionará como una red social, es fundamental que maneje eficientemente un gran volumen de datos y usuarios. MERN ofrece ventajas clave:
+✅ MongoDB es una base de datos NoSQL altamente escalable y flexible. Permite almacenar publicaciones de donaciones, usuarios y comentarios de manera eficiente.
+✅ React.js facilita la actualización dinámica de la interfaz sin recargar la página, mejorando la experiencia del usuario.
+✅ Node.js y Express manejan múltiples solicitudes concurrentes sin perder rendimiento, asegurando un backend rápido y estable
+
+3. **Integración con Funcionalidades Clave para una Red Social**: El stack MERN se adapta perfectamente a los requerimientos de una red social como ResQFood, incluyendo:
+✅ Publicación y gestión de alimentos: MongoDB permite almacenar publicaciones con imágenes, descripciones y geolocalización.
+✅ Sistema de usuarios y autenticación: Node.js y JWT garantizan una autenticación segura y escalable.
+✅ Geolocalización en tiempo real: React puede integrarse con Google Maps API para mostrar las donaciones cercanas a cada usuario.
+✅ Notificaciones en tiempo real: WebSockets con Node.js pueden usarse para alertar a los usuarios sobre nuevas donaciones.
+
+4. **Comunidad y Soporte Activo**: ✅ MERN es una tecnología ampliamente adoptada, con una gran comunidad de desarrolladores y documentación disponible, lo que facilita la resolución de problemas y futuras mejoras en el sistema.
+
+### Conclusión :
+ El MERN Stack ofrece una combinación ideal de velocidad, escalabilidad, facilidad de desarrollo e integración con funcionalidades clave para redes sociales. Su arquitectura basada en JavaScript en todo el stack, permite desarrollar ResQFood de manera eficiente y preparada para el crecimiento futuro. 🚀
 
 
-## Arquitectura del proyecto
+
+
+## 3.4. Arquitectura del proyecto
 
 Para el desarrollo de nuestro proyecto final, hemos decidido utilizar la arquitectura cliente-servidor junto con el patrón MVC(modelo-vista-controlador) debido a sus múltiples ventajas en términos de flexibilidad, escalabilidad, mantenimiento y organización de código. A continuación, se describen las principales razones de esta decisión:
 
@@ -335,7 +301,7 @@ La arquitectura cliente-servidor junto con el patrón MVC no solo se ajusta a lo
 ---
 
 
-## Justificación del uso de Mongo DB para la base de Datos
+## 3.5. Mongo DB para la base de Datos
 
  Para la base de datos de nuestro proyecto Utilizaremos Mongo DB debido a las siguientes razones:
 
@@ -347,63 +313,35 @@ La arquitectura cliente-servidor junto con el patrón MVC no solo se ajusta a lo
  7. **Reducción del desperdicio de tiempo en migraciones**: A diferencia de bases de datos relacionales que requieren modificaciones constantes en el esquema conforme evolucionan las necesidades del proyecto, MongoDB se adapta facílmente a cambio en los datos sin necesidad de migraciones complejas.
 
 
----
+## 3.6. [Modelado de la base de datos]
 
+![Entidad Usuario](img/modeladoBD/USUARIO.png)
+![Entidad Solicitud](img/modeladoBD/SOLICITUD.png)
+![Entidad Reporte](img/modeladoBD/REPORTE.png)
+![Entidad Notificacion](img/modeladoBD/NOTIFICACION.png)
+![Entidad Entrega](img/modeladoBD/ENTREGA.png)
+![Entidad Donacion](img/modeladoBD/DONACION.png)
+![Entidad Calificacion](img/modeladoBD/CALIFICACION.png)
+![Entidad Bitacora accion admin](img/modeladoBD/BITACORA-ACCION-ADMIN.png)
 
-## Diseño
-A continuación, se presenta un primer boceto de la pantalla de inicio (Home Page) de ResQFood. Este diseño no es definitivo y servirá como base para futuras iteraciones.
-
-![Diseño Home Page](img/bocetos/PrimerSketch.jpeg)
-
-## Más Bocetos de la App
-
-**Mapa de donaciones**:
-![Diseño Home Page](img/bocetos/mapaDeDonaciones.jpeg)
-
-**Principal, opción de creación y filtrado de publicaciones**:
-![Diseño Home Page](img/bocetos/principalCreacionFiltPublic.jpeg)
-
-**Creación de publicación**:
-![Diseño Home Page](img/bocetos/creacionPublicacion.jpeg)
-
-**Publicación creada**:
-![Diseño Home Page](img/bocetos/publicacionCreada.jpeg)
-![Diseño Home Page](img/bocetos/publicacionCreada2.jpeg)
-
-**Notificaciones**:
-![Diseño Home Page](img/bocetos/notificaciones.jpeg)
-![Diseño Home Page](img/bocetos/notificaciones2.jpeg)
-
-**Información de retiro**: 
-![Diseño Home Page](img/bocetos/informacionDeRetiro.jpeg)
-
-**Información de alimento donado**:
-![Diseño Home Page](img/bocetos/infoAlimentoDonado.jpeg)
-
-**Información de solicitudes**:
-![Diseño Home Page](img/bocetos/infoSolicitudes.jpeg)
-
-**Usuario general**:
-![Diseño Home Page](img/bocetos/usuarioGeneral.jpeg)
-
-**Historial de donaciones**:
-![Diseño Home Page](img/bocetos/historialDonaciones.jpeg)
-
-**Historial de recepciones**:
-![Diseño Home Page](img/bocetos/hitorialRecepciones.jpeg)
-
-**Calificaciones**:
-![Diseño Home Page](img/bocetos/calificaciones.jpeg)
+![modelo entidad relacion](img/modeladoBD/MODELO-ENTIDAD-RELACION.png)
 
 
 ---
 
-## 📚 Documentación de Diseño - ResQFood (Opción 2: Estética Minimalista)
-#### 1. Introducción
-**Objetivo**: Esta sección describe las directrices visuales de la aplicación ResQFood en una versión más moderna y minimalista. Incluye la paleta de colores, tipografía, iconografía y otros elementos clave de diseño. El propósito es mantener una experiencia de usuario limpia, clara y coherente.
-Audiencia: Este documento está dirigido a diseñadores, desarrolladores y otros stakeholders involucrados en el desarrollo visual y técnico del proyecto.
-________________________________________
-#### 2. Paleta de Colores
+
+## 4. Diseño y Experiencia de Usuario (UX/UI)
+
+## 4.1 Concepto de Diseño
+El diseño de ResQFood se basa en una **estética minimalista**, enfocada en la claridad, la usabilidad y una experiencia de usuario intuitiva. El objetivo es que la plataforma sea accesible para todo tipo de usuarios, sin distracciones visuales.
+
+
+## 📚 Documentación de Diseño - Resqfood
+
+## 4.2. Guía de Estilo Visual
+
+
+####  Paleta de Colores
 La siguiente paleta se enfoca en tonos suaves, neutros y modernos, con énfasis en la simplicidad visual.
 **Colores Principales**:
 **Color Primario**:
@@ -433,7 +371,8 @@ La siguiente paleta se enfoca en tonos suaves, neutros y modernos, con énfasis 
 •	RGB: (125, 125, 125)
 •	Uso: Descripciones, subtítulos, textos de ayuda.
 ________________________________________
-#### 3. Tipografía
+
+####  Tipografía
 Las fuentes utilizadas están pensadas para asegurar legibilidad y estilo moderno.
 **Fuente Principal**:
 •	Nombre: Inter
@@ -450,7 +389,8 @@ Las fuentes utilizadas están pensadas para asegurar legibilidad y estilo modern
 •	Texto Secundario: 14px
 •	Botones: 16–18px
 ________________________________________
-#### 4. Iconografía
+
+####  Iconografía
 **Estilo de íconos**: Lineales, minimalistas y monocromáticos. Se prioriza la claridad y consistencia.
 **Librerías sugeridas**: Lucide Icons, Feather Icons, Heroicons.
 **Íconos Relevantes**:
@@ -459,7 +399,8 @@ ________________________________________
 •	👤 Íconos de Usuario: Perfil, avatar, ajustes.
 •	🔍 Íconos de Filtro: Lista, embudo, sliders.
 ________________________________________
-#### 5. Espaciado y Márgenes
+
+####  Espaciado y Márgenes
 El espaciado generoso ayuda a mantener una estética limpia y profesional.
 **Recomendaciones**:
 •	Márgenes exteriores: 24px
@@ -501,33 +442,68 @@ ________________________________________
 ![Diseño Home Page](img/diseño.jpeg)
 
 
+---
 
-## Diseño UX/UI
+
+## 4.3. Bocetos Iniciales
+
+![Diseño Home Page](img/bocetos/PrimerSketch.jpeg)
+
+**Mapa de donaciones**:
+![Diseño Home Page](img/bocetos/mapaDeDonaciones.jpeg)
+
+**Principal, opción de creación y filtrado de publicaciones**:
+![Diseño Home Page](img/bocetos/principalCreacionFiltPublic.jpeg)
+
+**Creación de publicación**:
+![Diseño Home Page](img/bocetos/creacionPublicacion.jpeg)
+
+**Publicación creada**:
+![Diseño Home Page](img/bocetos/publicacionCreada.jpeg)
+![Diseño Home Page](img/bocetos/publicacionCreada2.jpeg)
+
+**Notificaciones**:
+![Diseño Home Page](img/bocetos/notificaciones.jpeg)
+![Diseño Home Page](img/bocetos/notificaciones2.jpeg)
+
+**Información de retiro**: 
+![Diseño Home Page](img/bocetos/informacionDeRetiro.jpeg)
+
+**Información de alimento donado**:
+![Diseño Home Page](img/bocetos/infoAlimentoDonado.jpeg)
+
+**Información de solicitudes**:
+![Diseño Home Page](img/bocetos/infoSolicitudes.jpeg)
+
+**Usuario general**:
+![Diseño Home Page](img/bocetos/usuarioGeneral.jpeg)
+
+**Historial de donaciones**:
+![Diseño Home Page](img/bocetos/historialDonaciones.jpeg)
+
+**Historial de recepciones**:
+![Diseño Home Page](img/bocetos/hitorialRecepciones.jpeg)
+
+**Calificaciones**:
+![Diseño Home Page](img/bocetos/calificaciones.jpeg)
+
+---
+
+## 4.4. Prototipo Interactivo
 Para visualizar el prototipo interactivo del diseño de la aplicación, visita el siguiente enlace en Figma:  
 [Prototipo ResQFood en Figma](https://www.figma.com/design/3JPAqtqi6R1U7tjWSTbVaU/ResQfood?node-id=0-1&t=CYVF0Fi65byTt0KI-1)
 
 
----
-
-18. [Modelado de la base de datos]
-
-![Entidad Usuario](img/modeladoBD/USUARIO.png)
-![Entidad Solicitud](img/modeladoBD/SOLICITUD.png)
-![Entidad Reporte](img/modeladoBD/REPORTE.png)
-![Entidad Notificacion](img/modeladoBD/NOTIFICACION.png)
-![Entidad Entrega](img/modeladoBD/ENTREGA.png)
-![Entidad Donacion](img/modeladoBD/DONACION.png)
-![Entidad Calificacion](img/modeladoBD/CALIFICACION.png)
-![Entidad Bitacora accion admin](img/modeladoBD/BITACORA-ACCION-ADMIN.png)
-
-![modelo entidad relacion](img/modeladoBD/MODELO-ENTIDAD-RELACION.png)
-
-19. [Prototipado]
-
-![Link de figma](https://www.figma.com/design/3JPAqtqi6R1U7tjWSTbVaU/ResQfood?node-id=0-1&p=f&t=5zFT8Z7vVygKhVSb-0)
 ![Qr figma](img/prototipos/qr_resqfood_figma.png)
 
-20. [Despliegue]
+
+---
+
+
+# 5. [Despliegue]
+
+La aplicación está desplegada y accesible públicamente a través de los siguientes enlaces:
 
 ![Link](https://res-q-food.vercel.app/)
+
 ![Qr](img/despliegue/vercel.png)
