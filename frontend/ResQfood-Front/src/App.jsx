@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useMemo, useCallback } from 're
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
-
+import { Toaster } from 'react-hot-toast'; 
 // --- Tus componentes y páginas ---
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
@@ -215,6 +215,17 @@ const AppContent = () => {
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
         <div className="flex flex-col min-h-screen bg-gray-50">
+             <Toaster 
+              position="top-center"
+              reverseOrder={false}
+              toastOptions={{
+                duration: 5000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+              }}
+            />
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             <ClerkLoaded>

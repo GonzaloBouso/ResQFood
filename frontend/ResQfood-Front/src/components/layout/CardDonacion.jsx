@@ -4,7 +4,7 @@ import { useAuth } from '@clerk/clerk-react';
 import API_BASE_URL from '../../api/config'; 
 import DetallesCardDonacion from './DetallesCardDonacion';
 import ConfirmModal from '../modals/ConfirmModal'; 
-
+import toast from 'react-hot-toast';
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200.png?text=Sin+Imagen';
 
 const CardDonacion = ({ donacion }) => { 
@@ -24,6 +24,7 @@ const CardDonacion = ({ donacion }) => {
   const inicialesDonante = nombreDonante.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   const handleSolicitarClick = async () => {
+    const toastId = toast.loading('Enviando tu solicitud...');
     try {
       const token = await getToken();
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${_id}/solicitar`, {
@@ -40,7 +41,9 @@ const CardDonacion = ({ donacion }) => {
         throw new Error(data.message || 'No se pudo enviar la solicitud.');
       }
       
-      alert('¡Solicitud enviada con éxito! El donante ha sido notificado.');
+        toast.success('¡Solicitud enviada con éxito! El donante ha sido notificado.', {
+        id: toastId, // Reemplaza el toast de "cargando"
+      });
 
     } catch (err) {
       console.error("Error al solicitar donación:", err);
