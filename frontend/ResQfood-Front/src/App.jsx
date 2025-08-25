@@ -178,35 +178,7 @@ const AppContent = () => {
   
   useSocket(appStateHook.addNotification);
 
-  const contextValueForProvider = useMemo(() => ({
-    isLoadingUserProfile: appStateHook.isLoadingUserProfile,
-    isComplete: appStateHook.isComplete,
-    currentUserRole: appStateHook.userRole,
-    currentUserDataFromDB: appStateHook.userDataFromDB,
-    currentClerkUserId: appStateHook.currentClerkUserId,
-    updateProfileState: appStateHook.updateProfileState,
-    activeSearchLocation: appStateHook.activeSearchLocation,
-    setActiveSearchLocation: appStateHook.setActiveSearchLocation,
-    donationCreationTimestamp: appStateHook.donationCreationTimestamp,
-    triggerDonationReFetch: appStateHook.triggerDonationReFetch,
-    searchQuery: appStateHook.searchQuery,
-    setSearchQuery: appStateHook.setSearchQuery,
-    notifications: appStateHook.notifications,
-    setNotifications: appStateHook.setNotifications,
-    unreadCount: appStateHook.unreadCount,
-    addNotification: appStateHook.addNotification,
-  }), [
-    appStateHook.isLoadingUserProfile,
-    appStateHook.isComplete,
-    appStateHook.currentUserRole,
-    appStateHook.currentUserDataFromDB,
-    appStateHook.currentClerkUserId,
-    appStateHook.activeSearchLocation,
-    appStateHook.donationCreationTimestamp,
-    appStateHook.searchQuery,
-    appStateHook.notifications,
-    appStateHook.unreadCount,
-  ]);
+  const contextValueForProvider = useMemo(() => (appStateHook), [appStateHook]);
 
   const handleDonationCreated = () => {
     appStateHook.triggerDonationReFetch();
