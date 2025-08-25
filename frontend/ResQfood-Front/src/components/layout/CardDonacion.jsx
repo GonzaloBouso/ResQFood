@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import API_BASE_URL from '../../api/config'; 
 import DetallesCardDonacion from './DetallesCardDonacion';
+import ConfirmModal from '../modals/ConfirmModal'; 
 
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200.png?text=Sin+Imagen';
 
 const CardDonacion = ({ donacion }) => { 
-  const [mostrarModal, setMostrarModal] = React.useState(false);
+  const [mostrarModal, setMostrarModal] = useState(false);
   const { getToken } = useAuth(); 
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   if (!donacion) return null;
 
@@ -21,10 +24,7 @@ const CardDonacion = ({ donacion }) => {
   const inicialesDonante = nombreDonante.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   const handleSolicitarClick = async () => {
-    if (!window.confirm(`¿Estás seguro de que quieres solicitar "${titulo}"?`)) {
-      return;
-    }
-try {
+    try {
       const token = await getToken();
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${_id}/solicitar`, {
         method: 'POST',
@@ -119,7 +119,7 @@ try {
             </button>
             <button
               className="w-full sm:w-auto flex-1 px-3 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-brandPrimaryDarker transition-colors whitespace-nowrap"
-              onClick={handleSolicitarClick}
+              onClick={() => setIsConfirmOpen(true)}
             >
               Solicitar
             </button>
@@ -130,6 +130,19 @@ try {
       {mostrarModal && (
         <DetallesCardDonacion donacionId={_id} onClose={cerrarModal} />
       )}
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={() => {
+            setIsConfirmOpen(false);
+            handleSolicitarClick();
+        }}
+        title="Confirmar Solicitud"
+        message={`¿Estás seguro de que quieres solicitar la donación "${titulo}"?`}
+        confirmText="Sí, Solicitar"
+        cancelText="Cancelar"
+      />
     </>
   );
 };
