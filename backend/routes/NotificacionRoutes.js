@@ -1,13 +1,12 @@
+// backend/routes/NotificacionRoutes.js
 import express from 'express';
 import { NotificacionController } from '../controllers/NotificacionController.js';
 import { requireAuth } from '../middlewares/autMiddleware.js';
 
 const router = express.Router();
 
-// Obtener todas las notificaciones del usuario logueado
-router.get('/', requireAuth, NotificacionController.getMisNotificaciones);
 
-// Marcar una notificación como leída
+router.get('/mis-notificaciones', requireAuth, NotificacionController.getMisNotificaciones);
 
 router.patch('/marcar-como-leidas', requireAuth, NotificacionController.marcarNotificacionesComoLeidas);
 

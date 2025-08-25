@@ -22,10 +22,12 @@ const Header = () => {
     searchQuery,
     setSearchQuery,
     unreadCount,
-    setNotifications 
+    setNotifications,
+    setUnreadCount 
 
 
   } = useContext(ProfileStatusContext) || {};
+
 
 
   const profilePath = "/mi-perfil";
@@ -61,22 +63,23 @@ const Header = () => {
   }
 
     const handleMarkAsRead = async () => {
-      if (unreadCount === 0) return; // No hace nada si no hay notificaciones nuevas
+      if (unreadCount === 0) return;
 
       try {
+      
+          setUnreadCount(0);
+          setNotifications(prev => prev.map(notif => ({ ...notif, leida: true })));
+
+          
           const token = await getToken();
           await fetch(`${API_BASE_URL}/api/notificacion/marcar-como-leidas`, {
               method: 'PATCH',
               headers: { 'Authorization': `Bearer ${token}` }
           });
           
-          // 2. Si la llamada al backend es exitosa, actualizamos el estado en el frontend.
-          //    Pasamos una función a setNotifications para modificar la lista actual.
-          setNotifications(prevNotifications => 
-              prevNotifications.map(notif => ({ ...notif, leida: true }))
-          );
       } catch (error) {
           console.error("Error al marcar notificaciones como leídas:", error);
+          
       }
   };
 

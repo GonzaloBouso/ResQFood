@@ -67,43 +67,72 @@ const useGlobalState = () => {
     };
 
     const addNotification = useCallback((newNotification) => {
-        setNotifications(prev => [newNotification, ...prev]);
+        setNotifications(prev => {
+            if (prev.some(n => n._id === newNotification._id)) return prev;
+            return [newNotification, ...prev];
+        });
+    }, []);
+
+
+     const fetchInitialNotifications = useCallback(async (token) => {
+        if (!token) return;
+        try {
+           
+            const response = await fetch(`${API_BASE_URL}/api/notificacion/mis-notificaciones`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error("Failed to fetch notifications");
+
+            const data = await response.json();
+            setNotifications(data.notificaciones || []);
+        } catch (error) {
+            console.error("Error al cargar notificaciones iniciales:", error);
+            setNotifications([]); 
+        }
     }, []);
 
     useEffect(() => {
         if (!isAuthLoaded) return;
         
-        const fetchUserProfileFunction = async () => {
+         const fetchUserProfileFunction = async () => {
             if (!isSignedIn) {
                 updateProfileState(null);
                 setActiveSearchLocation(null);
                 setNotifications([]);
-                setUnreadCount(0);
                 return;
             }
-            if (profileStatus.isComplete && !profileStatus.isLoadingUserProfile) return;
-            
-            setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
+
+
+           if (profileStatus.isComplete && !profileStatus.isLoadingUserProfile) return;
+
+
+              setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
             try {
                 const token = await getToken();
-                const response = await fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 
-                if (response.status === 404) {
+               
+                const [profileResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetchInitialNotifications(token) 
+                ]);
+                
+                if (profileResponse.status === 404) {
                     setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
                     return;
                 }
                 
-                if (!response.ok) throw new Error("Error fetching user profile");
+                if (!profileResponse.ok) throw new Error("Error fetching user profile");
                 
-                const data = await response.json();
+                const data = await profileResponse.json();
                 updateProfileState(data.user);
+
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error);
                 setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
             }
         };
         fetchUserProfileFunction();
-    }, [isAuthLoaded, isSignedIn]);
+    }, [isAuthLoaded, isSignedIn, getToken, fetchInitialNotifications]);
 
     return { 
         isLoadingUserProfile: profileStatus.isLoadingUserProfile,
