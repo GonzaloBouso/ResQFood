@@ -281,7 +281,8 @@ export class DonacionController {
             const solicitudes = await Solicitud.find({
                 donacionId: { $in: donacionIds },
                 estadoSolicitud: 'PENDIENTE_APROBACION'
-            }).populate('solicitanteId', 'nombre fotoDePerfilUrl');
+            }).populate('solicitanteId', 'nombre fotoDePerfilUrl')
+            .populate('entregaId');
 
             const donacionesConSolicitudes = donaciones.map(donacion => ({
                 ...donacion,

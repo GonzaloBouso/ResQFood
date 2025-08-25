@@ -57,7 +57,10 @@ const MyDonationsPage = () => {
         try {
             const token = await getToken();
             
-            const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones`, { headers: { 'Authorization': `Bearer ${token}` } });
+              const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones-activas`, { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+            
             if (!response.ok) throw new Error('No se pudieron cargar tus donaciones.');
             const data = await response.json();
             setDonaciones(data.donaciones);
