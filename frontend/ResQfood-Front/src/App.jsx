@@ -1,3 +1,5 @@
+// frontend/src/App.jsx
+
 import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
@@ -16,6 +18,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import MiPerfilPage from './pages/MiPerfilPage';
 import NewDonationPage from './pages/NewDonationPage';
 import MyDonationsPage from './pages/MyDonationsPage';
+import MyRequestsPage from './pages/MyRequestsPage'; // Asegúrate de que esta ruta esté importada
 import PoliticaPrivacidad from './pages/PoliticaPrivacidad';
 import FormularioContacto from './pages/FormularioContacto';
 import PoliticaUsoDatos from './pages/PoliticaUsoDatos';
@@ -35,7 +38,6 @@ import API_BASE_URL from './api/config.js';
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
-// --- Componente para gestionar la ruta raíz de forma segura ---
 const RootRedirector = () => {
   const { isSignedIn, isLoaded } = useAuth();
   if (!isLoaded) { return <div className="text-center py-20">Cargando...</div>; }
@@ -43,7 +45,6 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
-// --- Hook de estado global (mejorado con notificaciones) ---
 const useGlobalState = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
@@ -53,7 +54,7 @@ const useGlobalState = () => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     
-        useEffect(() => {
+    useEffect(() => {
         const newUnreadCount = notifications.filter(n => !n.leida).length;
         setUnreadCount(newUnreadCount);
     }, [notifications]); 
@@ -73,16 +74,13 @@ const useGlobalState = () => {
         });
     }, []);
 
-
-     const fetchInitialNotifications = useCallback(async (token) => {
+    const fetchInitialNotifications = useCallback(async (token) => {
         if (!token) return;
         try {
-           
             const response = await fetch(`${API_BASE_URL}/api/notificacion/mis-notificaciones`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error("Failed to fetch notifications");
-
             const data = await response.json();
             setNotifications(data.notificaciones || []);
         } catch (error) {
@@ -94,23 +92,17 @@ const useGlobalState = () => {
     useEffect(() => {
         if (!isAuthLoaded) return;
         
-         const fetchUserProfileFunction = async () => {
+        const fetchUserProfileFunction = async () => {
             if (!isSignedIn) {
                 updateProfileState(null);
                 setActiveSearchLocation(null);
                 setNotifications([]);
                 return;
             }
-
-
-           if (profileStatus.isComplete && !profileStatus.isLoadingUserProfile) return;
-
-
-              setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
+            if (profileStatus.isComplete && !profileStatus.isLoadingUserProfile) return;
+            setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
             try {
                 const token = await getToken();
-                
-               
                 const [profileResponse] = await Promise.all([
                     fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetchInitialNotifications(token) 
@@ -125,7 +117,6 @@ const useGlobalState = () => {
                 
                 const data = await profileResponse.json();
                 updateProfileState(data.user);
-
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error);
                 setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
@@ -134,11 +125,9 @@ const useGlobalState = () => {
         fetchUserProfileFunction();
     }, [isAuthLoaded, isSignedIn, getToken, fetchInitialNotifications]);
 
+    // --- CORRECCIÓN: Se usa el spread operator para devolver todo el estado de profileStatus de forma limpia ---
     return { 
-        isLoadingUserProfile: profileStatus.isLoadingUserProfile,
-        isComplete: profileStatus.isComplete,
-        userRole: profileStatus.userRole,
-        userDataFromDB: profileStatus.userDataFromDB,
+        ...profileStatus, // Esto incluye isLoadingUserProfile, isComplete, userRole, userDataFromDB
         updateProfileState, 
         currentClerkUserId: userId,
         activeSearchLocation,
@@ -154,9 +143,10 @@ const useGlobalState = () => {
     };
 };
 
-// --- Layout Guardián (ahora usa 'currentUserRole') ---
+// --- Layout Guardián CORREGIDO ---
 const ProtectedLayout = ({ adminOnly = false }) => {
-    const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
+    // --- CORRECCIÓN CLAVE: Se usa 'userRole' que SÍ existe en el contexto, en lugar de 'currentUserRole' ---
+    const { isLoadingUserProfile, isComplete, userRole, updateProfileState } = useContext(ProfileStatusContext);
 
     if (isLoadingUserProfile) {
         return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
@@ -166,7 +156,7 @@ const ProtectedLayout = ({ adminOnly = false }) => {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
     
-    if (adminOnly && currentUserRole !== 'ADMIN') {
+    if (adminOnly && userRole !== 'ADMIN') {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -175,42 +165,11 @@ const ProtectedLayout = ({ adminOnly = false }) => {
 
 const AppContent = () => {
   const appStateHook = useGlobalState();
-  
   useSocket(appStateHook.addNotification);
 
-  const contextValueForProvider = useMemo(() => ({
-    isLoadingUserProfile: appStateHook.isLoadingUserProfile,
-    isComplete: appStateHook.isComplete,
-    currentUserRole: appStateHook.userRole,
-    currentUserDataFromDB: appStateHook.userDataFromDB,
-    currentClerkUserId: appStateHook.currentClerkUserId,
-    updateProfileState: appStateHook.updateProfileState,
-    activeSearchLocation: appStateHook.activeSearchLocation,
-    setActiveSearchLocation: appStateHook.setActiveSearchLocation,
-    donationCreationTimestamp: appStateHook.donationCreationTimestamp,
-    triggerDonationReFetch: appStateHook.triggerDonationReFetch,
-    searchQuery: appStateHook.searchQuery,
-    setSearchQuery: appStateHook.setSearchQuery,
-    notifications: appStateHook.notifications,
-    setNotifications: appStateHook.setNotifications,
-    unreadCount: appStateHook.unreadCount,
-    addNotification: appStateHook.addNotification,
-  }), [
-    appStateHook.isLoadingUserProfile,
-    appStateHook.isComplete,
-    appStateHook.currentUserRole,
-    appStateHook.currentUserDataFromDB,
-    appStateHook.currentClerkUserId,
-    appStateHook.activeSearchLocation,
-    appStateHook.donationCreationTimestamp,
-    appStateHook.searchQuery,
-    appStateHook.notifications,
-    appStateHook.unreadCount,
-  ]);
-
-  const handleDonationCreated = () => {
-    appStateHook.triggerDonationReFetch();
-  };
+  // --- CORRECCIÓN Y SIMPLIFICACIÓN: Pasamos el objeto completo del hook al provider ---
+  // Esto es más robusto y menos propenso a errores que reconstruir el objeto manualmente.
+  const contextValueForProvider = useMemo(() => (appStateHook), [appStateHook]);
 
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
@@ -218,13 +177,7 @@ const AppContent = () => {
              <Toaster 
               position="top-center"
               reverseOrder={false}
-              toastOptions={{
-                duration: 5000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-              }}
+              toastOptions={{ duration: 5000, style: { background: '#363636', color: '#fff' } }}
             />
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
@@ -233,22 +186,17 @@ const AppContent = () => {
                     <Route path="/" element={<RootRedirector />} />
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
-                    
-                    {/* Grupo de Rutas para USUARIOS NORMALES */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
+                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={appStateHook.triggerDonationReFetch} />} />
                         <Route path="/mis-donaciones" element={<MyDonationsPage />} />
+                        <Route path="/mis-solicitudes" element={<MyRequestsPage />} />
                         <Route path="/mi-perfil" element={<MiPerfilPage />} />
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
                     </Route>
-                    
-                    {/* Grupo de Rutas para ADMINS */}
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
                     </Route>
-
-                    {/* Rutas Públicas de Contenido Estático */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
