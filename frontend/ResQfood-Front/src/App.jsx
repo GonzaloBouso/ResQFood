@@ -178,15 +178,14 @@ const AppContent = () => {
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
                     
-                   <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
+                    <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/mi-perfil" element={<MiPerfilPage />} />
-                        <Route path="/perfil/:id" element={<UserProfilePage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={() => appStateHook.triggerDonationReFetch()} />} />
                         <Route path="/mis-donaciones" element={<MyDonationsPage />} />
+                        <Route path="/mi-perfil" element={<MiPerfilPage />} />
+                        <Route path="/perfil/:id" element={<UserProfilePage />} />
                     </Route>
                     
-                    {/* Grupo de Rutas para ADMINS (también protegido por el layout) */}
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
                     </Route>
