@@ -1,10 +1,9 @@
-// frontend/src/App.jsx
-
 import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';
 import { LoadScript } from '@react-google-maps/api';
-import { Toaster } from 'react-hot-toast'; 
+import { Toaster } from 'react-hot-toast';
+
 // --- Tus componentes y páginas ---
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
@@ -18,7 +17,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import MiPerfilPage from './pages/MiPerfilPage';
 import NewDonationPage from './pages/NewDonationPage';
 import MyDonationsPage from './pages/MyDonationsPage';
-import MyRequestsPage from './pages/MyRequestsPage'; // Asegúrate de que esta ruta esté importada
+import MyRequestsPage from './pages/MyRequestsPage';
 import PoliticaPrivacidad from './pages/PoliticaPrivacidad';
 import FormularioContacto from './pages/FormularioContacto';
 import PoliticaUsoDatos from './pages/PoliticaUsoDatos';
@@ -38,6 +37,7 @@ import API_BASE_URL from './api/config.js';
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
 
+// --- Componente para gestionar la ruta raíz de forma segura ---
 const RootRedirector = () => {
   const { isSignedIn, isLoaded } = useAuth();
   if (!isLoaded) { return <div className="text-center py-20">Cargando...</div>; }
@@ -45,22 +45,24 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
+// --- Hook de estado global (Corregido) ---
 const useGlobalState = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
+    // LA SOLUCIÓN: El nombre del rol ahora es consistente
     const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, currentUserRole: null, userDataFromDB: null });
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    
+
     useEffect(() => {
         const newUnreadCount = notifications.filter(n => !n.leida).length;
         setUnreadCount(newUnreadCount);
-    }, [notifications]); 
+    }, [notifications]);
 
     const updateProfileState = (userData) => {
-        console.log("1. updateProfileState llamado con:", userData);
+        // LA SOLUCIÓN: Se usa 'currentUserRole' para consistencia
         setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, currentUserRole: userData?.rol || null, userDataFromDB: userData });
     };
 
@@ -86,7 +88,7 @@ const useGlobalState = () => {
             setNotifications(data.notificaciones || []);
         } catch (error) {
             console.error("Error al cargar notificaciones iniciales:", error);
-            setNotifications([]); 
+            setNotifications([]);
         }
     }, []);
 
@@ -106,11 +108,11 @@ const useGlobalState = () => {
                 const token = await getToken();
                 const [profileResponse] = await Promise.all([
                     fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetchInitialNotifications(token) 
+                    fetchInitialNotifications(token)
                 ]);
                 
                 if (profileResponse.status === 404) {
-                    setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
+                    setProfileStatus({ isLoadingUserProfile: false, isComplete: false, currentUserRole: null, userDataFromDB: null });
                     return;
                 }
                 
@@ -118,26 +120,17 @@ const useGlobalState = () => {
                 
                 const data = await profileResponse.json();
                 updateProfileState(data.user);
-                console.log("2. Datos recibidos del backend:", data.user);
-
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error);
-                setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
+                setProfileStatus({ isLoadingUserProfile: false, isComplete: false, currentUserRole: null, userDataFromDB: null });
             }
         };
         fetchUserProfileFunction();
     }, [isAuthLoaded, isSignedIn, getToken, fetchInitialNotifications]);
-        console.log("3. Hook useGlobalState devuelve:", profileStatus);
 
-
-    // --- CORRECCIÓN: Se usa el spread operator para devolver todo el estado de profileStatus de forma limpia ---
-    return { 
-        ...profileStatus, // Esto incluye isLoadingUserProfile, isComplete, userRole, userDataFromDB 
-        isLoadingUserProfile: profileStatus.isLoadingUserProfile,
-        isComplete: profileStatus.isComplete,
-        currentUserRole: profileStatus.currentUserRole, 
-        userDataFromDB: profileStatus.userDataFromDB,
-        updateProfileState, 
+    return {
+        ...profileStatus,
+        updateProfileState,
         currentClerkUserId: userId,
         activeSearchLocation,
         setActiveSearchLocation,
@@ -146,15 +139,15 @@ const useGlobalState = () => {
         searchQuery,
         setSearchQuery,
         notifications,
-        setNotifications, 
+        setNotifications,
         unreadCount,
         addNotification,
     };
 };
 
-// --- Layout Guardián CORREGIDO ---
+// --- Layout Guardián (Corregido) ---
 const ProtectedLayout = ({ adminOnly = false }) => {
-    // --- CORRECCIÓN CLAVE: Se usa 'userRole' que SÍ existe en el contexto, en lugar de 'currentUserRole' ---
+    // LA SOLUCIÓN: Se consume 'currentUserRole', que es el nombre correcto proveído por el contexto.
     const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
 
     if (isLoadingUserProfile) {
@@ -165,7 +158,7 @@ const ProtectedLayout = ({ adminOnly = false }) => {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
     
-    if (adminOnly && userRole !== 'ADMIN') {
+    if (adminOnly && currentUserRole !== 'ADMIN') {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -185,7 +178,7 @@ const AppContent = () => {
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
         <div className="flex flex-col min-h-screen bg-gray-50">
-             <Toaster 
+             <Toaster
               position="top-center"
               reverseOrder={false}
               toastOptions={{ duration: 5000, style: { background: '#363636', color: '#fff' } }}
@@ -197,6 +190,7 @@ const AppContent = () => {
                     <Route path="/" element={<RootRedirector />} />
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
+
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
@@ -205,9 +199,11 @@ const AppContent = () => {
                         <Route path="/mi-perfil" element={<MiPerfilPage />} />
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
                     </Route>
+                    
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
                     </Route>
+
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
