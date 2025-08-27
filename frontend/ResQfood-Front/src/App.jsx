@@ -47,7 +47,7 @@ const RootRedirector = () => {
 
 const useGlobalState = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
-    const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, userRole: null, userDataFromDB: null });
+    const [profileStatus, setProfileStatus] = useState({ isLoadingUserProfile: true, isComplete: false, currentUserRole: null, userDataFromDB: null });
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
     const [searchQuery, setSearchQuery] = useState('');
@@ -60,7 +60,7 @@ const useGlobalState = () => {
     }, [notifications]); 
 
     const updateProfileState = (userData) => {
-        setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, userRole: userData?.rol || null, userDataFromDB: userData });
+        setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, currentUserRole: userData?.rol || null, userDataFromDB: userData });
     };
 
     const triggerDonationReFetch = () => {
@@ -77,7 +77,7 @@ const useGlobalState = () => {
     const fetchInitialNotifications = useCallback(async (token) => {
         if (!token) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/api/notificacion/mis-notificaciones`, {
+            const response = await fetch(`${API_BASE_URL}/api/notificacion`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error("Failed to fetch notifications");
@@ -127,7 +127,11 @@ const useGlobalState = () => {
 
     // --- CORRECCIÓN: Se usa el spread operator para devolver todo el estado de profileStatus de forma limpia ---
     return { 
-        ...profileStatus, // Esto incluye isLoadingUserProfile, isComplete, userRole, userDataFromDB
+        ...profileStatus, // Esto incluye isLoadingUserProfile, isComplete, userRole, userDataFromDB 
+        isLoadingUserProfile: profileStatus.isLoadingUserProfile,
+        isComplete: profileStatus.isComplete,
+        currentUserRole: profileStatus.currentUserRole, 
+        userDataFromDB: profileStatus.userDataFromDB,
         updateProfileState, 
         currentClerkUserId: userId,
         activeSearchLocation,
@@ -146,7 +150,7 @@ const useGlobalState = () => {
 // --- Layout Guardián CORREGIDO ---
 const ProtectedLayout = ({ adminOnly = false }) => {
     // --- CORRECCIÓN CLAVE: Se usa 'userRole' que SÍ existe en el contexto, en lugar de 'currentUserRole' ---
-    const { isLoadingUserProfile, isComplete, userRole, updateProfileState } = useContext(ProfileStatusContext);
+    const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
 
     if (isLoadingUserProfile) {
         return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
@@ -190,7 +194,7 @@ const AppContent = () => {
                     <Route path="/sign-up/*" element={<SignUpPage />} />
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={appStateHook.triggerDonationReFetch} />} />
+                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
                         <Route path="/mis-donaciones" element={<MyDonationsPage />} />
                         <Route path="/mis-solicitudes" element={<MyRequestsPage />} />
                         <Route path="/mi-perfil" element={<MiPerfilPage />} />
