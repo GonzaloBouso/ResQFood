@@ -145,23 +145,26 @@ const useGlobalState = () => {
     };
 };
 
-// --- Layout Guardián (Corregido) ---
-const ProtectedLayout = ({ adminOnly = false }) => {
-    // LA SOLUCIÓN: Se consume 'currentUserRole', que es el nombre correcto proveído por el contexto.
-    const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
+const ProtectedLayout = () => {
+    const { isLoadingUserProfile, isComplete, updateProfileState, currentUserRole } = useContext(ProfileStatusContext);
 
+    // 1. Muestra un spinner MIENTRAS se cargan los datos del perfil.
+    //    Esto detiene el renderizado de las páginas hijas y evita la "race condition".
     if (isLoadingUserProfile) {
         return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
     }
 
+    // 2. Una vez cargado, si el perfil no está completo, SIEMPRE muestra esta página.
     if (!isComplete) {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
     
-    if (adminOnly && currentUserRole !== 'ADMIN') {
+    // 3. (Lógica para admin que ya teníamos)
+    if (adminOnly && currentUserRole !== 'ADMIN') { // Asumiendo que `adminOnly` se pasa como prop
         return <Navigate to="/dashboard" replace />;
     }
 
+    // 4. Si todas las comprobaciones pasan, permite que se renderice la ruta hija solicitada.
     return <Outlet />;
 };
 
