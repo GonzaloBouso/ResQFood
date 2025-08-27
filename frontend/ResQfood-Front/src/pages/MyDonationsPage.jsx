@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { ChevronDown, Loader2, Clock, CheckCircle } from 'lucide-react';
-import ProposeScheduleModal from '../components/solicitudes/ProposeScheduleModal';
+import ProposeScheduleModal from '../components/ProposeScheduleModal';
 
 const ConfirmarEntregaForm = ({ entregaId, onConfirm, isSubmitting }) => {
     const [codigo, setCodigo] = useState('');

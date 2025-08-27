@@ -109,7 +109,12 @@ export class SolicitudController {
             
             const io = getIoInstance();
             const receptorSocketId = getSocketIdForUser(receptor.clerkUserId);
-            if (receptorSocketId) { io.to(receptorSocketId).emit('nueva_notificacion', notificacionAprobacion.toObject()); }
+            if (receptorSocketId) {
+                console.log(`EMITTING 'nueva_notificacion' to receptor ${receptor.nombre} (ClerkID: ${receptor.clerkUserId}) on socket ${receptorSocketId}`);
+                io.to(receptorSocketId).emit('nueva_notificacion', notificacionAprobacion.toObject());
+            } else {
+                console.log(`COULD NOT FIND socket for receptor ${receptor.nombre} (ClerkID: ${receptor.clerkUserId}). Notification will be available on next page load.`);
+            }
 
             const otrasSolicitudes = await Solicitud.find({
                 donacionId: solicitudAceptada.donacionId,
@@ -132,7 +137,12 @@ export class SolicitudController {
                 await notificacionRechazo.save({ session });
                 
                 const otroReceptorSocketId = getSocketIdForUser(otroReceptor.clerkUserId);
-                if (otroReceptorSocketId) { io.to(otroReceptorSocketId).emit('nueva_notificacion', notificacionRechazo.toObject()); }
+                if (otroReceptorSocketId) {
+                    console.log(`EMITTING 'nueva_notificacion' (Rechazo) to other receptor ${otroReceptor.nombre} (ClerkID: ${otroReceptor.clerkUserId}) on socket ${otroReceptorSocketId}`);
+                    io.to(otroReceptorSocketId).emit('nueva_notificacion', notificacionRechazo.toObject());
+                } else {
+                     console.log(`COULD NOT FIND socket for other receptor ${otroReceptor.nombre} (ClerkID: ${otroReceptor.clerkUserId}).`);
+                }
             }
             
             await session.commitTransaction();
@@ -173,7 +183,12 @@ export class SolicitudController {
             await notificacion.save({ session });
             const io = getIoInstance();
             const receptorSocketId = getSocketIdForUser(receptor.clerkUserId);
-            if (receptorSocketId) { io.to(receptorSocketId).emit('nueva_notificacion', notificacion.toObject()); }
+            if (receptorSocketId) {
+                console.log(`EMITTING 'nueva_notificacion' (Rechazo) to receptor ${receptor.nombre} (ClerkID: ${receptor.clerkUserId}) on socket ${receptorSocketId}`);
+                io.to(receptorSocketId).emit('nueva_notificacion', notificacion.toObject());
+            } else {
+                 console.log(`COULD NOT FIND socket for receptor ${receptor.nombre} (ClerkID: ${receptor.clerkUserId}) during rejection. Notification will be available on next page load.`);
+            }
             await session.commitTransaction();
             res.status(200).json({ message: 'Solicitud rechazada exitosamente.' });
         } catch (error) {
