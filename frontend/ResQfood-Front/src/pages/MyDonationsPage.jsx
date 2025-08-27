@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { ChevronDown, Loader2, Clock, CheckCircle } from 'lucide-react';
-import ProposeScheduleModal from '../components/ProposeScheduleModal';
+import ProposeScheduleModal from '../components/solicitudes/ProposeScheduleModal';
 
 const ConfirmarEntregaForm = ({ entregaId, onConfirm, isSubmitting }) => {
     const [codigo, setCodigo] = useState('');
@@ -78,20 +78,49 @@ const MyDonationsPage = () => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(propuesta),
             });
-            if (!response.ok) throw new Error((await response.json()).message);
+            
+            if (!response.ok) {
+                let errorPayload;
+                try {
+                    errorPayload = await response.json();
+                } catch (e) {
+                    const textError = await response.text();
+                    throw new Error(`El servidor respondió con un error ${response.status}. Respuesta: ${textError || 'Sin cuerpo de respuesta'}`);
+                }
+                throw new Error(errorPayload.message || 'Ocurrió un error desconocido.');
+            }
+
             setSolicitudParaAceptar(null);
             fetchDonations();
-        } catch (err) { alert("Error al aceptar la solicitud: " + err.message); } finally { setIsSubmitting(false); }
+        } catch (err) { 
+            console.error("Error completo al aceptar la solicitud:", err);
+            alert("Error al aceptar la solicitud: " + err.message); 
+        } finally { 
+            setIsSubmitting(false); 
+        }
     };
     
     const handleReject = async (solicitudId) => {
-        if (!window.confirm("¿Estás seguro?")) return;
+        if (!window.confirm("¿Estás seguro de que deseas rechazar esta solicitud?")) return;
         setIsSubmitting(true);
         try {
             const token = await getToken();
-            await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/rechazar`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/rechazar`, { 
+                method: 'POST', 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+
+            if (!response.ok) {
+                 const errorData = await response.json().catch(() => ({ message: 'No se pudo procesar la respuesta del servidor.' }));
+                 throw new Error(errorData.message || 'Falló el rechazo de la solicitud.');
+            }
+            
             fetchDonations();
-        } catch (err) { alert("Error al rechazar: " + err.message); } finally { setIsSubmitting(false); }
+        } catch (err) { 
+            alert("Error al rechazar: " + err.message); 
+        } finally { 
+            setIsSubmitting(false); 
+        }
     };
 
     const handleCompleteDelivery = async (entregaId, codigo) => {
