@@ -37,22 +37,28 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => 
   const handleFormularioSubmit = async (data) => {
     try {
       const token = await getToken();
+
+      const fechaInicioEntrega = `${data.fechaDesde}T${data.horaDesde}:00.000Z`; 
+
+      const horarioEntregaPropuestaPorDonante = `${data.horaDesde} - ${data.horaHasta}`;
+
       const payload = {
-        horarioEntregaPropuestaPorDonante: {
-            horarioInicio: data.horaDesde,
-            horarioFin: data.horaHasta,
-        },
-        fechaPropuesto: {
-            fechaInicio: new Date(`${data.fechaDesde}T${data.horaDesde}`),
-            fechaFin: data.fechaHasta ? new Date(`${data.fechaHasta}T${data.horaHasta}`) : new Date(`${data.fechaDesde}T${data.horaHasta}`),
-        }
+        horarioEntregaPropuestaPorDonante: horarioEntregaPropuestaPorDonante,
+        fechaPropuesto: fechaInicioEntrega,
       };
+
+
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudSeleccionada._id}/aceptar-y-proponer`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!response.ok) throw new Error('Error al aceptar la solicitud');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al aceptar la solicitud');
+      }
+
       alert('Solicitud aceptada y horario propuesto.');
       setModalVisible(false);
       window.location.reload();
