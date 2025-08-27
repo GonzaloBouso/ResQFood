@@ -5,7 +5,7 @@ import HistorialDonacion from '../layout/HistorialDonacion';
 import HistorialRecepcion from '../layout/HistorialRecepcion';
 import BotonPublicar from '../layout/BotonPublicar';
 
-// --- Componente interno para mostrar la información detallada  ---
+// --- Componente interno para mostrar la información detallada (sin cambios) ---
 const InfoUsuarioGeneralDinamico = ({ userData }) => {
   if (!userData) return <p className="text-center text-gray-600 py-4">Cargando información del usuario...</p>;
 
@@ -52,7 +52,6 @@ const InfoUsuarioGeneralDinamico = ({ userData }) => {
     </div>
   );
 };
-
 
 // --- Componente principal de VISTA ---
 const PerfilGeneralView = ({ userData, isEditable, onEditPhotoClick, onEditInfoClick }) => {

@@ -4,7 +4,7 @@ import { Camera, Edit2 } from 'lucide-react';
 import HistorialDonacion from '../layout/HistorialDonacion';
 import BotonPublicar from '../layout/BotonPublicar';
 
-// --- Componente interno ---
+// --- Componente interno para mostrar la información detallada (sin cambios) ---
 const InfoUsuarioEmpresaDinamico = ({ userData }) => {
   if (!userData || !userData.localData) return <p className="text-center text-gray-600 py-4">La información de este local no está disponible.</p>;
   const estadisticas = userData.localData || userData.estadisticasGenerales;
@@ -50,8 +50,7 @@ const InfoUsuarioEmpresaDinamico = ({ userData }) => {
   );
 };
 
-
-// --- Componente de VISTA que ahora acepta props para mostrar botones de edición ---
+// --- Componente principal de VISTA ---
 const PerfilEmpresaView = ({ userData, isEditable, onEditPhotoClick, onEditInfoClick }) => {
   const [activeTab, setActiveTab] = useState('info');
 
@@ -110,9 +109,11 @@ const PerfilEmpresaView = ({ userData, isEditable, onEditPhotoClick, onEditInfoC
           </button>
         )}
       </div>
-        <div className="flex justify-center mb-6">
+
+      <div className="flex justify-center mb-6">
         <BotonPublicar />
       </div>
+
       <div className="mb-8">
         <div className="flex justify-center border-b border-gray-200">
           <button className={`px-4 py-3 text-sm font-medium ${activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'}`} onClick={() => setActiveTab('info')}>
