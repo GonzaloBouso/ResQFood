@@ -1,3 +1,6 @@
+//App.jsx
+
+
 import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, SignedOut, ClerkLoaded, useAuth } from '@clerk/clerk-react';

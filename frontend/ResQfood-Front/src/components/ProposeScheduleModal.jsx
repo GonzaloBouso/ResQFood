@@ -10,7 +10,7 @@ const ProposeScheduleModal = ({ solicitud, onClose, onSubmit, isSubmitting }) =>
     e.preventDefault();
     const propuesta = {
       fechaPropuesto: { fechaInicio: fecha, fechaFin: fecha },
-      horarioEntregaPropuestaPorDonante: { horarioInicio, horarioFin }
+      horarioEntregaPropuestaPorDonante: { horaInicio, horaFin }
     };
     onSubmit(solicitud._id, propuesta);
   };
