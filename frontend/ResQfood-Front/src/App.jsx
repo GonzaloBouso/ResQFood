@@ -194,14 +194,19 @@ const AppContent = () => {
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
 
-                    <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
+                        <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
+                        <Route 
+                            path="/publicar-donacion" 
+                            element={<NewDonationPage onDonationCreated={handleDonationCreated} />} 
+                        />
+                        
                         <Route path="/mis-donaciones" element={<MyDonationsPage />} />
                         <Route path="/mis-solicitudes" element={<MyRequestsPage />} />
                         <Route path="/mi-perfil" element={<MiPerfilPage />} />
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
                     </Route>
+
                     
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
