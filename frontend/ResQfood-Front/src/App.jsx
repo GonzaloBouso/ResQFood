@@ -132,15 +132,16 @@ const useGlobalState = () => {
 };
 
 // --- Layout Guardián (la clave de la solución) ---
-const ProtectedLayout = ({ adminOnly = false }) => {
-    const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
+const ProtectedLayout = () => {
+    const { isLoadingUserProfile, isComplete, updateProfileState, currentUserRole } = useContext(ProfileStatusContext);
 
-    // Muestra un spinner MIENTRAS se cargan los datos. Esto evita la "race condition".
+    // 1. Muestra un spinner MIENTRAS se cargan los datos del perfil.
+    //    Esto detiene el renderizado de las páginas hijas y evita la "race condition".
     if (isLoadingUserProfile) {
         return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
     }
 
-    // Una vez cargado, si el perfil no está completo, SIEMPRE muestra esta página.
+    // 2. Una vez cargado, si el perfil no está completo, SIEMPRE muestra esta página.
     if (!isComplete) {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
@@ -177,17 +178,15 @@ const AppContent = () => {
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
                     
-                    {/* --- Grupo de Rutas para USUARIOS NORMALES --- */}
-                    {/* Todas las rutas aquí dentro están protegidas por el guardián */}
-                    <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
+                   <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={handleDonationCreated} />} />
-                        <Route path="/mis-donaciones" element={<MyDonationsPage />} />
                         <Route path="/mi-perfil" element={<MiPerfilPage />} />
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
+                        <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={() => appStateHook.triggerDonationReFetch()} />} />
+                        <Route path="/mis-donaciones" element={<MyDonationsPage />} />
                     </Route>
                     
-                    {/* --- Grupo de Rutas para ADMINS --- */}
+                    {/* Grupo de Rutas para ADMINS (también protegido por el layout) */}
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
                     </Route>
