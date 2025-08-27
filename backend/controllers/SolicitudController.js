@@ -139,6 +139,7 @@ export class SolicitudController {
             res.status(200).json({ message: 'Solicitud aprobada y otras rechazadas.', entrega: nuevaEntrega });
         } catch (error) {
             await session.abortTransaction();
+            console.error("Error detallado al aceptar la solicitud y proponer horario:", error);
             res.status(500).json({ message: "Error interno al aceptar la solicitud.", errorDetails: error.message });
         } finally {
             session.endSession();
