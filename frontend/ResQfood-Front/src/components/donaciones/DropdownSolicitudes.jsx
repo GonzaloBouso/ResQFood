@@ -38,15 +38,32 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => 
     try {
       const token = await getToken();
 
-      const fechaInicioEntrega = `${data.fechaDesde}T${data.horaDesde}:00.000Z`; 
-
-      const horarioEntregaPropuestaPorDonante = `${data.horaDesde} - ${data.horaHasta}`;
-
-      const payload = {
-        horarioEntregaPropuestaPorDonante: horarioEntregaPropuestaPorDonante,
-        fechaPropuesto: fechaInicioEntrega,
+      
+      const horarioEntregaPropuestaPorDonanteObj = {
+          horarioInicio: data.horaDesde,
+          horarioFin: data.horaHasta,
       };
 
+   
+      const fechaInicio = new Date(`${data.fechaDesde}T${data.horaDesde}`);
+      let fechaFin = null;
+      if (data.fechaHasta) {
+        
+        fechaFin = new Date(`${data.fechaHasta}T${data.horaHasta}`);
+      } else {
+        
+        fechaFin = new Date(`${data.fechaDesde}T${data.horaHasta}`);
+      }
+      
+      const fechaPropuestoObj = {
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin,
+      };
+
+      const payload = {
+        horarioEntregaPropuestaPorDonante: horarioEntregaPropuestaPorDonanteObj,
+        fechaPropuesto: fechaPropuestoObj,
+      };
 
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudSeleccionada._id}/aceptar-y-proponer`, {
         method: 'POST',

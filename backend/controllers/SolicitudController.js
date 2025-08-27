@@ -81,13 +81,16 @@ export class SolicitudController {
 
             await Donacion.findByIdAndUpdate(solicitudAceptada.donacionId, { estadoPublicacion: 'PENDIENTE-ENTREGA' }, { session });
             
-            const nuevaEntrega = new Entrega({
-                solicitudId: solicitudAceptada._id, donacionId: solicitudAceptada.donacionId, donanteId: solicitudAceptada.donanteId,
-                receptorId: solicitudAceptada.solicitanteId, horarioEntregaPropuestaPorDonante, fechaPropuesto,
+           const nuevaEntrega = new Entrega({
+                solicitudId: solicitudAceptada._id, 
+                donacionId: solicitudAceptada.donacionId, 
+                donanteId: solicitudAceptada.donanteId,
+                receptorId: solicitudAceptada.solicitanteId, 
+                horarioEntregaPropuestaPorDonante: horarioEntregaPropuestaPorDonante, 
+                fechaPropuesto: fechaPropuesto, 
                 codigoConfirmacionReceptor: generarCodigo(),
             });
             await nuevaEntrega.save({ session });
-            
             
             solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
             solicitudAceptada.fechaAprobacion = new Date();
