@@ -60,6 +60,7 @@ const useGlobalState = () => {
     }, [notifications]); 
 
     const updateProfileState = (userData) => {
+        console.log("1. updateProfileState llamado con:", userData);
         setProfileStatus({ isLoadingUserProfile: false, isComplete: !!userData?.rol, currentUserRole: userData?.rol || null, userDataFromDB: userData });
     };
 
@@ -117,6 +118,8 @@ const useGlobalState = () => {
                 
                 const data = await profileResponse.json();
                 updateProfileState(data.user);
+                console.log("2. Datos recibidos del backend:", data.user);
+
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error);
                 setProfileStatus({ isLoadingUserProfile: false, isComplete: false, userRole: null, userDataFromDB: null });
@@ -124,6 +127,8 @@ const useGlobalState = () => {
         };
         fetchUserProfileFunction();
     }, [isAuthLoaded, isSignedIn, getToken, fetchInitialNotifications]);
+        console.log("3. Hook useGlobalState devuelve:", profileStatus);
+
 
     // --- CORRECCIÓN: Se usa el spread operator para devolver todo el estado de profileStatus de forma limpia ---
     return { 
