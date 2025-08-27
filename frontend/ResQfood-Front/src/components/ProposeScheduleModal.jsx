@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-
+//formulario de parte del donante
 const ProposeScheduleModal = ({ solicitud, onClose, onSubmit, isSubmitting }) => {
   const [fecha, setFecha] = useState('');
   const [horaInicio, setHoraInicio] = useState('');
@@ -10,7 +10,7 @@ const ProposeScheduleModal = ({ solicitud, onClose, onSubmit, isSubmitting }) =>
     e.preventDefault();
     const propuesta = {
       fechaPropuesto: { fechaInicio: fecha, fechaFin: fecha },
-      horarioEntregaPropuestaPorDonante: { horarioInicio, horarioFin }
+      horarioEntregaPropuestaPorDonante: { horaInicio, horaFin }
     };
     onSubmit(solicitud._id, propuesta);
   };

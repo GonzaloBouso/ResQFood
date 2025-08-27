@@ -15,7 +15,7 @@ const DropdownInfoAlimento = ({ solicitud }) => {
         <div className="px-4 py-3 border-t space-y-1">
           <p><strong>Tipo:</strong> {solicitud.tipo}</p>
           <p><strong>Descripción:</strong> {solicitud.descripcion}</p>
-          {/* Podés agregar más campos */}
+          
         </div>
       )}
     </div>
