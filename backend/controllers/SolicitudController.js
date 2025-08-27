@@ -67,7 +67,17 @@ export class SolicitudController {
         const { solicitudId } = req.params;
         const donanteClerkId = req.auth?.userId;
         const { horarioEntregaPropuestaPorDonante, fechaPropuesto } = req.body;
-        if (!horarioEntregaPropuestaPorDonante || !fechaPropuesto) { return res.status(400).json({ message: "Debe proporcionar una propuesta de fecha y hora." }); }
+
+       if (
+        !horarioEntregaPropuestaPorDonante ||
+        !horarioEntregaPropuestaPorDonante.horaInicio || 
+        !horarioEntregaPropuestaPorDonante.horaFin || 
+        !fechaPropuesto ||
+        !fechaPropuesto.fechaInicio) 
+        {
+
+        return res.status(400).json({ message: "La propuesta de fecha y hora está incompleta." });
+    }
         
         const session = await mongoose.startSession();
         session.startTransaction();

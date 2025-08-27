@@ -16,7 +16,8 @@ router.post('/:donacionId/solicitar', requireAuth, SolicitudController.createSol
 // Donante acepta la solicitud y propone un horario
 router.post('/:solicitudId/aceptar-y-proponer', requireAuth, SolicitudController.aceptarSolicitudYProponerHorario);
 
-router.post('/:solicitudId/rechazar', requireAuth, SolicitudController.rechazarSolicitud);
+// Donante acepta la solicitud y propone un horario
+router.put('/:solicitudId/aceptar-y-proponer', requireAuth, SolicitudController.aceptarSolicitudYProponerHorario)
 
 // Cancelar una solicitud pendiente (Receptor) - para el botón "Descartar"
 router.patch('/:solicitudId/cancelar', requireAuth, SolicitudController.cancelarSolicitud);

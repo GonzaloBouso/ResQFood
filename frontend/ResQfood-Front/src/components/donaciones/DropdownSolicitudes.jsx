@@ -66,7 +66,7 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => 
       };
 
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudSeleccionada._id}/aceptar-y-proponer`, {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });

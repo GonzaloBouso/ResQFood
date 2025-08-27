@@ -74,7 +74,7 @@ const MyDonationsPage = () => {
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/aceptar-y-proponer`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(propuesta),
             });
@@ -89,6 +89,9 @@ const MyDonationsPage = () => {
                 }
                 throw new Error(errorPayload.message || 'Ocurrió un error desconocido.');
             }
+
+            console.log('¡Propuesta enviada con éxito!'); 
+            alert('¡Propuesta enviada con éxito!'); 
 
             setSolicitudParaAceptar(null);
             fetchDonations();
