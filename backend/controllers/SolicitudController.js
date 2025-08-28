@@ -137,18 +137,20 @@ export class SolicitudController {
         await nuevaEntrega.save({ session });
         
         solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
-        solicitudAceptada.fechaAprobacion = new Date();
-        solicitudAceptada.entregaId = nuevaEntrega._id; 
-        
-         await donacion.save({ session });
-         await solicitudAceptada.save({ session });
+            solicitudAceptada.fechaAprobacion = new Date();
+            solicitudAceptada.entregaId = nuevaEntrega._id; 
+            
+           
+            await donacion.save({ session });
+            await solicitudAceptada.save({ session });
 
         const notificacionAprobacion = new Notificacion({
             destinatarioId: receptor._id,
             tipoNotificacion: 'APROBACION',
             mensaje: `¡Tu solicitud para "${donacion.titulo}" fue aprobada! Confirma el horario de retiro.`,
             referenciaId: nuevaEntrega._id,
-            tipoReferencia: 'Entrega'
+            tipoReferencia: 'Entrega',
+            enlace: '/mis-solicitudes'
         });
         await notificacionAprobacion.save({ session });
         
@@ -188,7 +190,7 @@ export class SolicitudController {
         
         await session.commitTransaction();
 
-        
+
         res.status(200).json({ message: 'Solicitud aprobada y otras rechazadas.', entrega: nuevaEntrega });
     } catch (error) {
         await session.abortTransaction();

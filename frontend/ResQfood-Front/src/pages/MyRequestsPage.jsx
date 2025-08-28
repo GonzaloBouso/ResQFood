@@ -1,9 +1,9 @@
-// frontend/src/pages/MyRequestsPage.jsx
+// pages/MyRequestsPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
-import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lucide-react';
 
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
@@ -32,6 +32,7 @@ const MyRequestsPage = () => {
     useEffect(() => { fetchSolicitudes(); }, [fetchSolicitudes]);
 
     const handleConfirmarHorario = async (entregaId) => {
+        if (!window.confirm("¿Confirmas que puedes retirar la donación en este horario?")) return;
         setIsSubmitting(true);
         try {
             const token = await getToken();
@@ -40,9 +41,30 @@ const MyRequestsPage = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
+            alert('¡Horario confirmado! El donante ha sido notificado.');
             fetchSolicitudes();
         } catch (err) {
             alert('Error al confirmar: ' + err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // --- NUEVA FUNCIÓN ---
+    const handleRechazarHorario = async (entregaId) => {
+        if (!window.confirm("¿Seguro que no puedes en este horario? La donación volverá a estar disponible para otros.")) return;
+        setIsSubmitting(true);
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
+            alert('Propuesta rechazada. La donación ahora está disponible para otros usuarios.');
+            fetchSolicitudes();
+        } catch (err) {
+            alert('Error al rechazar: ' + err.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -54,22 +76,28 @@ const MyRequestsPage = () => {
     };
     
     const renderCardContent = (solicitud) => {
-        const entrega = solicitud.entregaId; // Gracias a la corrección del backend, esto ahora funciona.
+        const entrega = solicitud.entregaId;
         switch (solicitud.estadoSolicitud) {
             case 'PENDIENTE_APROBACION':
                 return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
             case 'RECHAZADA_DONANTE':
                 return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
+            case 'CANCELADA_RECEPTOR':
+                return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
             case 'COMPLETADA_CON_ENTREGA':
-                return <div className="flex items-center gap-2 text-gray-500"><CheckCircle size={16} /><span>Entrega completada</span></div>;
+                return <div className="flex items-center gap-2 text-green-700 font-semibold"><CheckCircle size={16} /><span>¡Retiro exitoso!</span></div>;
             case 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO':
                 if (!entrega) return <div className="text-gray-500">Cargando detalles de la entrega...</div>;
                 return (
                     <div className="bg-blue-50 p-3 rounded-md">
                         <p className="font-semibold text-blue-800">¡Aprobada! Confirma el horario:</p>
                         <p className="text-sm"><strong>Fecha:</strong> {new Date(entrega.fechaPropuesto.fechaInicio).toLocaleDateString()}</p>
-                        <p className="text-sm"><strong>Horario:</strong> {entrega.horarioEntregaPropuestaPorDonante.horarioInicio} - {entrega.horarioEntregaPropuestaPorDonante.horarioFin}</p>
-                        <button onClick={() => handleConfirmarHorario(entrega._id)} disabled={isSubmitting} className="mt-2 w-full text-xs bg-blue-600 text-white py-1 rounded">Confirmar Horario</button>
+                        <p className="text-sm"><strong>Horario:</strong> {entrega.horarioEntregaPropuestaPorDonante.horaInicio} - {entrega.horarioEntregaPropuestaPorDonante.horaFin}</p>
+                        {/* --- BOTONES ACTUALIZADOS --- */}
+                        <div className="flex gap-2 mt-2">
+                            <button onClick={() => handleRechazarHorario(entrega._id)} disabled={isSubmitting} className="flex-1 text-xs bg-red-100 text-red-700 py-1 rounded hover:bg-red-200">No puedo</button>
+                            <button onClick={() => handleConfirmarHorario(entrega._id)} disabled={isSubmitting} className="flex-1 text-xs bg-blue-600 text-white py-1 rounded hover:bg-blue-700">Confirmar</button>
+                        </div>
                     </div>
                 );
             default:
@@ -82,7 +110,7 @@ const MyRequestsPage = () => {
                                 <span className="font-bold text-lg tracking-widest">{entrega.codigoConfirmacionReceptor}</span>
                                 <button onClick={() => copyToClipboard(entrega.codigoConfirmacionReceptor)} title="Copiar código"><Copy size={16} /></button>
                             </div>
-                            <p className="text-xs text-center">Muestra este código al donante.</p>
+                            <p className="text-xs text-center">Muestra este código al donante al momento del retiro.</p>
                         </div>
                     );
                 }
