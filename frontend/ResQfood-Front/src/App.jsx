@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, ClerkLoaded, useAuth } from '@clerk/clerk-react';
@@ -28,7 +27,6 @@ import FormularioVoluntario from './pages/FormularioVoluntario';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 
 import { useSocket } from './hooks/useSocket';
-
 import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
 
@@ -55,13 +53,12 @@ const useGlobalState = () => {
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
     const [searchQuery, setSearchQuery] = useState('');
+    
     const [notifications, setNotifications] = useState([]);
-    const [unreadCount, setUnreadCount] = useState(0);
 
-    useEffect(() => {
-        const newUnreadCount = notifications.filter(n => !n.leida).length;
-        setUnreadCount(newUnreadCount);
-    }, [notifications]);
+    const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
+    const hasNewDonationNotifications = useMemo(() => notifications.some(n => !n.leida && n.enlace === '/mis-donaciones'), [notifications]);
+    const hasNewRequestNotifications = useMemo(() => notifications.some(n => !n.leida && n.enlace === '/mis-solicitudes'), [notifications]);
 
     const updateProfileState = (userData) => {
         setProfileStatus({ 
@@ -72,30 +69,13 @@ const useGlobalState = () => {
         });
     };
 
-    const triggerDonationReFetch = () => {
-        setDonationCreationTimestamp(Date.now());
-    };
+    const triggerDonationReFetch = () => { setDonationCreationTimestamp(Date.now()); };
 
     const addNotification = useCallback((newNotification) => {
         setNotifications(prev => {
             if (prev.some(n => n._id === newNotification._id)) return prev;
             return [newNotification, ...prev];
         });
-    }, []);
-
-    const fetchInitialNotifications = useCallback(async (token) => {
-        if (!token) return;
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/notificacion`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) throw new Error("Failed to fetch notifications");
-            const data = await response.json();
-            setNotifications(data.notificaciones || []);
-        } catch (error) {
-            console.error("Error al cargar notificaciones iniciales:", error);
-            setNotifications([]);
-        }
     }, []);
 
     useEffect(() => {
@@ -114,12 +94,14 @@ const useGlobalState = () => {
             try {
                 const token = await getToken();
                 
-                const profileResponse = await fetch(`${API_BASE_URL}/api/usuario/me`, { 
-                  headers: { 'Authorization': `Bearer ${token}` } 
-                });
+                const [profileResponse, notificationsResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${API_BASE_URL}/api/notificacion`, { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
                 
                 if (profileResponse.status === 404) {
                     setProfileStatus({ isLoadingUserProfile: false, isComplete: false, currentUserRole: null, currentUserDataFromDB: null });
+                    setNotifications([]); 
                     return;
                 }
                 
@@ -127,10 +109,13 @@ const useGlobalState = () => {
                   const errorData = await profileResponse.json();
                   throw new Error(errorData.message || "Error al obtener el perfil del usuario.");
                 }
+                if (!notificationsResponse.ok) throw new Error("Failed to fetch notifications");
                 
-                const data = await profileResponse.json();
-                updateProfileState(data.user); 
-                await fetchInitialNotifications(token); 
+                const profileData = await profileResponse.json();
+                const notificationsData = await notificationsResponse.json();
+
+                updateProfileState(profileData.user); 
+                setNotifications(notificationsData.notificaciones || []);
 
             } catch (error) {
                 console.error("Error en fetchUserProfileFunction:", error.message);
@@ -139,7 +124,7 @@ const useGlobalState = () => {
         };
 
         fetchUserProfileFunction();
-    }, [isAuthLoaded, isSignedIn, getToken, fetchInitialNotifications]); 
+    }, [isAuthLoaded, isSignedIn, getToken]); 
 
     return {
         ...profileStatus,
@@ -154,25 +139,17 @@ const useGlobalState = () => {
         notifications,
         setNotifications,
         unreadCount,
+        hasNewDonationNotifications,
+        hasNewRequestNotifications,
         addNotification,
     };
 };
 
 const ProtectedLayout = ({ adminOnly = false }) => {
     const { isLoadingUserProfile, isComplete, currentUserRole } = useContext(ProfileStatusContext);
-
-    if (isLoadingUserProfile) {
-        return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
-    }
-
-    if (!isComplete) {
-        return <CompleteProfilePage onProfileComplete={useContext(ProfileStatusContext).updateProfileState} />;
-    }
-    
-    if (adminOnly && currentUserRole !== 'ADMIN') {
-        return <Navigate to="/dashboard" replace />;
-    }
-
+    if (isLoadingUserProfile) return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
+    if (!isComplete) return <CompleteProfilePage onProfileComplete={useContext(ProfileStatusContext).updateProfileState} />;
+    if (adminOnly && currentUserRole !== 'ADMIN') return <Navigate to="/dashboard" replace />;
     return <Outlet />;
 };
 
@@ -181,20 +158,16 @@ const AppContent = () => {
   useSocket(appStateHook.addNotification);
 
   const contextValueForProvider = useMemo(() => (appStateHook), [
-    appStateHook.isLoadingUserProfile,
-    appStateHook.isComplete,
-    appStateHook.currentUserDataFromDB,
-    appStateHook.activeSearchLocation,
-    appStateHook.donationCreationTimestamp,
-    appStateHook.searchQuery,
-    appStateHook.notifications,
-    appStateHook.unreadCount
+    appStateHook.isLoadingUserProfile, appStateHook.isComplete, appStateHook.currentUserDataFromDB,
+    appStateHook.activeSearchLocation, appStateHook.donationCreationTimestamp, appStateHook.searchQuery,
+    appStateHook.notifications, appStateHook.unreadCount, appStateHook.hasNewDonationNotifications,
+    appStateHook.hasNewRequestNotifications
   ]);
 
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
         <div className="flex flex-col min-h-screen bg-gray-50">
-             <Toaster position="top-center" reverseOrder={false} />
+            <Toaster position="top-center" reverseOrder={false} />
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
             <ClerkLoaded>
@@ -202,8 +175,6 @@ const AppContent = () => {
                     <Route path="/" element={<RootRedirector />} />
                     <Route path="/sign-in/*" element={<SignInPage />} />
                     <Route path="/sign-up/*" element={<SignUpPage />} />
-
-                    {/* Rutas Protegidas para usuarios logueados y con perfil completo */}
                     <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
                         <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={appStateHook.triggerDonationReFetch} />} />
@@ -212,13 +183,9 @@ const AppContent = () => {
                         <Route path="/mi-perfil" element={<MiPerfilPage />} />
                         <Route path="/perfil/:id" element={<UserProfilePage />} />
                     </Route>
-
-                    {/* Rutas Protegidas solo para Administradores */}
                     <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
                         <Route path="/admin" element={<AdminDashboardPage />} />
                     </Route>
-
-                    {/* Rutas Públicas */}
                     <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
                     <Route path="/formularioContacto" element={<FormularioContacto />} />
                     <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
