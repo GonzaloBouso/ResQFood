@@ -29,7 +29,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 
 import { useSocket } from './hooks/useSocket';
 
-import { ProfileStatusContext } from './context/ProfileStatusContext.js';
+import { ProfileStatusContext } from './context/ProfileStatusContext';
 import API_BASE_URL from './api/config.js';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
