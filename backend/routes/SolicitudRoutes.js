@@ -13,8 +13,6 @@ router.get('/recibidas', requireAuth, SolicitudController.getSolicitudesRecibida
 
 router.post('/:donacionId/solicitar', requireAuth, SolicitudController.createSolicitud);
 
-// Donante acepta la solicitud y propone un horario
-router.post('/:solicitudId/aceptar-y-proponer', requireAuth, SolicitudController.aceptarSolicitudYProponerHorario);
 
 // Donante acepta la solicitud y propone un horario
 router.put('/:solicitudId/aceptar-y-proponer', requireAuth, SolicitudController.aceptarSolicitudYProponerHorario)
