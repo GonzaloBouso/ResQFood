@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
-import { ChevronDown, Loader2, Clock, CheckCircle } from 'lucide-react';
+import { ChevronDown, Loader2 } from 'lucide-react';
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
+import toast from 'react-hot-toast';
 
 const ConfirmarEntregaForm = ({ entregaId, onConfirm, isSubmitting }) => {
     const [codigo, setCodigo] = useState('');
@@ -32,8 +33,6 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
                     </div>
                     <div className="flex gap-2">
                         <button disabled={isSubmitting} onClick={() => onReject(solicitud._id)} className="px-2 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200">Rechazar</button>
-                        
-
                         <button disabled={isSubmitting} onClick={() => onAcceptClick(solicitud)} className="px-2 py-1 text-xs text-white bg-green-600 rounded hover:bg-green-700">Aceptar</button>
                     </div>
                 </div>
@@ -41,6 +40,7 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
         </div>
     );
 };
+// --- FIN DE COMPONENTES INTERNOS ---
 
 const MyDonationsPage = () => {
     const { getToken } = useAuth();
@@ -56,11 +56,9 @@ const MyDonationsPage = () => {
         setError(null);
         try {
             const token = await getToken();
-            
-              const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones-activas`, { 
-                headers: { 'Authorization': `Bearer ${token}` } 
+            const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones-activas`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-            
             if (!response.ok) throw new Error('No se pudieron cargar tus donaciones.');
             const data = await response.json();
             setDonaciones(data.donaciones);
@@ -69,65 +67,89 @@ const MyDonationsPage = () => {
 
     useEffect(() => { fetchDonations(); }, [fetchDonations]);
 
+    // --- REFACTORIZADO SOBRE LA ÚLTIMA VERSIÓN ---
     const handleAcceptAndPropose = async (solicitudId, propuesta) => {
         setIsSubmitting(true);
+        const toastId = toast.loading('Enviando propuesta...'); // Estado de carga
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/aceptar-y-proponer`, {
-                method: 'PUT',
+                method: 'PUT', 
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(propuesta),
             });
-            
+
             if (!response.ok) {
-                let errorPayload;
-                try {
-                    errorPayload = await response.json();
-                } catch (e) {
-                    const textError = await response.text();
-                    throw new Error(`El servidor respondió con un error ${response.status}. Respuesta: ${textError || 'Sin cuerpo de respuesta'}`);
-                }
-                throw new Error(errorPayload.message || 'Ocurrió un error desconocido.');
+                const errorPayload = await response.json().catch(() => ({ message: 'Ocurrió un error desconocido.' }));
+                throw new Error(errorPayload.message);
             }
 
-            console.log('¡Propuesta enviada con éxito!'); 
-            alert('¡Propuesta enviada con éxito!'); 
-
+            toast.success('¡Propuesta enviada con éxito!', { id: toastId }); // Estado de éxito
             setSolicitudParaAceptar(null);
-            fetchDonations();
-        } catch (err) { 
+            fetchDonations(); // Refresca la lista
+        } catch (err) {
             console.error("Error completo al aceptar la solicitud:", err);
-            alert("Error al aceptar la solicitud: " + err.message); 
-        } finally { 
-            setIsSubmitting(false); 
+            toast.error(`Error: ${err.message}`, { id: toastId }); // Estado de error
+        } finally {
+            setIsSubmitting(false);
         }
     };
-    
+
+    // --- REFACTORIZADO ---
     const handleReject = async (solicitudId) => {
-        if (!window.confirm("¿Estás seguro de que deseas rechazar esta solicitud?")) return;
+        // Usamos un toast de confirmación en lugar de window.confirm
+        toast((t) => (
+            <div className="flex flex-col items-center gap-3">
+                <span className="text-center font-semibold">¿Seguro que quieres rechazar esta solicitud?</span>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="px-3 py-1 text-sm bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={() => {
+                            toast.dismiss(t.id);
+                            executeReject(solicitudId); // Ejecuta la lógica si se confirma
+                        }}
+                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                    >
+                        Rechazar
+                    </button>
+                </div>
+            </div>
+        ), { duration: 6000 });
+    };
+
+    // --- Lógica de rechazo extraída para usarla después de la confirmación ---
+    const executeReject = async (solicitudId) => {
         setIsSubmitting(true);
+        const toastId = toast.loading('Rechazando solicitud...');
         try {
             const token = await getToken();
-            const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/rechazar`, { 
-                method: 'POST', 
-                headers: { 'Authorization': `Bearer ${token}` } 
+            const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/rechazar`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!response.ok) {
-                 const errorData = await response.json().catch(() => ({ message: 'No se pudo procesar la respuesta del servidor.' }));
-                 throw new Error(errorData.message || 'Falló el rechazo de la solicitud.');
+                const errorData = await response.json().catch(() => ({ message: 'No se pudo procesar la respuesta.' }));
+                throw new Error(errorData.message || 'Falló el rechazo de la solicitud.');
             }
-            
+            toast.success('Solicitud rechazada.', { id: toastId });
             fetchDonations();
-        } catch (err) { 
-            alert("Error al rechazar: " + err.message); 
-        } finally { 
-            setIsSubmitting(false); 
+        } catch (err) {
+            toast.error(`Error: ${err.message}`, { id: toastId });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
+    // --- REFACTORIZADO ---
     const handleCompleteDelivery = async (entregaId, codigo) => {
         setIsSubmitting(true);
+        const toastId = toast.loading('Confirmando entrega...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/completar`, {
@@ -135,11 +157,19 @@ const MyDonationsPage = () => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ codigoConfirmacion: codigo }),
             });
-            if (!response.ok) throw new Error((await response.json()).message);
-            alert('¡Entrega completada!');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message);
+            }
+            toast.success('¡Entrega completada con éxito!', { id: toastId });
             fetchDonations();
-        } catch (err) { alert('Error al confirmar: ' + err.message); } finally { setIsSubmitting(false); }
+        } catch (err) {
+            toast.error(`Error: ${err.message}`, { id: toastId });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
 
     if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
@@ -151,7 +181,6 @@ const MyDonationsPage = () => {
                 <div className="space-y-4">
                     {donaciones.map(donacion => {
                         const isExpanded = expandedDonationId === donacion._id;
-                       
                         const solicitudConEntrega = donacion.solicitudes.find(s => s.entregaId);
                         const entregaActiva = solicitudConEntrega?.entregaId;
 
