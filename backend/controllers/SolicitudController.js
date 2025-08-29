@@ -202,43 +202,59 @@ export class SolicitudController {
     }
         
     static async rechazarSolicitud(req, res){
-        const {solicitudId} = req.params;
-        const {motivoRechazo} = req.body;
+        const { solicitudId } = req.params;
+        const { motivoRechazo } = req.body;
         const donanteClerkId = req.auth?.userId;
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
             const solicitud = await Solicitud.findById(solicitudId).session(session);
-            if (!solicitud) { await session.abortTransaction(); session.endSession(); return res.status(404).json({ message: 'Solicitud no encontrada.' }); }
-            if (solicitud.estadoSolicitud !== 'PENDIENTE_APROBACION') { await session.abortTransaction(); session.endSession(); return res.status(400).json({ message: 'Esta solicitud ya ha sido gestionada.' }); }
+            if (!solicitud) { throw new Error('Solicitud no encontrada.'); }
+            if (solicitud.estadoSolicitud !== 'PENDIENTE_APROBACION') { throw new Error('Esta solicitud ya ha sido gestionada.'); }
+            
             const donante = await User.findById(solicitud.donanteId).session(session);
-            if (donante.clerkUserId !== donanteClerkId) { await session.abortTransaction(); session.endSession(); return res.status(403).json({ message: 'No tienes permiso.' }); }
+            if (!donante || donante.clerkUserId !== donanteClerkId) { 
+                throw new Error('No tienes permiso para gestionar esta solicitud.');
+            }
+
             solicitud.estadoSolicitud = 'RECHAZADA_DONANTE';
             solicitud.motivoRechazo = motivoRechazo || 'El donante no ha especificado un motivo.';
             solicitud.fechaRechazo = new Date();
-            const receptor = await User.findById(solicitud.solicitanteId).session(session);
+            
+            const receptor = await User.findById(solicitud.solicitanteId).select('nombre clerkUserId').session(session);
             const donacion = await Donacion.findById(solicitud.donacionId).select('titulo').session(session);
-            const notificacion = new Notificacion({
-                destinatarioId: receptor._id, tipoNotificacion: 'RECHAZO',
-                mensaje: `Tu solicitud para "${donacion.titulo}" fue rechazada por el donante.`,
-                referenciaId: solicitud._id, tipoReferencia: 'Solicitud'
-            });
+            
             await solicitud.save({ session });
-            await notificacion.save({ session });
-            const io = getIoInstance();
-            const receptorSocketId = getSocketIdForUser(receptor.clerkUserId);
-            if (receptorSocketId) {
-                console.log(`EMITTING 'nueva_notificacion' (Rechazo) to receptor ${receptor.nombre} (ClerkID: ${receptor.clerkUserId}) on socket ${receptorSocketId}`);
-                io.to(receptorSocketId).emit('nueva_notificacion', notificacion.toObject());
+
+            if (receptor && donacion) {
+                const notificacion = new Notificacion({
+                    destinatarioId: receptor._id,
+                    tipoNotificacion: 'RECHAZO',
+                    mensaje: `Tu solicitud para "${donacion.titulo}" fue rechazada por el donante.`,
+                    referenciaId: solicitud._id,
+                    tipoReferencia: 'Solicitud'
+                });
+                await notificacion.save({ session });
+
+                const io = getIoInstance();
+                const receptorSocketId = getSocketIdForUser(receptor.clerkUserId);
+                if (receptorSocketId) {
+                    console.log(`EMITIENDO notificación de rechazo a ${receptor.nombre}`);
+                    io.to(receptorSocketId).emit('nueva_notificacion', notificacion.toObject());
+                } else {
+                    console.log(`No se encontró socket para ${receptor.nombre}.`);
+                }
             } else {
-                 console.log(`COULD NOT FIND socket for receptor ${receptor.nombre} (ClerkID: ${receptor.clerkUserId}) during rejection. Notification will be available on next page load.`);
+                console.warn(`No se pudo notificar el rechazo de la solicitud ${solicitud._id} por falta de datos.`);
             }
+            
             await session.commitTransaction();
             res.status(200).json({ message: 'Solicitud rechazada exitosamente.' });
         } catch (error) {
             await session.abortTransaction();
-            res.status(500).json({ message: 'Error al rechazar la solicitud.', errorDetails: error.message });
-        }finally {
+            console.error("Error detallado al rechazar la solicitud:", error);
+            res.status(500).json({ message: `Error al rechazar la solicitud: ${error.message}` });
+        } finally {
             session.endSession();
         }
     }
