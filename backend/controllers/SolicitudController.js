@@ -148,7 +148,7 @@ export class SolicitudController {
 
             const notificacionAprobacion = new Notificacion({
                 destinatarioId: receptor._id,
-                tipoNotificacion: 'PROPUESTA_HORARIO',
+                tipoNotificacion: 'APROBACION',
                 mensaje: `¡Tu solicitud para "${donacion.titulo}" fue aprobada! Confirma el horario de retiro.`,
                 referenciaId: nuevaEntrega._id,
                 tipoReferencia: 'Entrega',
