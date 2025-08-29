@@ -1,3 +1,4 @@
+// frontend/src/components/modals/ReportModal.jsx (NUEVO ARCHIVO)
 import React, { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { X, Flag } from 'lucide-react';
@@ -45,13 +46,13 @@ const ReportModal = ({ donacion, onClose }) => {
             <div className="bg-white rounded-xl w-full max-w-md shadow-2xl">
                 <div className="p-4 border-b flex justify-between items-center">
                     <h2 className="text-lg font-semibold flex items-center gap-2"><Flag size={20}/> Reportar Publicación</h2>
-                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100">&times;</button>
+                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100 text-gray-500"><X size={20}/></button>
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="p-6 space-y-4">
                         <div>
                             <label htmlFor="motivo" className="block text-sm font-medium text-gray-700 mb-1">Motivo del reporte</label>
-                            <select id="motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} required className="w-full border-gray-300 rounded-md shadow-sm">
+                            <select id="motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} required className="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
                                 <option value="" disabled>Selecciona una razón...</option>
                                 <option value="Contenido inapropiado">Contenido inapropiado</option>
                                 <option value="Información falsa o engañosa">Información falsa o engañosa</option>
@@ -62,7 +63,7 @@ const ReportModal = ({ donacion, onClose }) => {
                         </div>
                         <div>
                             <label htmlFor="detalles" className="block text-sm font-medium text-gray-700 mb-1">Detalles adicionales (opcional)</label>
-                            <textarea id="detalles" value={detalles} onChange={(e) => setDetalles(e.target.value)} rows="3" placeholder="Proporciona más información si es necesario." className="w-full border-gray-300 rounded-md shadow-sm"></textarea>
+                            <textarea id="detalles" value={detalles} onChange={(e) => setDetalles(e.target.value)} rows="3" placeholder="Proporciona más información si es necesario." className="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"></textarea>
                         </div>
                     </div>
                     <div className="px-6 pb-4 flex justify-end gap-3 bg-gray-50 pt-4 rounded-b-xl">

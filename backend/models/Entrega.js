@@ -1,3 +1,4 @@
+// backend/models/Reporte.js (CÓDIGO COMPLETO Y CORREGIDO)
 import mongoose, { Schema } from "mongoose";
 
 const ReporteSchema = new Schema(
@@ -16,7 +17,7 @@ const ReporteSchema = new Schema(
             ],
             required: true,
         },
-        detalles: { type: String, trim: true },
+        detalles: { type: String, trim: true, maxLength: 500 },
         estado: {
             type: String,
             enum: ['PENDIENTE', 'RESUELTO'],

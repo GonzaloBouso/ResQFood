@@ -1,3 +1,4 @@
+// frontend/src/components/layout/CardDonacion.jsx (CÓDIGO COMPLETO Y CORREGIDO)
 import React, { useState } from 'react';
 import { MoreVertical, Flag } from 'lucide-react';
 import ReportModal from '../modals/ReportModal'; // Importamos el nuevo modal
@@ -21,14 +22,14 @@ const CardDonacion = ({ donacion }) => {
                             <div className="flex justify-between items-start">
                                 <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">{categoria}</span>
                                 <div className="relative">
-                                    <button onClick={() => setMenuOpen(!menuOpen)} className="p-1 rounded-full hover:bg-gray-100">
+                                    <button onClick={() => setMenuOpen(prev => !prev)} onBlur={() => setTimeout(() => setMenuOpen(false), 150)} className="p-1 rounded-full hover:bg-gray-100 text-gray-500">
                                         <MoreVertical size={18} />
                                     </button>
                                     {menuOpen && (
                                         <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border z-10">
                                             <button 
                                                 onClick={() => { setReportModalOpen(true); setMenuOpen(false); }}
-                                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                                className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                                             >
                                                 <Flag size={14} /> Reportar
                                             </button>
@@ -39,7 +40,7 @@ const CardDonacion = ({ donacion }) => {
                             <h3 className="font-semibold text-lg mt-1">{titulo}</h3>
                             <p className="text-sm text-gray-500">Donado por: {donanteId?.nombre || 'Anónimo'}</p>
                         </div>
-                        <button className="mt-2 text-sm font-semibold text-primary self-start">
+                        <button className="mt-2 text-sm font-semibold text-primary self-start hover:underline">
                             Ver detalles
                         </button>
                     </div>
