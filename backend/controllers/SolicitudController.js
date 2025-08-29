@@ -45,7 +45,8 @@ export class SolicitudController {
                 tipoNotificacion: 'SOLICITUD',
                 mensaje: `${solicitante.nombre} ha solicitado tu donación "${donacion.titulo}".`,
                 referenciaId: nuevaSolicitud._id,
-                tipoReferencia: 'Solicitud'
+                tipoReferencia: 'Solicitud',
+                enlace: '/mis-donaciones'
             });
             await notificacion.save({ session });
             const io = getIoInstance();
