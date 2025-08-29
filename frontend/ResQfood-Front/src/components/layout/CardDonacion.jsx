@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
+// frontend/src/components/layout/CardDonacion.jsx (CÓDIGO COMPLETO Y FINAL)
+
+import React, { useState, useContext } from 'react'; // 1. Importamos useContext
 import { Link } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import API_BASE_URL from '../../api/config'; 
 import DetallesCardDonacion from './DetallesCardDonacion';
 import ConfirmModal from '../modals/ConfirmModal'; 
+import ReportModal from '../modals/ReportModal'; // 2. Importamos el nuevo modal de reporte
+import { ProfileStatusContext } from '../../context/ProfileStatusContext'; // 3. Importamos el contexto de perfil
+import { MoreVertical, Flag } from 'lucide-react'; // 4. Importamos los íconos necesarios
 import toast from 'react-hot-toast';
+
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200.png?text=Sin+Imagen';
 
 const CardDonacion = ({ donacion }) => { 
+  // Estados que ya tenías
   const [mostrarModal, setMostrarModal] = useState(false);
   const { getToken } = useAuth(); 
-
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  
+  // --- NUEVOS ESTADOS para el menú y el modal de reporte ---
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  
+  // --- OBTENEMOS EL USUARIO ACTUAL DEL CONTEXTO ---
+  const { currentUserDataFromDB } = useContext(ProfileStatusContext);
 
   if (!donacion) return null;
 
@@ -22,6 +35,9 @@ const CardDonacion = ({ donacion }) => {
   const ubicacionSimple = ubicacionRetiro ? `${ubicacionRetiro.ciudad || ''}${ubicacionRetiro.provincia ? ', ' + ubicacionRetiro.provincia : ''}`.trim() : 'Ubicación no especificada';
   const nombreDonante = isDonantePopulated ? donanteId.nombre : 'Donante Anónimo';
   const inicialesDonante = nombreDonante.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+  // --- LÓGICA CLAVE: Comparamos para saber si es nuestra donación ---
+  const isMyDonation = currentUserDataFromDB?._id === donanteId?._id;
 
   const handleSolicitarClick = async () => {
     const toastId = toast.loading('Enviando tu solicitud...');
@@ -42,12 +58,13 @@ const CardDonacion = ({ donacion }) => {
       }
       
         toast.success('¡Solicitud enviada con éxito! El donante ha sido notificado.', {
-        id: toastId, // Reemplaza el toast de "cargando"
+        id: toastId,
       });
 
     } catch (err) {
       console.error("Error al solicitar donación:", err);
-      toast.error(err.message, { id: toastId });    }
+      toast.error(err.message, { id: toastId });
+    }
   };
 
   const abrirModal = () => setMostrarModal(true);
@@ -57,12 +74,9 @@ const CardDonacion = ({ donacion }) => {
     <>
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col h-full transition-shadow hover:shadow-lg">
         {isDonantePopulated ? (
-          <Link 
-            to={`/perfil/${donanteId._id}`} 
-            className="block px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-          >
+          <div className="block px-4 py-3 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+              <Link to={`/perfil/${donanteId._id}`} className="flex items-center space-x-3 group">
                 {donanteId.fotoDePerfilUrl ? (
                   <img className="w-8 h-8 rounded-full object-cover" src={donanteId.fotoDePerfilUrl} alt={nombreDonante} />
                 ) : (
@@ -70,12 +84,35 @@ const CardDonacion = ({ donacion }) => {
                     {inicialesDonante}
                   </div>
                 )}
-                <span className="font-medium text-sm text-gray-700 truncate" title={nombreDonante}>
+                <span className="font-medium text-sm text-gray-700 truncate group-hover:text-primary" title={nombreDonante}>
                   {nombreDonante}
                 </span>
-              </div>
+              </Link>
+
+              {/* --- RENDERIZADO CONDICIONAL DEL MENÚ DE 3 PUNTOS --- */}
+              {!isMyDonation && currentUserDataFromDB && (
+                <div className="relative">
+                  <button 
+                      onClick={() => setMenuOpen(prev => !prev)} 
+                      onBlur={() => setTimeout(() => setMenuOpen(false), 200)} // Cierra el menú si se pierde el foco
+                      className="p-2 -mr-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                  >
+                      <MoreVertical size={18} />
+                  </button>
+                  {menuOpen && (
+                      <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border z-20 animate-fade-in-up">
+                          <button 
+                              onClick={() => { setReportModalOpen(true); setMenuOpen(false); }}
+                              className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3"
+                          >
+                              <Flag size={14} /> Reportar publicación
+                          </button>
+                      </div>
+                  )}
+                </div>
+              )}
             </div>
-          </Link>
+          </div>
         ) : (
           <div className="px-4 py-3 border-b border-gray-100">
              <div className="flex items-center space-x-3">
@@ -119,12 +156,15 @@ const CardDonacion = ({ donacion }) => {
             >
               Ver Detalles
             </button>
-            <button
-              className="w-full sm:w-auto flex-1 px-3 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-brandPrimaryDarker transition-colors whitespace-nowrap"
-              onClick={() => setIsConfirmOpen(true)}
-            >
-              Solicitar
-            </button>
+            {/* Solo mostramos el botón "Solicitar" si NO es nuestra donación */}
+            {!isMyDonation && (
+              <button
+                className="w-full sm:w-auto flex-1 px-3 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-brandPrimaryDarker transition-colors whitespace-nowrap"
+                onClick={() => setIsConfirmOpen(true)}
+              >
+                Solicitar
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -145,6 +185,11 @@ const CardDonacion = ({ donacion }) => {
         confirmText="Sí, Solicitar"
         cancelText="Cancelar"
       />
+
+      {/* Renderizado del modal de reporte */}
+      {reportModalOpen && (
+          <ReportModal donacion={donacion} onClose={() => setReportModalOpen(false)} />
+      )}
     </>
   );
 };
