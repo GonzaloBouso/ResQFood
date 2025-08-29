@@ -1,13 +1,19 @@
-// backend/models/Entrega.js (CÓDIGO COMPLETO Y CORREGIDO)
-
 import mongoose, { Schema } from "mongoose";
 
 const EntregaSchema = new mongoose.Schema(
     {
-        solicitudId: { type: Schema.Types.ObjectId, ref: 'Solicitud', required: true, unique: true, index: true },
+        solicitudId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Solicitud',
+            required: true,
+            unique: true,
+            index: true
+            
+        },
         donacionId: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
         donanteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         receptorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        
         horarioPropuesto: {
             type: {
                 fecha: { type: Date, required: true },
@@ -17,13 +23,14 @@ const EntregaSchema = new mongoose.Schema(
             _id: false,
             required: true,
         },
+        
         horarioEntregaConfirmadoSolicitante: { type: Boolean, default: false },
         fechaHorarioConfirmado: { type: Date, default: null },
         codigoConfirmacionReceptor: { type: String, required: true },
         estadoEntrega: {
             type: String,
             enum: [
-                'PENDIENTE_CONFIRMACION_SOLICITANTE', // El estado que se usa
+                'PENDIENTE_CONFIRMACION_SOLICITANTE',
                 'LISTA_PARA_RETIRO',
                 'COMPLETADA',
                 'FALLIDA_RECEPTOR_NO_ASISTIO',
@@ -31,9 +38,10 @@ const EntregaSchema = new mongoose.Schema(
                 'CANCELADA_POR_DONANTE',
                 'CANCELADA_POR_SOLICITANTE',
             ],
-            // CORRECCIÓN: El valor por defecto DEBE estar en la lista de enum.
+           
             default: "PENDIENTE_CONFIRMACION_SOLICITANTE",
-            required: true, index: true,
+            required: true, 
+            index: true,
         },
         notasEntrega: { type: String, default: null },
         fechaCompletada: { type: Date, default: null },
