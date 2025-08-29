@@ -56,20 +56,15 @@ const useGlobalState = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState([]);
 
-    // --- CORRECCIÓN #1: Lógica para los indicadores de notificación ---
-    // Se usa 'useMemo' para calcular estos valores de forma eficiente.
-    // Solo se recalcularán si la lista de 'notifications' cambia.
     const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
 
-    // Lógica para el punto en "Mis donaciones": busca notificaciones de nuevas SOLICITUDES
     const hasNewDonationNotifications = useMemo(() => 
         notifications.some(n => !n.leida && n.tipoNotificacion === 'SOLICITUD'), 
         [notifications]
     );
 
-    // Lógica para el punto en "Mis solicitudes": busca notificaciones sobre el estado de tus solicitudes
     const hasNewRequestNotifications = useMemo(() => 
-        notifications.some(n => !n.leida && ['APROBACION', 'RECHAZO', 'PROPUESTA_HORARIO'].includes(n.tipoNotificacion)), 
+        notifications.some(n => !n.leida && ['APROBACION', 'RECHAZO'].includes(n.tipoNotificacion)), 
         [notifications]
     );
 
@@ -91,7 +86,23 @@ const useGlobalState = () => {
         });
     }, []);
 
-    // Tu useEffect de carga de datos se mantiene intacto, ya es eficiente.
+    // --- FUNCIONES NUEVAS AÑADIDAS ---
+    const markDonationNotificationsAsRead = useCallback(() => {
+        setNotifications(prev => 
+            prev.map(n => 
+                n.tipoNotificacion === 'SOLICITUD' ? { ...n, leida: true } : n
+            )
+        );
+    }, []);
+
+    const markRequestNotificationsAsRead = useCallback(() => {
+        setNotifications(prev =>
+            prev.map(n =>
+                ['APROBACION', 'RECHAZO'].includes(n.tipoNotificacion) ? { ...n, leida: true } : n
+            )
+        );
+    }, []);
+
     useEffect(() => {
         if (!isAuthLoaded) return; 
         
@@ -140,7 +151,7 @@ const useGlobalState = () => {
         fetchUserProfileFunction();
     }, [isAuthLoaded, isSignedIn, getToken]); 
 
-    // Se retornan todos los valores necesarios para el resto de la aplicación
+    // Se retornan todos los valores, incluyendo las nuevas funciones
     return {
         ...profileStatus,
         updateProfileState,
@@ -157,6 +168,8 @@ const useGlobalState = () => {
         addNotification,
         hasNewRequestNotifications,
         hasNewDonationNotifications,
+        markDonationNotificationsAsRead,
+        markRequestNotificationsAsRead,
     };
 };
 

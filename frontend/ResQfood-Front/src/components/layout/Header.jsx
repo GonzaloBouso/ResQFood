@@ -22,6 +22,8 @@ const Header = () => {
     searchQuery,
     setSearchQuery,
     notifications,
+    markDonationNotificationsAsRead,
+    markRequestNotificationsAsRead,  
     setNotifications,
     unreadCount,
     hasNewDonationNotifications,
@@ -123,7 +125,6 @@ const Header = () => {
                   <button
                      onClick={() => {
                         toggleProfileMenu();
-                        handleMarkAsRead(); 
                     }}
                     className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100"
                     aria-label="Opciones de perfil"
@@ -162,8 +163,12 @@ const Header = () => {
                         <Link
                           to={misDonacionesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
-                          onClick={toggleProfileMenu}
+                          onClick={() => {
+                            toggleProfileMenu(); // Cierra el menú
+                            markDonationNotificationsAsRead(); // Marca las notificaciones como leídas
+                          }}
                         >
+
                           <span>Mis donaciones</span>
                           {hasNewDonationNotifications && (
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -176,7 +181,10 @@ const Header = () => {
                         <Link
                           to={misSolicitudesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
-                          onClick={toggleProfileMenu}
+                          onClick={() => {
+                            toggleProfileMenu(); // Cierra el menú
+                            markRequestNotificationsAsRead(); // Marca las notificaciones como leídas
+                          }}
                         >
                           <span>Mis solicitudes</span>
                           {hasNewRequestNotifications && (
