@@ -8,47 +8,7 @@ import multer from 'multer';
 
 export class DonacionController {
 
-   
-    static async getMisDonacionesActivasConSolicitudes(req, res) {
-        try {
-            const donanteClerkId = req.auth?.userId;
-            const donante = await User.findOne({ clerkUserId: donanteClerkId });
-
-            if (!donante) {
-                return res.status(404).json({ message: "Usuario donante no encontrado." });
-            }
-
-            
-            const donaciones = await Donacion.find({
-                donanteId: donante._id,
-                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
-            }).sort({ createdAt: -1 });
-
-            if (donaciones.length === 0) {
-                return res.status(200).json({ donaciones: [] });
-            }
-
-            
-            const donacionesCompletas = await Donacion.populate(donaciones, {
-                path: 'solicitudes', 
-                populate: [
-                    { path: 'solicitanteId', select: 'nombre fotoDePerfilUrl' },
-                    { path: 'entregaId' }
-                ]
-            });
-            
-            res.status(200).json({ donaciones: donacionesCompletas });
-
-        } catch (error) {
-            console.error("Error en getMisDonacionesActivasConSolicitudes:", error);
-            res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
-        }
-    }
-
-    
-
     static async createDonacion(req, res) {
-       
         try {
             const textData = {
                 titulo: req.body.titulo,
@@ -110,7 +70,6 @@ export class DonacionController {
     }
 
     static async getDonations(req, res) {
-        
         try {
             const donaciones = await Donacion.find({ estadoPublicacion: 'DISPONIBLE' })
                 .populate('donanteId', 'nombre fotoDePerfilUrl ubicacion.ciudad')
@@ -124,13 +83,14 @@ export class DonacionController {
     }
 
     static async getPublicDonations(req, res) {
-        
         try {
+            // Buscamos las últimas 10 donaciones que estén DISPONIBLES
             const donaciones = await Donacion.find({ estadoPublicacion: 'DISPONIBLE' })
-                .sort({ createdAt: -1 }) 
-                .limit(10)
+                .sort({ createdAt: -1 }) // Ordena para mostrar las más recientes primero
+                .limit(10) // Limita el resultado a las últimas 10 para no sobrecargar la homepage
+                // Selecciona solo los campos necesarios para la tarjeta de vista limitada
                 .select('titulo imagenesUrl categoria donanteId') 
-                .populate('donanteId', 'nombre fotoDePerfilUrl');
+                .populate('donanteId', 'nombre fotoDePerfilUrl'); // Obtiene nombre y foto del donante
 
             res.status(200).json({ donaciones });
         } catch (error) {
@@ -139,34 +99,34 @@ export class DonacionController {
         }
     }
 
-    static async getDonacionesByUsuario(req, res) {
-       
-        try {
-            const userId = req.params.id;
-            if (!mongoose.Types.ObjectId.isValid(userId)) {
-                return res.status(400).json({ message: 'ID de usuario inválido.' });
-            }
-
-            const donaciones = await Donacion.find({ 
-                donanteId: userId,
-                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] },
-                fechaExpiracionPublicacion: { $gte: new Date() } 
-            })
-            .populate('donanteId', 'nombre fotoDePerfilUrl') 
-            .sort({ createdAt: -1 });
-
-            res.status(200).json({ donaciones });
-        } catch (error) {
-            console.error('Error al obtener las donaciones del usuario:', error);
-            res.status(500).json({
-                message: 'Error interno al obtener las donaciones del usuario',
-                errorDetails: error.message,
-            });
+ static async getDonacionesByUsuario(req, res) {
+    try {
+        const userId = req.params.id;
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: 'ID de usuario inválido.' });
         }
+
+       
+        const donaciones = await Donacion.find({ 
+            donanteId: userId,
+            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] },
+            
+            fechaExpiracionPublicacion: { $gte: new Date() } 
+        })
+        .populate('donanteId', 'nombre fotoDePerfilUrl') 
+        .sort({ createdAt: -1 });
+
+        res.status(200).json({ donaciones });
+    } catch (error) {
+        console.error('Error al obtener las donaciones del usuario:', error);
+        res.status(500).json({
+            message: 'Error interno al obtener las donaciones del usuario',
+            errorDetails: error.message,
+        });
     }
+}
 
     static async getDonationById(req, res) {
-        
         try {
             const { id } = req.params;
             if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -186,7 +146,6 @@ export class DonacionController {
     }
 
     static async getDonacionesCercanas(req, res) {
-        
         const { lat, lon, distanciaMaxKm = 20, q} = req.query;
 
         if (!lat || !lon) {
@@ -216,14 +175,16 @@ export class DonacionController {
              fechaExpiracionPublicacion: { $gte: new Date() }
             }
 
+            //si la busqueda existe añadimos un filtro de texto
+
              if (q && q.trim() !== '') {
-                const regex = new RegExp(q.trim(), 'i');
-                filter.$or = [
-                    { titulo: { $regex: regex } },
-                    { descripcion: { $regex: regex } },
-                    { categoria: { $regex: regex } }
-                ];
-            }
+            const regex = new RegExp(q.trim(), 'i');
+            filter.$or = [
+                { titulo: { $regex: regex } },
+                { descripcion: { $regex: regex } },
+                { categoria: { $regex: regex } }
+            ];
+        }
 
             const donacionesCercanas = await Donacion.find(filter)
                 .populate('donanteId', 'nombre fotoDePerfilUrl')
@@ -237,7 +198,6 @@ export class DonacionController {
     }
 
     static async updateDonation(req, res) {
-        
         try {
             const { id } = req.params;
             const donanteClerkId = req.auth?.userId;
@@ -270,7 +230,6 @@ export class DonacionController {
     }
 
     static async deleteDonation(req, res) {
-        
         try {
             const { id } = req.params;
             const donanteClerkId = req.auth?.userId;
@@ -298,4 +257,45 @@ export class DonacionController {
             res.status(500).json({ message: 'Error interno al eliminar la donación', errorDetails: error.message });
         }
     }
-}
+
+   static async getMisDonacionesActivasConSolicitudes(req, res) {
+        try {
+            const donanteClerkId = req.auth?.userId;
+            const donante = await User.findOne({ clerkUserId: donanteClerkId });
+
+            if (!donante) {
+                return res.status(404).json({ message: "Usuario donante no encontrado." });
+            }
+
+            const donaciones = await Donacion.find({
+                donanteId: donante._id,
+                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
+            }).sort({ createdAt: -1 }).lean();
+
+            if (donaciones.length === 0) {
+                return res.status(200).json({ donaciones: [] });
+            }
+
+            const donacionIds = donaciones.map(d => d._id);
+
+            const solicitudes = await Solicitud.find({
+                donacionId: { $in: donacionIds },
+                estadoSolicitud: 'PENDIENTE_APROBACION'
+            }).populate('solicitanteId', 'nombre fotoDePerfilUrl')
+            .populate('entregaId');
+
+            const donacionesConSolicitudes = donaciones.map(donacion => ({
+                ...donacion,
+                solicitudes: solicitudes.filter(
+                    solicitud => solicitud.donacionId.toString() === donacion._id.toString()
+                )
+            }));
+            
+            res.status(200).json({ donaciones: donacionesConSolicitudes });
+
+        } catch (error) {
+            console.error("Error en getMisDonacionesActivasConSolicitudes:", error);
+            res.status(500).json({ message: "Error interno del servidor." });
+        }
+    }
+ }
