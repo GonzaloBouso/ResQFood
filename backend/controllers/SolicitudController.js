@@ -63,13 +63,15 @@ export class SolicitudController {
     }
 
     
-    static async aceptarSolicitudYProponerHorario(req, res) {
+   static async aceptarSolicitudYProponerHorario(req, res) {
         const { solicitudId } = req.params;
         const donanteClerkId = req.auth?.userId;
+        
+        
         const { fecha, horaInicio, horaFin } = req.body;
 
         if (!fecha || !horaInicio || !horaFin) {
-            return res.status(400).json({ message: "Debe proporcionar una propuesta de fecha y un rango horario." });
+            return res.status(400).json({ message: "Debes proporcionar fecha, hora de inicio y hora de fin." });
         }
         
         const session = await mongoose.startSession();
@@ -78,65 +80,57 @@ export class SolicitudController {
             const solicitudAceptada = await Solicitud.findById(solicitudId).session(session);
             if (!solicitudAceptada) {
                 await session.abortTransaction();
-                session.endSession();
                 return res.status(404).json({ message: 'Solicitud no encontrada.' });
             }
             
             if (solicitudAceptada.estadoSolicitud !== 'PENDIENTE_APROBACION') {
                 await session.abortTransaction();
-                session.endSession();
                 return res.status(400).json({ message: 'Esta solicitud ya ha sido gestionada.' });
             }
             
             const donante = await User.findById(solicitudAceptada.donanteId).session(session);
-            if (!donante) {
+            if (!donante || donante.clerkUserId !== donanteClerkId) {
                 await session.abortTransaction();
-                session.endSession();
-                return res.status(404).json({ message: 'El usuario donante asociado a la solicitud no fue encontrado.' });
-            }
-
-            if (donante.clerkUserId !== donanteClerkId) {
-                await session.abortTransaction();
-                session.endSession();
                 return res.status(403).json({ message: 'No tienes permiso para aceptar esta solicitud.' });
             }
 
             const donacion = await Donacion.findById(solicitudAceptada.donacionId).session(session);
             if (!donacion) {
                 await session.abortTransaction();
-                session.endSession();
-                return res.status(404).json({ message: 'La donación asociada a la solicitud no fue encontrada.' });
+                return res.status(404).json({ message: 'La donación asociada no fue encontrada.' });
             }
             
             const receptor = await User.findById(solicitudAceptada.solicitanteId).session(session);
             if (!receptor) {
                 await session.abortTransaction();
-                session.endSession();
-                return res.status(404).json({ message: 'El usuario receptor asociado a la solicitud no fue encontrado.' });
+                return res.status(404).json({ message: 'El usuario receptor no fue encontrado.' });
             }
             
+           
             donacion.estadoPublicacion = 'PENDIENTE-ENTREGA';
             
-            const fechaHoraInicio = new Date(`${fecha}T${horaInicio}:00`);
-            if (isNaN(fechaHoraInicio.getTime())) {
-                throw new Error('El formato de fecha u hora proporcionado es inválido.');
+            const fechaHoraObjeto = new Date(fecha);
+            if (isNaN(fechaHoraObjeto.getTime())) {
+                await session.abortTransaction();
+                throw new Error('El formato de fecha proporcionado es inválido.');
             }
 
-        
+            
+
             const nuevaEntrega = new Entrega({
                 solicitudId: solicitudAceptada._id, 
                 donacionId: solicitudAceptada.donacionId, 
                 donanteId: solicitudAceptada.donanteId,
                 receptorId: solicitudAceptada.solicitanteId,
                 horarioPropuesto: {
-                    fecha: fechaHoraInicio,
-                    horaInicio: horaInicio,
+                    fecha: fechaHoraObjeto,
+                    horaInicio: horaInicio, 
                     horaFin: horaFin
                 },
                 codigoConfirmacionReceptor: generarCodigo(),
-                estadoEntrega: 'PENDIENTE_CONFIRMACION',
+                
+                estadoEntrega: 'PENDIENTE_CONFIRMACION_SOLICITANTE',
             });
-        
             await nuevaEntrega.save({ session });
             
             solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
@@ -152,7 +146,8 @@ export class SolicitudController {
                 mensaje: `¡Tu solicitud para "${donacion.titulo}" fue aprobada! Confirma el horario de retiro.`,
                 referenciaId: nuevaEntrega._id,
                 tipoReferencia: 'Entrega',
-                enlace: '/mis-solicitudes'
+                enlace: '/mis-solicitudes' 
+
             });
             await notificacionAprobacion.save({ session });
             
@@ -162,44 +157,47 @@ export class SolicitudController {
                 io.to(receptorSocketId).emit('nueva_notificacion', notificacionAprobacion.toObject());
             }
 
+          
             const otrasSolicitudes = await Solicitud.find({
                 donacionId: solicitudAceptada.donacionId,
                 _id: { $ne: solicitudAceptada._id },
                 estadoSolicitud: 'PENDIENTE_APROBACION'
-            }).session(session);
+            }).populate('solicitanteId').session(session);
 
             for (const otraSolicitud of otrasSolicitudes) {
                 otraSolicitud.estadoSolicitud = 'RECHAZADA_DONANTE';
                 otraSolicitud.motivoRechazo = 'La donación fue asignada a otro solicitante.';
-                otraSolicitud.fechaRechazo = new Date();
                 await otraSolicitud.save({ session });
-
-                const otroReceptor = await User.findById(otraSolicitud.solicitanteId).session(session);
-                if(otroReceptor) {
-                    const notificacionRechazo = new Notificacion({
-                        destinatarioId: otroReceptor._id, tipoNotificacion: 'RECHAZO',
-                        mensaje: `Tu solicitud para "${donacion.titulo}" no pudo ser aceptada en esta ocasión.`,
-                        referenciaId: otraSolicitud._id, tipoReferencia: 'Solicitud'
-                    });
-                    await notificacionRechazo.save({ session });
-                    
-                    const otroReceptorSocketId = getSocketIdForUser(otroReceptor.clerkUserId);
-                    if (otroReceptorSocketId) {
-                        io.to(otroReceptorSocketId).emit('nueva_notificacion', notificacionRechazo.toObject());
-                    }
+                
+                const notificacionRechazo = new Notificacion({
+                    destinatarioId: otraSolicitud.solicitanteId._id, 
+                    tipoNotificacion: 'RECHAZO',
+                    mensaje: `Tu solicitud para "${donacion.titulo}" no pudo ser aceptada esta vez.`,
+                    referenciaId: otraSolicitud._id, 
+                    tipoReferencia: 'Solicitud'
+                });
+                await notificacionRechazo.save({ session });
+                
+                const otroSocketId = getSocketIdForUser(otraSolicitud.solicitanteId.clerkUserId);
+                if (otroSocketId) {
+                    io.to(otroSocketId).emit('nueva_notificacion', notificacionRechazo.toObject());
                 }
             }
             
             await session.commitTransaction();
-            res.status(200).json({ message: 'Solicitud aprobada y otras rechazadas.', entrega: nuevaEntrega });
+            res.status(200).json({ message: 'Solicitud aprobada y horario propuesto.', entrega: nuevaEntrega });
         } catch (error) {
             await session.abortTransaction();
-            console.error("Error detallado al aceptar la solicitud y proponer horario:", error);
-            res.status(500).json({ message: error.message || "Error interno al aceptar la solicitud." });
+            console.error("Error al aceptar la solicitud:", error);
+            res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
         } finally {
+            if (session.inTransaction()) {
+                await session.abortTransaction();
+            }
             session.endSession();
         }
     }
+
         
     static async rechazarSolicitud(req, res){
         const {solicitudId} = req.params;
