@@ -15,16 +15,14 @@ const EntregaSchema = new mongoose.Schema(
         donanteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         receptorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         
-        // --- MODELO SIMPLIFICADO ---
-        // Un solo objeto para toda la propuesta de horario.
         horarioPropuesto: {
             type: {
-                fecha: { type: Date, required: true },     // Guarda la fecha completa (incluye hora de inicio)
-                horaInicio: { type: String, required: true }, // Guarda el string 'HH:mm' para mostrarlo fácil
-                horaFin: { type: String, required: true }    // Guarda el string 'HH:mm'
+                fecha: { type: Date, required: true },
+                horaInicio: { type: String, required: true },
+                horaFin: { type: String, required: true }
             },
             _id: false,
-            required: true,
+            required: true, 
         },
         
         horarioEntregaConfirmadoSolicitante: { type: Boolean, default: false },
@@ -33,7 +31,7 @@ const EntregaSchema = new mongoose.Schema(
         estadoEntrega: {
             type: String,
             enum: [
-                'PENDIENTE_CONFIRMACION', // Nombre simplificado
+                'PENDIENTE_CONFIRMACION',
                 'LISTA_PARA_RETIRO',
                 'COMPLETADA',
                 'FALLIDA_RECEPTOR_NO_ASISTIO',

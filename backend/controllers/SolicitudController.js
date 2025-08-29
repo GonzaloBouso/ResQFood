@@ -66,10 +66,8 @@ export class SolicitudController {
     static async aceptarSolicitudYProponerHorario(req, res) {
         const { solicitudId } = req.params;
         const donanteClerkId = req.auth?.userId;
-        // --- CORRECCIÓN #1: Leer los datos que realmente envía el frontend ---
         const { fecha, horaInicio, horaFin } = req.body;
 
-        // --- CORRECCIÓN #2: Actualizar la validación para que coincida con los nuevos datos ---
         if (!fecha || !horaInicio || !horaFin) {
             return res.status(400).json({ message: "Debe proporcionar una propuesta de fecha y un rango horario." });
         }
@@ -119,36 +117,29 @@ export class SolicitudController {
             
             donacion.estadoPublicacion = 'PENDIENTE-ENTREGA';
             
-            // --- CORRECCIÓN #3: Construir las fechas de forma segura y crear el objeto para el modelo ---
             const fechaHoraInicio = new Date(`${fecha}T${horaInicio}:00`);
-            const fechaHoraFin = new Date(`${fecha}T${horaFin}:00`);
-
-            if (isNaN(fechaHoraInicio.getTime()) || isNaN(fechaHoraFin.getTime())) {
+            if (isNaN(fechaHoraInicio.getTime())) {
                 throw new Error('El formato de fecha u hora proporcionado es inválido.');
             }
 
+        
             const nuevaEntrega = new Entrega({
                 solicitudId: solicitudAceptada._id, 
                 donacionId: solicitudAceptada.donacionId, 
                 donanteId: solicitudAceptada.donanteId,
-                receptorId: solicitudAceptada.solicitanteId, 
-                // Se construye el objeto que coincide con tu modelo Entrega.js
-                horarioEntregaPropuestaPorDonante: {
+                receptorId: solicitudAceptada.solicitanteId,
+                horarioPropuesto: {
+                    fecha: fechaHoraInicio,
                     horaInicio: horaInicio,
                     horaFin: horaFin
                 },
-                fechaPropuesto: {
-                    fechaInicio: fechaHoraInicio,
-                    fechaFin: fechaHoraFin
-                }, 
                 codigoConfirmacionReceptor: generarCodigo(),
-                // El resto de campos toman su valor por defecto del schema
+                estadoEntrega: 'PENDIENTE_CONFIRMACION',
             });
         
-
             await nuevaEntrega.save({ session });
             
-            solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
+            solicitudAceptada.estadoSolicitud = 'ACEPTADA';
             solicitudAceptada.fechaAprobacion = new Date();
             solicitudAceptada.entregaId = nuevaEntrega._id; 
             
@@ -157,7 +148,7 @@ export class SolicitudController {
 
             const notificacionAprobacion = new Notificacion({
                 destinatarioId: receptor._id,
-                tipoNotificacion: 'APROBACION',
+                tipoNotificacion: 'PROPUESTA_HORARIO',
                 mensaje: `¡Tu solicitud para "${donacion.titulo}" fue aprobada! Confirma el horario de retiro.`,
                 referenciaId: nuevaEntrega._id,
                 tipoReferencia: 'Entrega',
