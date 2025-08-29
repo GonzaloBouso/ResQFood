@@ -139,7 +139,7 @@ export class SolicitudController {
         
             await nuevaEntrega.save({ session });
             
-            solicitudAceptada.estadoSolicitud = 'ACEPTADA';
+            solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
             solicitudAceptada.fechaAprobacion = new Date();
             solicitudAceptada.entregaId = nuevaEntrega._id; 
             
