@@ -1,3 +1,4 @@
+// backend/models/Donacion.js (CÓDIGO COMPLETO Y CORREGIDO)
 import mongoose from "mongoose";
 
 const { Schema } = mongoose;
@@ -44,19 +45,18 @@ const donationSchema = new Schema(
     },
     {
         timestamps: true,
-        
         toJSON: { virtuals: true },
         toObject: { virtuals: true }
     }
 );
 
-
 donationSchema.virtual('solicitudes', {
-    ref: 'Solicitud', 
-    localField: '_id', 
+    ref: 'Solicitud',
+    localField: '_id',
     foreignField: 'donacionId'
 });
 
 donationSchema.index({ 'ubicacionRetiro.coordenadas': '2dsphere' });
 
-export default mongoose.model('Donacion', donationSchema);
+// LA SOLUCIÓN: Verifica si el modelo ya existe.
+export default mongoose.models.Donacion || mongoose.model('Donacion', donationSchema);

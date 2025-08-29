@@ -1,59 +1,26 @@
-import mongoose from "mongoose";
-
-const {Schema} = mongoose;
+// backend/models/Reporte.js (CÓDIGO COMPLETO Y CORREGIDO)
+import mongoose, { Schema } from "mongoose";
 
 const ReporteSchema = new Schema(
     {
-        reportadorId:{
-            type: mongoose.Schema.Types.ObjectId,
-            ref:'User',
-            required: true,
-            index: true,
-        },
-        tipoElementoReportado:{
-            type: String,
-            enum: ['User', 'Publicacion','Entrega'],
-            required: true,
-        },
-        elementoReportadoId: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            index:true,
-        },
+        reportadoPor: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        usuarioReportado: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        donacionReportada: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
         motivo: {
             type: String,
+            enum: ['Contenido inapropiado', 'Información falsa o engañosa', 'Spam', 'Comportamiento abusivo', 'Otro'],
             required: true,
         },
-        descripcionAdicional:{
-            type:String,
-        },
-        estadoReporte:{
-            type:String,
-            enum:['PENDIENTE_REVISION',
-            'EN_PROCESO',
-            'RESUELTO_ACCION_TOMADA',
-            'RESUELTO_SIN_ACCION',
-            ],
-            default:'PENDIENTE_REVISION',
-            required:true,
-            index:true,
-        },
-        moderadorAsignadoId:{
-            type: mongoose.Schema.Types.ObjectId,
-            ref:'User',
-        },
-        resolucion:{
-            type:String,
-        },
-        fechaResolucion: {
-            type:Date,
+        detalles: { type: String, trim: true, maxLength: 500 },
+        estado: {
+            type: String,
+            enum: ['PENDIENTE', 'RESUELTO'],
+            default: 'PENDIENTE',
+            index: true,
         },
     },
-    {
-        timestamps: true
-    }
-)
+    { timestamps: true }
+);
 
-
-
-export default mongoose.model('Reporte', ReporteSchema)
+// LA SOLUCIÓN: Verifica si el modelo ya existe antes de compilarlo.
+export default mongoose.models.Reporte || mongoose.model('Reporte', ReporteSchema);

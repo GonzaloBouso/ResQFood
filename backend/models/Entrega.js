@@ -1,31 +1,50 @@
-// backend/models/Reporte.js (CÓDIGO COMPLETO Y CORREGIDO)
+// backend/models/Entrega.js (CÓDIGO COMPLETO Y CORREGIDO)
 import mongoose, { Schema } from "mongoose";
 
-const ReporteSchema = new Schema(
+const EntregaSchema = new Schema(
     {
-        reportadoPor: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-        usuarioReportado: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-        donacionReportada: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
-        motivo: {
-            type: String,
-            enum: [
-                'Contenido inapropiado',
-                'Información falsa o engañosa',
-                'Spam',
-                'Comportamiento abusivo',
-                'Otro'
-            ],
+        solicitudId: { type: Schema.Types.ObjectId, ref: 'Solicitud', required: true, unique: true, index: true },
+        donacionId: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
+        donanteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        receptorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        horarioPropuesto: {
+            type: {
+                fecha: { type: Date, required: true },
+                horaInicio: { type: String, required: true },
+                horaFin: { type: String, required: true }
+            },
+            _id: false,
             required: true,
         },
-        detalles: { type: String, trim: true, maxLength: 500 },
-        estado: {
+        horarioEntregaConfirmadoSolicitante: { type: Boolean, default: false },
+        fechaHorarioConfirmado: { type: Date, default: null },
+        codigoConfirmacionReceptor: { type: String, required: true },
+        estadoEntrega: {
             type: String,
-            enum: ['PENDIENTE', 'RESUELTO'],
-            default: 'PENDIENTE',
+            enum: [
+                'PENDIENTE_CONFIRMACION_SOLICITANTE',
+                'LISTA_PARA_RETIRO',
+                'COMPLETADA',
+                'FALLIDA_RECEPTOR_NO_ASISTIO',
+                'FALLIDA_OTRO_MOTIVO',
+                'CANCELADA_POR_DONANTE',
+                'CANCELADA_POR_SOLICITANTE',
+            ],
+            default: "PENDIENTE_CONFIRMACION_SOLICITANTE",
+            required: true, 
             index: true,
         },
+        notasEntrega: { type: String, default: null },
+        fechaCompletada: { type: Date, default: null },
+        fechaFallida: { type: Date, default: null },
+        fechaCancelada: { type: Date, default: null },
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+    }
 );
 
-export default mongoose.model('Reporte', ReporteSchema);
+EntregaSchema.index({ donacionId: 1, receptorId: 1 });
+
+// LA SOLUCIÓN: Verifica si el modelo ya existe.
+export default mongoose.models.Entrega || mongoose.model('Entrega', EntregaSchema);
