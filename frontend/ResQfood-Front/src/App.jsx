@@ -62,10 +62,18 @@ const useGlobalState = () => {
     const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
 
     // Lógica para el punto en "Mis donaciones": busca notificaciones de nuevas SOLICITUDES
-    const hasNewDonationNotifications = useMemo(() => 
-        notifications.some(n => !n.leida && n.tipoNotificacion === 'SOLICITUD'), 
-        [notifications]
-    );
+const hasNewDonationNotifications = useMemo(() => {
+            console.log("--- Verificando Notificaciones de Donación ---");
+    console.log("Lista completa de notificaciones:", notifications);
+    
+    const result = notifications.some(n => !n.leida && n.tipoNotificacion === 'SOLICITUD');
+    
+    console.log("¿Hay alguna notificación de tipo 'SOLICITUD' sin leer?:", result);
+    console.log("-----------------------------------------");
+    
+    return result;
+}, [notifications]);
+
 
     // Lógica para el punto en "Mis solicitudes": busca notificaciones sobre el estado de tus solicitudes
     const hasNewRequestNotifications = useMemo(() => 
