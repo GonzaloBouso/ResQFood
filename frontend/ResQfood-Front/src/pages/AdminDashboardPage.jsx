@@ -1,4 +1,5 @@
-// frontend/src/pages/AdminDashboardPage.jsx (CÓDIGO COMPLETO Y CORREGIDO)
+// frontend/src/pages/AdminDashboardPage.jsx (CÓDIGO COMPLETO Y FINAL)
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Search, Edit, ShieldAlert, Users } from 'lucide-react';
@@ -7,11 +8,12 @@ import ManageUserModal from '../components/modals/ManageUserModal';
 import TablaReportes from '../components/admin/TablaReportes'; // Asumiendo que creaste este componente
 import toast from 'react-hot-toast';
 
-// --- Sub-componente para la Tabla de Usuarios ---
+// --- Sub-componente para la Tabla de Usuarios (sin cambios) ---
 const UserTable = ({ users, onEditUser }) => {
     if (!users || users.length === 0) {
-        return <p className="text-center text-gray-500 py-10">No se encontraron usuarios.</p>;
+        return <p className="text-center text-gray-500 py-10">No se encontraron usuarios con los filtros actuales.</p>;
     }
+    // Tu JSX para la tabla de usuarios va aquí...
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full bg-white text-sm">
@@ -29,15 +31,9 @@ const UserTable = ({ users, onEditUser }) => {
                         <tr key={user._id} className="hover:bg-gray-50">
                             <td className="px-4 py-3 whitespace-nowrap">{user.nombre || '-'}</td>
                             <td className="px-4 py-3 whitespace-nowrap">{user.email}</td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                                <span className={`px-2 py-1 text-xs font-bold rounded-full ${user.rol === 'ADMIN' ? 'bg-red-100 text-red-800' : user.rol === 'LOCAL' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{user.rol || 'Incompleto'}</span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                                <span className={`font-medium ${user.activo ? 'text-green-600' : 'text-red-600'}`}>{user.activo ? 'Activo' : 'Suspendido'}</span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                                <button onClick={() => onEditUser(user)} className="text-primary hover:text-brandPrimaryDarker font-medium flex items-center gap-1"><Edit size={14} /> Editar</button>
-                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap"><span className={`px-2 py-1 text-xs font-bold rounded-full ${user.rol === 'ADMIN' ? 'bg-red-100 text-red-800' : user.rol === 'LOCAL' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>{user.rol || 'Incompleto'}</span></td>
+                            <td className="px-4 py-3 whitespace-nowrap"><span className={`font-medium ${user.activo ? 'text-green-600' : 'text-red-600'}`}>{user.activo ? 'Activo' : 'Suspendido'}</span></td>
+                            <td className="px-4 py-3 whitespace-nowrap"><button onClick={() => onEditUser(user)} className="text-primary hover:text-brandPrimaryDarker font-medium flex items-center gap-1"><Edit size={14} /> Editar</button></td>
                         </tr>
                     ))}
                 </tbody>
@@ -46,7 +42,7 @@ const UserTable = ({ users, onEditUser }) => {
     );
 };
 
-// --- Sub-componente para la Paginación ---
+// --- Sub-componente para la Paginación (sin cambios) ---
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -117,6 +113,13 @@ const AdminDashboardPage = () => {
             fetchReportes();
         }
     }, [page, filters, vistaActual, fetchUsers, fetchReportes]);
+    
+    // --- ¡LA FUNCIÓN QUE FALTABA ESTÁ AQUÍ! ---
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setPage(1); // Reinicia a la página 1 al cambiar un filtro
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleViewChange = (view) => {
         setVistaActual(view);
@@ -129,7 +132,6 @@ const AdminDashboardPage = () => {
     
     const handleUpdateAndRefresh = () => { setEditingUser(null); fetchUsers(page, filters); };
     
-    // --- Lógica de acciones de reportes (implementación futura) ---
     const handleResolverReporte = async (reporteId) => { toast.error("Función no implementada"); };
     const handleSuspenderUsuario = async (userId, reporteId) => { toast.error("Función no implementada"); };
     const handleEliminarDonacion = async (donacionId, reporteId) => { toast.error("Función no implementada"); };
@@ -149,7 +151,10 @@ const AdminDashboardPage = () => {
                 <div className="bg-white p-6 rounded-lg shadow-md animate-fade-in-up">
                     <h2 className="text-2xl font-semibold mb-4">Usuarios Registrados ({pagination.totalItems || 0})</h2>
                     <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                        <input name="search" value={filters.search} placeholder="Buscar por nombre o email..." onChange={handleFilterChange} className="w-full pl-4 pr-4 py-2 border rounded-md" />
+                        <div className="relative flex-1">
+                            <input type="text" name="search" placeholder="Buscar por nombre o email..." value={filters.search} onChange={handleFilterChange} className="w-full pl-10 pr-4 py-2 border rounded-md"/>
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20}/>
+                        </div>
                         <select name="rol" value={filters.rol} onChange={handleFilterChange} className="border rounded-md px-4 py-2 bg-white">
                              <option value="">Todos los Roles</option>
                              <option value="ADMIN">Admin</option>
