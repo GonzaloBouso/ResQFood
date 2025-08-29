@@ -149,8 +149,8 @@ const Header = () => {
                         Ir a mi perfil
                       </Link>
                       
-                      {/* "Mis donaciones" se muestra para LOCAL, GENERAL y ADMIN */}
-                      {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
+                      {/* "Mis donaciones" se muestra para LOCAL, GENERAL */}
+                      {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' ) && (
                         <Link
                           to={misDonacionesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
@@ -164,7 +164,7 @@ const Header = () => {
                       )}
 
                       {/* "Mis solicitudes" se muestra solo para GENERAL y ADMIN */}
-                      {(currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
+                      {(currentUserRole === 'GENERAL' ) && (
                         <Link
                           to={misSolicitudesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
@@ -177,19 +177,6 @@ const Header = () => {
                         </Link>
                       )}
 
-                      
-                      {currentUserRole === 'GENERAL' && (
-                        <Link
-                          to={misSolicitudesPath}
-                          className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
-                          onClick={toggleProfileMenu}
-                        >
-                          <span>Mis solicitudes</span>
-                          {hasNewRequestNotifications && (
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                          )}
-                        </Link>
-                      )}
                     </div>
                   </div>
                 )}
