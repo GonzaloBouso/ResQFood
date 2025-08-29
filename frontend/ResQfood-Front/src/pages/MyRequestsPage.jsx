@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'; 
 
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
@@ -16,11 +17,17 @@ const MyRequestsPage = () => {
         setIsLoading(true);
         try {
             const token = await getToken();
-            const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             if (!response.ok) throw new Error('Error al cargar tus solicitudes.');
             const data = await response.json();
             setSolicitudes(data.solicitudes);
-        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
     }, [getToken]);
 
     useEffect(() => { fetchSolicitudes(); }, [fetchSolicitudes]);
@@ -30,7 +37,10 @@ const MyRequestsPage = () => {
         const toastId = toast.loading('Confirmando horario...');
         try {
             const token = await getToken();
-            const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
             toast.success('¡Horario confirmado! El donante será notificado.', { id: toastId });
             fetchSolicitudes();
@@ -41,17 +51,16 @@ const MyRequestsPage = () => {
         }
     };
 
-    const handleRechazarHorario = (entregaId) => {
+    const handleRechazarHorario = async (entregaId) => {
         toast((t) => (
-            <div className="flex flex-col items-center gap-3 p-2">
-                <span className="text-center font-semibold">¿Seguro que no puedes en este horario?</span>
-                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible para otros.</p>
-                <div className="flex gap-3 mt-2">
-                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Sí, rechazar</button>
-                </div>
+            <div className="flex flex-col items-center gap-3">
+              <span className="text-center font-semibold">¿Seguro que no puedes en este horario? La donación volverá a estar disponible para otros.</span>
+              <div className="flex gap-3">
+                <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancelar</button>
+                <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Rechazar</button>
+              </div>
             </div>
-        ), { duration: 8000 });
+        ));
     };
 
     const executeRechazarHorario = async (entregaId) => {
@@ -59,7 +68,10 @@ const MyRequestsPage = () => {
         const toastId = toast.loading('Rechazando propuesta...');
         try {
             const token = await getToken();
-            const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
             toast.success('Propuesta rechazada. El donante será notificado.', { id: toastId });
             fetchSolicitudes();
@@ -68,25 +80,36 @@ const MyRequestsPage = () => {
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }
     
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text);
         toast.success('¡Código copiado!');
     };
     
+    
     const renderCardContent = (solicitud) => {
         const entrega = solicitud.entregaId;
+        
         switch (solicitud.estadoSolicitud) {
-            case 'PENDIENTE_APROBACION': return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
-            case 'RECHAZADA_DONANTE': return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
-            case 'CANCELADA_RECEPTOR': return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
-            case 'COMPLETADA_CON_ENTREGA': return <div className="flex items-center gap-2 text-green-700 font-semibold"><CheckCircle size={16} /><span>¡Retiro exitoso!</span></div>;
+            case 'PENDIENTE_APROBACION':
+                return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
+            case 'RECHAZADA_DONANTE':
+                return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
+            case 'CANCELADA_RECEPTOR':
+                return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
+            case 'COMPLETADA_CON_ENTREGA':
+                return <div className="flex items-center gap-2 text-green-700 font-semibold"><CheckCircle size={16} /><span>¡Retiro exitoso!</span></div>;
+            
             case 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO':
-                if (!entrega || !entrega.horarioPropuesto) return <div className="text-gray-500">Cargando detalles...</div>;
+                
+                if (!entrega || !entrega.horarioPropuesto) {
+                    return <div className="text-gray-500">Cargando detalles de la entrega...</div>;
+                }
                 return (
                     <div className="bg-blue-50 p-3 rounded-md">
                         <p className="font-semibold text-blue-800">¡Aprobada! Confirma el horario:</p>
+                        
                         <p className="text-sm"><strong>Fecha:</strong> {new Date(entrega.horarioPropuesto.fecha).toLocaleDateString()}</p>
                         <p className="text-sm"><strong>Horario:</strong> {entrega.horarioPropuesto.horaInicio} - {entrega.horarioPropuesto.horaFin}</p>
                         <div className="flex gap-2 mt-2">
@@ -95,6 +118,7 @@ const MyRequestsPage = () => {
                         </div>
                     </div>
                 );
+            
             default:
                 if (entrega && entrega.estadoEntrega === 'LISTA_PARA_RETIRO') {
                     return (
@@ -109,11 +133,12 @@ const MyRequestsPage = () => {
                         </div>
                     );
                 }
+                
                 return <p className="text-gray-500">{solicitud.estadoSolicitud}</p>;
         }
     };
 
-    if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
+    if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando tus solicitudes...</div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
 
     return (
@@ -127,7 +152,9 @@ const MyRequestsPage = () => {
                             <div className="flex-grow">
                                 <h3 className="font-semibold text-gray-900">{solicitud.donacionId.titulo}</h3>
                                 <p className="text-sm text-gray-600">Donado por: {solicitud.donanteId.nombre}</p>
-                                <div className="mt-3">{renderCardContent(solicitud)}</div>
+                                <div className="mt-3">
+                                    {renderCardContent(solicitud)}
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -135,8 +162,8 @@ const MyRequestsPage = () => {
             ) : (
                 <div className="text-center py-10 border-2 border-dashed rounded-lg">
                     <p className="text-gray-600 mb-4">Aún no has realizado ninguna solicitud.</p>
-                    <Link to="/" className="inline-block bg-primary text-white font-bold py-2 px-4 rounded hover:bg-brandPrimaryDarker">
-                        <Gift className="inline-block mr-2" size={16} /> Ver donaciones
+                    <Link to="/" className="inline-block bg-primary text-white font-bold py-2 px-4 rounded hover:bg-brandPrimaryDarker transition-colors">
+                        <Gift className="inline-block mr-2" size={16} /> Ver donaciones disponibles
                     </Link>
                 </div>
             )}
