@@ -9,6 +9,7 @@ const EntregaSchema = new mongoose.Schema(
             ref: 'Solicitud',
             required: true,
             unique: true,
+            sparse: true, 
             index: true
         },
         donacionId: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
@@ -22,7 +23,7 @@ const EntregaSchema = new mongoose.Schema(
                 horaFin: { type: String, required: true }
             },
             _id: false,
-            required: true, 
+            required: true,
         },
         
         horarioEntregaConfirmadoSolicitante: { type: Boolean, default: false },
