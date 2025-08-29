@@ -1,4 +1,4 @@
-// frontend/src/components/modals/ReportModal.jsx (NUEVO ARCHIVO)
+// frontend/src/components/modals/ReportModal.jsx (CÓDIGO COMPLETO)
 import React, { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { X, Flag } from 'lucide-react';

@@ -1,52 +1,75 @@
-// frontend/src/components/layout/CardDonacion.jsx (CÓDIGO COMPLETO Y CORREGIDO)
-import React, { useState } from 'react';
+// frontend/src/components/layout/CardDonacion.jsx (CÓDIGO COMPLETO Y FINAL)
+
+import React, { useState, useContext } from 'react';
 import { MoreVertical, Flag } from 'lucide-react';
+import { ProfileStatusContext } from '../../context/ProfileStatusContext'; // Importamos el contexto
 import ReportModal from '../modals/ReportModal'; // Importamos el nuevo modal
 
 const CardDonacion = ({ donacion }) => {
+    // Estados para controlar los menús y modales
     const [menuOpen, setMenuOpen] = useState(false);
     const [reportModalOpen, setReportModalOpen] = useState(false);
+    
+    // Obtenemos los datos del usuario logueado desde el contexto
+    const { currentUserDataFromDB } = useContext(ProfileStatusContext);
 
     if (!donacion) return null;
 
-    const { titulo, imagenesUrl = [], categoria, donanteId } = donacion;
+    const { _id, titulo, imagenesUrl = [], categoria, donanteId, ubicacionRetiro } = donacion;
     const img = imagenesUrl[0] || 'https://via.placeholder.com/150';
+
+    // --- LÓGICA CLAVE: Comparamos el ID del donante con el ID del usuario actual ---
+    const isMyDonation = currentUserDataFromDB?._id === donanteId?._id;
 
     return (
         <>
-            <article className="bg-white rounded-lg border shadow-sm w-full">
-                <div className="p-4 flex gap-4">
-                    <img src={img} alt={titulo} className="w-24 h-24 rounded-md object-cover" />
-                    <div className="flex-1 flex flex-col justify-between">
+            <article className="bg-white rounded-lg border shadow-sm w-full max-w-sm mx-auto">
+                <div className="p-3">
+                    <div className="flex items-center gap-3 mb-3">
+                        <img src={donanteId?.fotoDePerfilUrl} alt={donanteId?.nombre} className="w-10 h-10 rounded-full object-cover bg-gray-200" />
+                        <span className="font-semibold text-gray-800">{donanteId?.nombre || 'Donante'}</span>
+                    </div>
+                    <img src={img} alt={titulo} className="w-full h-48 rounded-md object-cover" />
+                </div>
+                <div className="p-4 pt-2">
+                    <div className="flex justify-between items-start">
                         <div>
-                            <div className="flex justify-between items-start">
-                                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">{categoria}</span>
-                                <div className="relative">
-                                    <button onClick={() => setMenuOpen(prev => !prev)} onBlur={() => setTimeout(() => setMenuOpen(false), 150)} className="p-1 rounded-full hover:bg-gray-100 text-gray-500">
-                                        <MoreVertical size={18} />
-                                    </button>
-                                    {menuOpen && (
-                                        <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border z-10">
-                                            <button 
-                                                onClick={() => { setReportModalOpen(true); setMenuOpen(false); }}
-                                                className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                            >
-                                                <Flag size={14} /> Reportar
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <h3 className="font-semibold text-lg mt-1">{titulo}</h3>
-                            <p className="text-sm text-gray-500">Donado por: {donanteId?.nombre || 'Anónimo'}</p>
+                            <p className="text-xs font-semibold text-primary uppercase tracking-wide">{categoria}</p>
+                            <h3 className="font-bold text-xl text-gray-900 mt-1">{titulo}</h3>
+                            <p className="text-sm text-gray-500 mt-1">📍 {ubicacionRetiro?.ciudad || 'Ubicación no especificada'}</p>
                         </div>
-                        <button className="mt-2 text-sm font-semibold text-primary self-start hover:underline">
-                            Ver detalles
-                        </button>
+                        {/* --- RENDERIZADO CONDICIONAL DEL MENÚ DE 3 PUNTOS --- */}
+                        {/* Solo se muestra si NO es mi donación y estoy logueado */}
+                        {!isMyDonation && currentUserDataFromDB && (
+                            <div className="relative">
+                                <button 
+                                    onClick={() => setMenuOpen(prev => !prev)}
+                                    onBlur={() => setTimeout(() => setMenuOpen(false), 200)} // Cierra el menú si se pierde el foco
+                                    className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                                >
+                                    <MoreVertical size={20} />
+                                </button>
+                                {menuOpen && (
+                                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border z-10 animate-fade-in-up">
+                                        <button 
+                                            onClick={() => { setReportModalOpen(true); setMenuOpen(false); }}
+                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3"
+                                        >
+                                            <Flag size={16} /> Reportar publicación
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex gap-3 mt-4">
+                        <button className="flex-1 px-4 py-2 text-sm font-semibold border border-gray-300 rounded-md hover:bg-gray-50">Ver Detalles</button>
+                        <button className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-primary rounded-md hover:bg-brandPrimaryDarker">Solicitar</button>
                     </div>
                 </div>
             </article>
 
+            {/* Renderizado del modal de reporte */}
             {reportModalOpen && (
                 <ReportModal donacion={donacion} onClose={() => setReportModalOpen(false)} />
             )}
