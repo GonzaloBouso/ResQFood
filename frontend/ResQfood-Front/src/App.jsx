@@ -40,6 +40,7 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
+// --- Hook de estado global CORREGIDO Y COMPLETO ---
 const useGlobalState = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     
@@ -53,12 +54,24 @@ const useGlobalState = () => {
     const [activeSearchLocation, setActiveSearchLocation] = useState(null);
     const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
     const [searchQuery, setSearchQuery] = useState('');
-    
     const [notifications, setNotifications] = useState([]);
 
+    // --- CORRECCIÓN #1: Lógica para los indicadores de notificación ---
+    // Se usa 'useMemo' para calcular estos valores de forma eficiente.
+    // Solo se recalcularán si la lista de 'notifications' cambia.
     const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
-    const hasNewDonationNotifications = useMemo(() => notifications.some(n => !n.leida && n.enlace === '/mis-donaciones'), [notifications]);
-    const hasNewRequestNotifications = useMemo(() => notifications.some(n => !n.leida && n.enlace === '/mis-solicitudes'), [notifications]);
+
+    // Lógica para el punto en "Mis donaciones": busca notificaciones de nuevas SOLICITUDES
+    const hasNewDonationNotifications = useMemo(() => 
+        notifications.some(n => !n.leida && n.tipoNotificacion === 'SOLICITUD'), 
+        [notifications]
+    );
+
+    // Lógica para el punto en "Mis solicitudes": busca notificaciones sobre el estado de tus solicitudes
+    const hasNewRequestNotifications = useMemo(() => 
+        notifications.some(n => !n.leida && ['APROBACION', 'RECHAZO', 'PROPUESTA_HORARIO'].includes(n.tipoNotificacion)), 
+        [notifications]
+    );
 
     const updateProfileState = (userData) => {
         setProfileStatus({ 
@@ -78,6 +91,7 @@ const useGlobalState = () => {
         });
     }, []);
 
+    // Tu useEffect de carga de datos se mantiene intacto, ya es eficiente.
     useEffect(() => {
         if (!isAuthLoaded) return; 
         
@@ -126,6 +140,7 @@ const useGlobalState = () => {
         fetchUserProfileFunction();
     }, [isAuthLoaded, isSignedIn, getToken]); 
 
+    // Se retornan todos los valores necesarios para el resto de la aplicación
     return {
         ...profileStatus,
         updateProfileState,
@@ -139,9 +154,9 @@ const useGlobalState = () => {
         notifications,
         setNotifications,
         unreadCount,
-        hasNewDonationNotifications,
-        hasNewRequestNotifications,
         addNotification,
+        hasNewRequestNotifications,
+        hasNewDonationNotifications,
     };
 };
 
@@ -157,12 +172,10 @@ const AppContent = () => {
   const appStateHook = useGlobalState();
   useSocket(appStateHook.addNotification);
 
-  const contextValueForProvider = useMemo(() => (appStateHook), [
-    appStateHook.isLoadingUserProfile, appStateHook.isComplete, appStateHook.currentUserDataFromDB,
-    appStateHook.activeSearchLocation, appStateHook.donationCreationTimestamp, appStateHook.searchQuery,
-    appStateHook.notifications, appStateHook.unreadCount, appStateHook.hasNewDonationNotifications,
-    appStateHook.hasNewRequestNotifications
-  ]);
+  // --- CORRECCIÓN #2: Simplificar las dependencias de useMemo ---
+  // Pasar el objeto 'appStateHook' completo es suficiente y más limpio.
+  // React detectará cambios en sus propiedades internas.
+  const contextValueForProvider = useMemo(() => appStateHook, [appStateHook]);
 
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
