@@ -84,13 +84,12 @@ export class DonacionController {
 
     static async getPublicDonations(req, res) {
         try {
-            // Buscamos las últimas 10 donaciones que estén DISPONIBLES
+           
             const donaciones = await Donacion.find({ estadoPublicacion: 'DISPONIBLE' })
-                .sort({ createdAt: -1 }) // Ordena para mostrar las más recientes primero
-                .limit(10) // Limita el resultado a las últimas 10 para no sobrecargar la homepage
-                // Selecciona solo los campos necesarios para la tarjeta de vista limitada
+                .sort({ createdAt: -1 }) 
+                .limit(10) 
                 .select('titulo imagenesUrl categoria donanteId') 
-                .populate('donanteId', 'nombre fotoDePerfilUrl'); // Obtiene nombre y foto del donante
+                .populate('donanteId', 'nombre fotoDePerfilUrl');
 
             res.status(200).json({ donaciones });
         } catch (error) {
@@ -175,7 +174,6 @@ export class DonacionController {
              fechaExpiracionPublicacion: { $gte: new Date() }
             }
 
-            //si la busqueda existe añadimos un filtro de texto
 
              if (q && q.trim() !== '') {
             const regex = new RegExp(q.trim(), 'i');
@@ -267,35 +265,29 @@ export class DonacionController {
                 return res.status(404).json({ message: "Usuario donante no encontrado." });
             }
 
+            
             const donaciones = await Donacion.find({
                 donanteId: donante._id,
                 estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] }
-            }).sort({ createdAt: -1 }).lean();
+            }).sort({ createdAt: -1 });
 
             if (donaciones.length === 0) {
                 return res.status(200).json({ donaciones: [] });
             }
 
-            const donacionIds = donaciones.map(d => d._id);
-
-            const solicitudes = await Solicitud.find({
-                donacionId: { $in: donacionIds },
-                estadoSolicitud: 'PENDIENTE_APROBACION'
-            }).populate('solicitanteId', 'nombre fotoDePerfilUrl')
-            .populate('entregaId');
-
-            const donacionesConSolicitudes = donaciones.map(donacion => ({
-                ...donacion,
-                solicitudes: solicitudes.filter(
-                    solicitud => solicitud.donacionId.toString() === donacion._id.toString()
-                )
-            }));
+           
+            const donacionesCompletas = await Donacion.populate(donaciones, {
+                path: 'solicitudes', 
+                populate: [
+                    { path: 'solicitanteId', select: 'nombre fotoDePerfilUrl' },
+                    { path: 'entregaId' } 
+                ]
+            });
             
-            res.status(200).json({ donaciones: donacionesConSolicitudes });
+            res.status(200).json({ donaciones: donacionesCompletas });
 
         } catch (error) {
             console.error("Error en getMisDonacionesActivasConSolicitudes:", error);
-            res.status(500).json({ message: "Error interno del servidor." });
+            res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
         }
-    }
- }
+    }}

@@ -1,4 +1,3 @@
-// frontend/src/pages/MyRequestsPage.jsx (CÓDIGO COMPLETO Y MEJORADO)
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';

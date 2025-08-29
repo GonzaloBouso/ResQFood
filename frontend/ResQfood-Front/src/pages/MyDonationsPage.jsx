@@ -1,5 +1,3 @@
-// frontend/src/pages/MyDonationsPage.jsx (CÓDIGO COMPLETO Y FINAL)
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
@@ -8,7 +6,7 @@ import { ChevronDown, Loader2, CheckCircle, Clock, XCircle } from 'lucide-react'
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
 import toast from 'react-hot-toast';
 
-// --- Componente Interno para listar solicitudes pendientes ---
+
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {
     const pendientes = solicitudes.filter(s => s.estadoSolicitud === 'PENDIENTE_APROBACION');
     
@@ -34,6 +32,7 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
                         <span className="text-sm font-medium">{solicitud.solicitanteId?.nombre}</span>
                     </div>
                     <div className="flex gap-2">
+                        
                         <button disabled={isSubmitting} onClick={() => onReject(solicitud)} className="px-2 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200 disabled:opacity-50">Rechazar</button>
                         <button disabled={isSubmitting} onClick={() => onAcceptClick(solicitud)} className="px-2 py-1 text-xs text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">Aceptar</button>
                     </div>
@@ -43,7 +42,7 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
     );
 };
 
-// --- Componente Interno para confirmar la entrega ---
+
 const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
     const [codigo, setCodigo] = useState('');
     const handleSubmit = (e) => {
@@ -58,7 +57,7 @@ const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
     );
 };
 
-// --- Componente Principal ---
+
 const MyDonationsPage = () => {
     const { getToken } = useAuth();
     const [donaciones, setDonaciones] = useState([]);
