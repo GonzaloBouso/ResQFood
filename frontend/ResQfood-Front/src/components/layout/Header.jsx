@@ -130,10 +130,11 @@ const Header = () => {
                   </button>
                 )}
 
-                {/* --- CORRECCIÓN #2: El menú condicional bien estructurado --- */}
                 {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">
+                      
+                      {/* El Panel de Admin se muestra solo para el rol ADMIN */}
                       {currentUserRole === 'ADMIN' && (
                         <>
                           <Link to="/admin" className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left font-semibold" onClick={toggleProfileMenu}>
@@ -143,12 +144,13 @@ const Header = () => {
                         </>
                       )}
                       
+                      {/* "Ir a mi perfil" se muestra para TODOS los roles */}
                       <Link to={profilePath} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onClick={toggleProfileMenu}>
                         Ir a mi perfil
                       </Link>
                       
-                     
-                      {(currentUserRole === 'LOCAL' || currentUserRole === 'ADMIN') && (
+                      {/* "Mis donaciones" se muestra para LOCAL, GENERAL y ADMIN */}
+                      {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
                         <Link
                           to={misDonacionesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
@@ -156,6 +158,20 @@ const Header = () => {
                         >
                           <span>Mis donaciones</span>
                           {hasNewDonationNotifications && (
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                          )}
+                        </Link>
+                      )}
+
+                      {/* "Mis solicitudes" se muestra solo para GENERAL y ADMIN */}
+                      {(currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
+                        <Link
+                          to={misSolicitudesPath}
+                          className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
+                          onClick={toggleProfileMenu}
+                        >
+                          <span>Mis solicitudes</span>
+                          {hasNewRequestNotifications && (
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                           )}
                         </Link>
