@@ -5,7 +5,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { ChevronDown, Loader2, CheckCircle, Clock, XCircle } from 'lucide-react';
-import ProposeScheduleModal from '../components/solicitudes/ProposeScheduleModal';
+import ProposeScheduleModal from '../components/ProposeScheduleModal';
 import toast from 'react-hot-toast';
 
 // --- Componente Interno para listar solicitudes pendientes ---
