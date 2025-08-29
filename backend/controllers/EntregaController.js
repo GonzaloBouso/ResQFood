@@ -1,204 +1,65 @@
-// controllers/EntregaController.js
-import mongoose from 'mongoose';
-import Entrega from '../models/Entrega.js';
-import Solicitud from '../models/Solicitud.js';
-import Donacion from '../models/Donacion.js';
+
+import Reporte from '../models/Reporte.js';
 import User from '../models/User.js';
-import Notificacion from '../models/Notificacion.js';
-import { getIoInstance, getSocketIdForUser } from '../socket.js';
+import Donacion from '../models/Donacion.js';
+import mongoose from 'mongoose';
 
-export class EntregaController {
-
-    static async confirmarHorario(req, res) {
-        const { entregaId } = req.params;
-        const receptorClerkId = req.auth?.userId;
-        const session = await mongoose.startSession();
-        session.startTransaction();
+export class ReporteController {
+    // Para que un usuario cree un reporte
+    static async createReporte(req, res) {
         try {
-            const entrega = await Entrega.findById(entregaId).session(session);
-            if (!entrega) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(404).json({ message: 'Registro de entrega no encontrado.' });
-            }
+            const { donacionId } = req.params;
+            const { motivo, detalles } = req.body;
+            const reportadoPorId = req.auth.userId;
 
-            const receptor = await User.findById(entrega.receptorId).session(session);
-            if (!receptor || receptor.clerkUserId !== receptorClerkId) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(403).json({ message: 'No tienes permiso.' });
-            }
-            if (entrega.estadoEntrega !== 'PENDIENTE_CONFIRMACION_SOLICITANTE') {
-                await session.abortTransaction(); session.endSession();
-                return res.status(400).json({ message: 'Esta propuesta ya no es válida.' });
-            }
+            const donacion = await Donacion.findById(donacionId);
+            if (!donacion) return res.status(404).json({ message: "Donación no encontrada." });
 
-            entrega.horarioEntregaConfirmadoSolicitante = true;
-            entrega.fechaHorarioConfirmado = new Date();
-            entrega.estadoEntrega = 'LISTA_PARA_RETIRO';
+            const reportador = await User.findOne({ clerkUserId: reportadoPorId });
+            if (!reportador) return res.status(404).json({ message: "Usuario reportador no encontrado." });
 
-            const donante = await User.findById(entrega.donanteId).session(session);
-            const donacion = await Donacion.findById(entrega.donacionId).select('titulo').session(session);
-            
-            // Notificación mejorada
-            const notificacion = new Notificacion({
-                destinatarioId: donante._id,
-                tipoNotificacion: 'GENERAL',
-                mensaje: `¡${receptor.nombre} confirmó el retiro de "${donacion.titulo}"! La entrega está lista.`,
-                referenciaId: entrega._id,
-                tipoReferencia: 'Entrega',
-                enlace: '/mis-donaciones' // Dirige al donante a la página correcta
+            const nuevoReporte = new Reporte({
+                reportadoPor: reportador._id,
+                usuarioReportado: donacion.donanteId,
+                donacionReportada: donacion._id,
+                motivo,
+                detalles,
             });
 
-            await entrega.save({ session });
-            await notificacion.save({ session });
-
-            const io = getIoInstance();
-            const donanteSocketId = getSocketIdForUser(donante.clerkUserId);
-            if (donanteSocketId) {
-                io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject());
-            }
-            
-            await session.commitTransaction();
-            res.status(200).json({ message: 'Horario confirmado.' });
+            await nuevoReporte.save();
+            res.status(201).json({ message: 'Reporte enviado con éxito. Lo revisaremos pronto.', reporte: nuevoReporte });
         } catch (error) {
-            await session.abortTransaction();
-            console.error("Error al confirmar horario:", error);
-            res.status(500).json({ message: 'Error al confirmar horario.', errorDetails: error.message });
-        } finally {
-            session.endSession();
+            console.error('Error al crear reporte:', error);
+            res.status(500).json({ message: 'Error interno del servidor.' });
         }
     }
 
-    // --- NUEVA FUNCIÓN ---
-    static async rechazarHorario(req, res) {
-        const { entregaId } = req.params;
-        const receptorClerkId = req.auth?.userId;
-        const session = await mongoose.startSession();
-        session.startTransaction();
+    // Para que un admin obtenga todos los reportes pendientes
+    static async getReportesPendientes(req, res) {
         try {
-            const entrega = await Entrega.findById(entregaId).session(session);
-            if (!entrega) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(404).json({ message: 'Registro de entrega no encontrado.' });
-            }
+            const reportes = await Reporte.find({ estado: 'PENDIENTE' })
+                .populate('reportadoPor', 'nombre email')
+                .populate('usuarioReportado', 'nombre email activo')
+                .populate('donacionReportada', 'titulo')
+                .sort({ createdAt: -1 });
 
-            const receptor = await User.findById(entrega.receptorId).session(session);
-            if (!receptor || receptor.clerkUserId !== receptorClerkId) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(403).json({ message: 'No tienes permiso.' });
-            }
-            if (entrega.estadoEntrega !== 'PENDIENTE_CONFIRMACION_SOLICITANTE') {
-                await session.abortTransaction(); session.endSession();
-                return res.status(400).json({ message: 'Esta propuesta ya no se puede rechazar.' });
-            }
-
-            // Actualizar estados
-            entrega.estadoEntrega = 'CANCELADA_POR_SOLICITANTE';
-            entrega.fechaCancelada = new Date();
-            await entrega.save({ session });
-            
-            await Solicitud.findByIdAndUpdate(entrega.solicitudId, { estadoSolicitud: 'CANCELADA_RECEPTOR' }, { session });
-            
-            // Volver a poner la donación como DISPONIBLE para que otros la puedan solicitar
-            const donacion = await Donacion.findByIdAndUpdate(entrega.donacionId, { estadoPublicacion: 'DISPONIBLE' }, { session });
-            
-            // Notificar al donante
-            const donante = await User.findById(entrega.donanteId).session(session);
-            const notificacion = new Notificacion({
-                destinatarioId: donante._id,
-                tipoNotificacion: 'GENERAL',
-                mensaje: `${receptor.nombre} no pudo aceptar el horario para "${donacion.titulo}". La donación vuelve a estar disponible.`,
-                referenciaId: entrega.solicitudId,
-                tipoReferencia: 'Solicitud',
-                enlace: '/mis-donaciones'
-            });
-            await notificacion.save({ session });
-
-            // Enviar notificación por socket
-            const io = getIoInstance();
-            const donanteSocketId = getSocketIdForUser(donante.clerkUserId);
-            if (donanteSocketId) {
-                io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject());
-            }
-
-            await session.commitTransaction();
-            res.status(200).json({ message: 'Propuesta de horario rechazada. La donación vuelve a estar disponible.' });
+            res.status(200).json({ reportes });
         } catch (error) {
-            await session.abortTransaction();
-            console.error("Error al rechazar horario:", error);
-            res.status(500).json({ message: 'Error al rechazar el horario.', errorDetails: error.message });
-        } finally {
-            session.endSession();
+            console.error('Error al obtener reportes:', error);
+            res.status(500).json({ message: 'Error interno del servidor.' });
         }
     }
 
-    static async completarEntrega(req, res) {
-        // ... (Tu código existente para completarEntrega está bien, no necesita cambios)
-        const { entregaId } = req.params;
-        const { codigoConfirmacion } = req.body;
-        const donanteClerkId = req.auth?.userId;
-        if (!codigoConfirmacion) return res.status(400).json({ message: 'Código requerido.' });
-
-        const session = await mongoose.startSession();
-        session.startTransaction();
+    // Para que un admin resuelva un reporte (sin tomar acción)
+    static async resolverReporte(req, res) {
         try {
-            const entrega = await Entrega.findById(entregaId).session(session);
-            if (!entrega) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(404).json({ message: 'Entrega no encontrada.' });
-            }
-
-            const donante = await User.findById(entrega.donanteId).session(session);
-            if (donante.clerkUserId !== donanteClerkId) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(403).json({ message: 'No tienes permiso.' });
-            }
-            if (entrega.codigoConfirmacionReceptor !== codigoConfirmacion.toUpperCase()) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(400).json({ message: 'Código incorrecto.' });
-            }
-            if (entrega.estadoEntrega !== 'LISTA_PARA_RETIRO') {
-                await session.abortTransaction(); session.endSession();
-                return res.status(400).json({ message: 'La entrega no está lista para ser completada.' });
-            }
-            
-            entrega.estadoEntrega = 'COMPLETADA';
-            entrega.fechaCompletada = new Date();
-            
-            const donacion = await Donacion.findByIdAndUpdate(entrega.donacionId, { estadoPublicacion: 'ENTREGADA' }, {session, new: true});
-            await Solicitud.findByIdAndUpdate(entrega.solicitudId, { estadoSolicitud: 'COMPLETADA_CON_ENTREGA' }, { session });
-            
-            const receptor = await User.findById(entrega.receptorId).session(session);
-            if (receptor.rol === 'GENERAL' && receptor.estadisticasGenerales) {
-                receptor.estadisticasGenerales.totalDonacionesRecibidas = (receptor.estadisticasGenerales.totalDonacionesRecibidas || 0) + 1;
-            }
-
-            const notificacion = new Notificacion({
-                destinatarioId: receptor._id,
-                tipoNotificacion: 'ENTREGA',
-                mensaje: `La entrega de "${donacion.titulo}" se ha completado. ¡Gracias por participar!`,
-                referenciaId: entrega._id,
-                tipoReferencia: 'Entrega',
-                enlace: '/mis-solicitudes'
-            });
-
-            await entrega.save({ session });
-            await receptor.save({ session });
-            await notificacion.save({ session });
-
-            const io = getIoInstance();
-            const receptorSocketId = getSocketIdForUser(receptor.clerkUserId);
-            if (receptorSocketId) {
-                io.to(receptorSocketId).emit('nueva_notificacion', notificacion.toObject());
-            }
-
-            await session.commitTransaction();
-            res.status(200).json({ message: '¡Entrega completada!' });
+            const { reporteId } = req.params;
+            const reporte = await Reporte.findByIdAndUpdate(reporteId, { estado: 'RESUELTO' }, { new: true });
+            if (!reporte) return res.status(404).json({ message: "Reporte no encontrado." });
+            res.status(200).json({ message: 'Reporte marcado como resuelto.', reporte });
         } catch (error) {
-            await session.abortTransaction();
-            console.error("Error al completar entrega:", error);
-            res.status(500).json({ message: 'Error al completar entrega.', errorDetails: error.message });
-        } finally {
-            session.endSession();
+            console.error('Error al resolver reporte:', error);
+            res.status(500).json({ message: 'Error interno del servidor.' });
         }
     }
 }

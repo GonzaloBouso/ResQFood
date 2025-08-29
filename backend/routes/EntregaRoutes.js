@@ -1,17 +1,15 @@
-// routes/EntregaRoutes.js
 import express from 'express';
-import { EntregaController } from '../controllers/EntregaController.js';
+import { ReporteController } from '../controllers/ReporteController.js';
 import { requireAuth } from '../middlewares/autMiddleware.js';
+import { requireAdmin } from '../middlewares/auth/requireAdmin.js'; // Asumo que tienes un middleware para admins
 
 const router = express.Router();
 
-// Receptor confirma el horario propuesto por el donante
-router.post('/:entregaId/confirmar-horario', requireAuth, EntregaController.confirmarHorario);
+// Ruta para que un usuario cree un reporte sobre una donación
+router.post('/donacion/:donacionId', requireAuth, ReporteController.createReporte);
 
-// Receptor rechaza el horario propuesto por el donante
-router.post('/:entregaId/rechazar-horario', requireAuth, EntregaController.rechazarHorario);
-
-// Donante completa la entrega usando el código de confirmación
-router.post('/:entregaId/completar', requireAuth, EntregaController.completarEntrega);
+// Rutas solo para administradores
+router.get('/', requireAuth, requireAdmin, ReporteController.getReportesPendientes);
+router.patch('/:reporteId/resolver', requireAuth, requireAdmin, ReporteController.resolverReporte);
 
 export default router;

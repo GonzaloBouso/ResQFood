@@ -1,58 +1,30 @@
 import mongoose, { Schema } from "mongoose";
 
-const EntregaSchema = new mongoose.Schema(
+const ReporteSchema = new Schema(
     {
-        solicitudId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Solicitud',
-            required: true,
-            sparse: true, 
-            index: true
-            
-        },
-        donacionId: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
-        donanteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-        receptorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-        
-        horarioPropuesto: {
-            type: {
-                fecha: { type: Date, required: true },
-                horaInicio: { type: String, required: true },
-                horaFin: { type: String, required: true }
-            },
-            _id: false,
-            required: true,
-        },
-        
-        horarioEntregaConfirmadoSolicitante: { type: Boolean, default: false },
-        fechaHorarioConfirmado: { type: Date, default: null },
-        codigoConfirmacionReceptor: { type: String, required: true },
-        estadoEntrega: {
+        reportadoPor: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        usuarioReportado: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        donacionReportada: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
+        motivo: {
             type: String,
             enum: [
-                'PENDIENTE_CONFIRMACION_SOLICITANTE',
-                'LISTA_PARA_RETIRO',
-                'COMPLETADA',
-                'FALLIDA_RECEPTOR_NO_ASISTIO',
-                'FALLIDA_OTRO_MOTIVO',
-                'CANCELADA_POR_DONANTE',
-                'CANCELADA_POR_SOLICITANTE',
+                'Contenido inapropiado',
+                'Información falsa o engañosa',
+                'Spam',
+                'Comportamiento abusivo',
+                'Otro'
             ],
-           
-            default: "PENDIENTE_CONFIRMACION_SOLICITANTE",
-            required: true, 
+            required: true,
+        },
+        detalles: { type: String, trim: true },
+        estado: {
+            type: String,
+            enum: ['PENDIENTE', 'RESUELTO'],
+            default: 'PENDIENTE',
             index: true,
         },
-        notasEntrega: { type: String, default: null },
-        fechaCompletada: { type: Date, default: null },
-        fechaFallida: { type: Date, default: null },
-        fechaCancelada: { type: Date, default: null },
     },
-    {
-        timestamps: true,
-    }
+    { timestamps: true }
 );
 
-EntregaSchema.index({ donacionId: 1, receptorId: 1 });
-
-export default mongoose.model('Entrega', EntregaSchema);
+export default mongoose.model('Reporte', ReporteSchema);
