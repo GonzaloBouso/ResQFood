@@ -134,7 +134,7 @@ export class SolicitudController {
                     horaFin: horaFin
                 },
                 codigoConfirmacionReceptor: generarCodigo(),
-                estadoEntrega: 'PENDIENTE_CONFIRMACION',
+                 estadoEntrega: 'PENDIENTE_CONFIRMACION_SOLICITANTE',
             });
         
             await nuevaEntrega.save({ session });

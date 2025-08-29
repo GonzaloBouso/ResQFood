@@ -1,141 +1,137 @@
+// frontend/src/components/solicitudes/DropdownSolicitudes.jsx (VERSIÓN CORREGIDA)
+
 import React, { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import Modal from './Modal';
-import FormularioConfirmacion from './FormularioConfirmacion';
+import toast from 'react-hot-toast'; // Usaremos toasts para mejor feedback
+
+import ProposeScheduleModal from './ProposeScheduleModal'; // Importamos el modal correcto
 import API_BASE_URL from '../../api/config';
 
-const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, donacionId }) => {
+const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, onActionComplete }) => {
   const [open, setOpen] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [solicitudParaAceptar, setSolicitudParaAceptar] = useState(null); // Estado para manejar el modal
   const { getToken } = useAuth();
 
-  const handleAceptarClick = (solicitud) => {
-    setSolicitudSeleccionada(solicitud);
-    setModalVisible(true);
-  };
-
   const handleRechazarClick = async (solicitud) => {
-    if (!window.confirm(`¿Estás seguro de que quieres rechazar la solicitud de ${solicitud.solicitanteId?.nombre || 'este usuario'}?`)) return;
+    if (!window.confirm(`¿Seguro que quieres rechazar la solicitud de ${solicitud.solicitanteId?.nombre}?`)) return;
+    
+    setIsSubmitting(true);
+    const toastId = toast.loading('Rechazando solicitud...');
+    
     try {
       const token = await getToken();
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitud._id}/rechazar`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ motivoRechazo: 'El donante ha rechazado la solicitud.' })
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error('Error al rechazar la solicitud');
-      alert('Solicitud rechazada.');
-      window.location.reload();
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al rechazar');
+      }
+      
+      toast.success('Solicitud rechazada.', { id: toastId });
+      if (onActionComplete) onActionComplete(); // Llama a la función para recargar datos
+      
     } catch (error) {
-      console.error('Error al rechazar:', error);
-      alert(error.message);
+      toast.error(`Error: ${error.message}`, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleFormularioSubmit = async (data) => {
+  // --- FUNCIÓN CORREGIDA Y SIMPLIFICADA ---
+  // Esta función ahora es idéntica a la de MyDonationsPage.jsx
+  const handleAcceptAndPropose = async (solicitudId, propuesta) => {
+    setIsSubmitting(true);
+    const toastId = toast.loading('Enviando propuesta...');
+    
     try {
       const token = await getToken();
-
-      
-      const horarioEntregaPropuestaPorDonanteObj = {
-          horarioInicio: data.horaDesde,
-          horarioFin: data.horaHasta,
-      };
-
-   
-      const fechaInicio = new Date(`${data.fechaDesde}T${data.horaDesde}`);
-      let fechaFin = null;
-      if (data.fechaHasta) {
-        
-        fechaFin = new Date(`${data.fechaHasta}T${data.horaHasta}`);
-      } else {
-        
-        fechaFin = new Date(`${data.fechaDesde}T${data.horaHasta}`);
-      }
-      
-      const fechaPropuestoObj = {
-          fechaInicio: fechaInicio,
-          fechaFin: fechaFin,
-      };
-
-      const payload = {
-        horarioEntregaPropuestaPorDonante: horarioEntregaPropuestaPorDonanteObj,
-        fechaPropuesto: fechaPropuestoObj,
-      };
-
-      const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudSeleccionada._id}/aceptar-y-proponer`, {
+      const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/aceptar-y-proponer`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        // El 'body' ahora es el objeto plano que espera el backend
+        body: JSON.stringify(propuesta),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al aceptar la solicitud');
+        const errorPayload = await response.json();
+        throw new Error(errorPayload.message);
       }
 
-      alert('Solicitud aceptada y horario propuesto.');
-      setModalVisible(false);
-      window.location.reload();
-    } catch (error) {
-      console.error('Error al aceptar:', error);
-      alert(error.message);
+      toast.success('¡Propuesta enviada con éxito!', { id: toastId });
+      setSolicitudParaAceptar(null); // Cierra el modal
+      if (onActionComplete) onActionComplete(); // Recarga los datos
+      
+    } catch (err) {
+      toast.error(`Error: ${err.message}`, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-gray-50 text-black rounded-lg shadow-sm overflow-hidden w-full border border-gray-200">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left font-medium text-sm hover:bg-gray-100 transition"
-      >
-        <span>Lista de solicitudes ({solicitudes.length})</span>
-        {open ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-      </button>
+    <>
+      <div className="bg-gray-50 text-black rounded-lg shadow-sm overflow-hidden w-full border border-gray-200">
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left font-medium text-sm hover:bg-gray-100 transition"
+        >
+          <span>Lista de solicitudes ({solicitudes.length})</span>
+          {open ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+        </button>
 
-      {open && (
-        <div className="divide-y border-t border-gray-200 px-4 pb-3">
-          {solicitudes.length === 0 ? (
-            <p className="text-sm py-3 text-gray-500">No hay solicitudes pendientes.</p>
-          ) : (
-            solicitudes.map((s) => (
-              <div key={s._id} className="py-3 flex flex-col sm:flex-row justify-between sm:items-center">
-                <div className="text-sm">
-                  <p><strong>Usuario:</strong> {s.solicitanteId?.nombre || 'Usuario desconocido'}</p>
+        {open && (
+          <div className="divide-y border-t border-gray-200 px-4 pb-3">
+            {solicitudes.length === 0 ? (
+              <p className="text-sm py-3 text-gray-500">No hay solicitudes pendientes.</p>
+            ) : (
+              solicitudes.map((s) => (
+                <div key={s._id} className="py-3 flex flex-col sm:flex-row justify-between sm:items-center">
+                  <div className="text-sm">
+                    <p><strong>Usuario:</strong> {s.solicitanteId?.nombre || 'Usuario desconocido'}</p>
+                  </div>
+                  <div className="flex gap-2 mt-2 sm:mt-0">
+                    <button
+                        // Abre el modal de proponer horario
+                        onClick={() => setSolicitudParaAceptar(s)}
+                        className={`text-xs px-3 py-1 rounded transition ${
+                        solicitudAceptada
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-green-500 hover:bg-green-600 text-white'
+                        }`}
+                        disabled={!!solicitudAceptada || isSubmitting}
+                    >
+                        Aceptar
+                    </button>
+                    <button
+                      onClick={() => handleRechazarClick(s)}
+                      className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded transition"
+                      disabled={!!solicitudAceptada || isSubmitting}
+                    >
+                      Rechazar
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2 mt-2 sm:mt-0">
-                  <button
-                      onClick={() => handleAceptarClick(s)}
-                      className={`text-xs px-3 py-1 rounded transition ${
-                      solicitudAceptada
-                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          : 'bg-green-500 hover:bg-green-600 text-white'
-                      }`}
-                      disabled={!!solicitudAceptada}
-                  >
-                      Aceptar
-                  </button>
-                  <button
-                    onClick={() => handleRechazarClick(s)}
-                    className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded transition"
-                    disabled={!!solicitudAceptada}
-                  >
-                    Rechazar
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Usamos el modal estandarizado que ya funciona */}
+      {solicitudParaAceptar && (
+          <ProposeScheduleModal 
+              solicitud={solicitudParaAceptar} 
+              onClose={() => setSolicitudParaAceptar(null)}
+              onSubmit={handleAcceptAndPropose}
+              isSubmitting={isSubmitting}
+          />
       )}
-
-      <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
-        <h2 className="text-lg font-semibold mb-4">Proponer Horario de Entrega</h2>
-        <FormularioConfirmacion onSubmit={handleFormularioSubmit} />
-      </Modal>
-    </div>
+    </>
   );
 };
 

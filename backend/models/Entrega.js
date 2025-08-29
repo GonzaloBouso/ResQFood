@@ -32,7 +32,7 @@ const EntregaSchema = new mongoose.Schema(
         estadoEntrega: {
             type: String,
             enum: [
-                'PENDIENTE_CONFIRMACION',
+                'PENDIENTE_CONFIRMACION_SOLICITANTE',
                 'LISTA_PARA_RETIRO',
                 'COMPLETADA',
                 'FALLIDA_RECEPTOR_NO_ASISTIO',
