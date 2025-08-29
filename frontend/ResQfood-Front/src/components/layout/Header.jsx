@@ -64,16 +64,24 @@ const Header = () => {
   const handleMarkAsRead = async () => {
     if (unreadCount === 0) return;
     try {
-        // CORRECCIÓN #1: Sintaxis correcta para la actualización optimista
-        setNotifications(prevNotifications => prevNotifications.map(notif => ({ ...notif, leida: true })));
-        
         const token = await getToken();
-        await fetch(`${API_BASE_URL}/api/notificacion/marcar-como-leidas`, {
+        const response = await fetch(`${API_BASE_URL}/api/notificacion/marcar-como-leidas`, {
             method: 'PATCH',
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        // Solo si el backend confirma que las marcó como leídas,
+        // actualizamos el estado en el frontend.
+        if (response.ok) {
+            setNotifications(prevNotifications => 
+                prevNotifications.map(notif => ({ ...notif, leida: true }))
+            );
+        } else {
+            // Opcional: mostrar un toast de error si falla
+            console.error("El servidor no pudo marcar las notificaciones como leídas.");
+        }
     } catch (error) {
-        console.error("Error al marcar notificaciones como leídas:", error);
+        console.error("Error de red al marcar notificaciones como leídas:", error);
     }
   };
 
