@@ -47,8 +47,7 @@ const CardDonacion = ({ donacion }) => {
 
     } catch (err) {
       console.error("Error al solicitar donación:", err);
-      alert(`Error: ${err.message}`);
-    }
+      toast.error(err.message, { id: toastId });    }
   };
 
   const abrirModal = () => setMostrarModal(true);
