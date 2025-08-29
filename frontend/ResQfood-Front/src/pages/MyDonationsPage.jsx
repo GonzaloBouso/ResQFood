@@ -123,11 +123,16 @@ const MyDonationsPage = () => {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/rechazar`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+               headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({}) 
             });
+
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
-                throw new Error(errorData.message);
+                const errorData = await response.json().catch(() => ({ message: 'No se pudo procesar la respuesta.' }));
+                throw new Error(errorData.message || 'Falló el rechazo de la solicitud.');
             }
             toast.success('Solicitud rechazada.', { id: toastId });
             fetchDonations();
