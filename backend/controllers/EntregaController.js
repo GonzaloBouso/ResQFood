@@ -34,8 +34,6 @@ export class EntregaController {
             entrega.fechaHorarioConfirmado = new Date();
             entrega.estadoEntrega = 'LISTA_PARA_RETIRO';
 
-            // --- CORRECCIÓN CLAVE AÑADIDA ---
-            // Se actualiza el estado de la Solicitud para que el frontend sepa qué mostrar.
             await Solicitud.findByIdAndUpdate(
                 entrega.solicitudId,
                 { estadoSolicitud: 'HORARIO_CONFIRMADO' },
@@ -80,34 +78,36 @@ export class EntregaController {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
+            // 1. Buscar todos los documentos necesarios al principio
             const entrega = await Entrega.findById(entregaId).session(session);
-            if (!entrega) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(404).json({ message: 'Registro de entrega no encontrado.' });
-            }
-
+            if (!entrega) { throw new Error('Registro de entrega no encontrado.'); }
+            
             const receptor = await User.findById(entrega.receptorId).session(session);
-            if (!receptor || receptor.clerkUserId !== receptorClerkId) {
-                await session.abortTransaction(); session.endSession();
-                return res.status(403).json({ message: 'No tienes permiso.' });
-            }
-            if (entrega.estadoEntrega !== 'PENDIENTE_CONFIRMACION_SOLICITANTE') {
-                await session.abortTransaction(); session.endSession();
-                return res.status(400).json({ message: 'Esta propuesta ya no se puede rechazar.' });
-            }
+            if (!receptor || receptor.clerkUserId !== receptorClerkId) { throw new Error('No tienes permiso para realizar esta acción.'); }
+            
+            if (entrega.estadoEntrega !== 'PENDIENTE_CONFIRMACION_SOLICITANTE') { throw new Error('Esta propuesta ya no se puede rechazar.'); }
+            
+            const donacion = await Donacion.findById(entrega.donacionId).session(session);
+            if (!donacion) { throw new Error('La donación asociada ya no existe.'); }
 
+            const donante = await User.findById(entrega.donanteId).session(session);
+            if (!donante) { throw new Error('El donante asociado ya no existe.'); }
+
+            // 2. Realizar todas las actualizaciones de estado
             entrega.estadoEntrega = 'CANCELADA_POR_SOLICITANTE';
             entrega.fechaCancelada = new Date();
-            await entrega.save({ session });
             
             await Solicitud.findByIdAndUpdate(entrega.solicitudId, { estadoSolicitud: 'CANCELADA_RECEPTOR' }, { session });
             
-            const donacion = await Donacion.findByIdAndUpdate(entrega.donacionId, { estadoPublicacion: 'DISPONIBLE' }, { session });
+            donacion.estadoPublicacion = 'DISPONIBLE'; // Volver a poner la donación como DISPONIBLE
             
-            const donante = await User.findById(entrega.donanteId).session(session);
+            await entrega.save({ session });
+            await donacion.save({ session });
+            
+            // 3. Crear y enviar la notificación de forma segura
             const notificacion = new Notificacion({
                 destinatarioId: donante._id,
-                tipoNotificacion: 'HORARIO_RECHAZADO',
+                tipoNotificacion: 'HORARIO_RECHAZADO', // Usando un tipo más específico
                 mensaje: `${receptor.nombre} no pudo aceptar el horario para "${donacion.titulo}". La donación vuelve a estar disponible.`,
                 referenciaId: entrega.solicitudId,
                 tipoReferencia: 'Solicitud',
@@ -121,12 +121,13 @@ export class EntregaController {
                 io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject());
             }
 
+            // 4. Confirmar la transacción
             await session.commitTransaction();
             res.status(200).json({ message: 'Propuesta de horario rechazada. La donación vuelve a estar disponible.' });
         } catch (error) {
             await session.abortTransaction();
             console.error("Error al rechazar horario:", error);
-            res.status(500).json({ message: 'Error al rechazar el horario.', errorDetails: error.message });
+            res.status(500).json({ message: `Error al rechazar el horario: ${error.message}` });
         } finally {
             session.endSession();
         }
