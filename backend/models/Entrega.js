@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 
 const EntregaSchema = new Schema(
     {
-        solicitudId: { type: Schema.Types.ObjectId, ref: 'Solicitud', required: true, unique: true, index: true },
+        solicitudId: { type: Schema.Types.ObjectId, ref: 'Solicitud', required: true, unique: true, sparse: true, index: true },
         donacionId: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
         donanteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         receptorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
