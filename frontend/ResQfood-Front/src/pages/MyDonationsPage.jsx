@@ -5,7 +5,6 @@ import API_BASE_URL from '../api/config';
 import { ChevronDown, Loader2, CheckCircle, Clock, XCircle } from 'lucide-react';
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
 import toast from 'react-hot-toast';
-import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {
     const pendientes = solicitudes.filter(s => s.estadoSolicitud === 'PENDIENTE_APROBACION');
@@ -60,7 +59,6 @@ const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
 
 const MyDonationsPage = () => {
     const { getToken } = useAuth();
-    const { setNotifications } = useContext(ProfileStatusContext);
     const [donaciones, setDonaciones] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -96,15 +94,6 @@ const MyDonationsPage = () => {
                 throw new Error(errorPayload.message);
             }
             toast.success('¡Propuesta enviada!', { id: toastId });
-            if (setNotifications) {
-                setNotifications(prev => 
-                    prev.map(n => 
-                        (n.referenciaId === solicitudId && n.tipoNotificacion === 'SOLICITUD') 
-                        ? { ...n, leida: true } 
-                        : n
-                    )
-                );
-            }
 
             setSolicitudParaAceptar(null);
             fetchDonations(); // Refresca los datos de la donación

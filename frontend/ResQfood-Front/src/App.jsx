@@ -56,15 +56,19 @@ const useGlobalState = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState([]);
 
+    const DONATION_NOTIFICATION_TYPES = ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO'];
+    
+    const REQUEST_NOTIFICATION_TYPES = ['APROBACION', 'RECHAZO']; 
+
     const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
 
-    const hasNewDonationNotifications = useMemo(() => 
-        notifications.some(n => !n.leida && ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO'].includes(n.tipoNotificacion)), 
+     const hasNewDonationNotifications = useMemo(() => 
+        notifications.some(n => !n.leida && DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion)), 
         [notifications]
     );
 
-    const hasNewRequestNotifications = useMemo(() => 
-        notifications.some(n => !n.leida && ['APROBACION', 'RECHAZO'].includes(n.tipoNotificacion)), 
+     const hasNewRequestNotifications = useMemo(() => 
+        notifications.some(n => !n.leida && REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion)), 
         [notifications]
     );
 
@@ -90,18 +94,18 @@ const useGlobalState = () => {
     const markDonationNotificationsAsRead = useCallback(() => {
         setNotifications(prev => 
             prev.map(n => 
-                n.tipoNotificacion === 'SOLICITUD' ? { ...n, leida: true } : n
+                DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion) ? { ...n, leida: true } : n
             )
         );
-    }, []);
+    }, []); 
 
     const markRequestNotificationsAsRead = useCallback(() => {
         setNotifications(prev =>
             prev.map(n =>
-                ['APROBACION', 'RECHAZO'].includes(n.tipoNotificacion) ? { ...n, leida: true } : n
+                REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion) ? { ...n, leida: true } : n
             )
         );
-    }, []);
+    }, []); 
 
     useEffect(() => {
         if (!isAuthLoaded) return; 
