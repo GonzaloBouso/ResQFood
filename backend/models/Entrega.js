@@ -1,12 +1,19 @@
-// backend/models/Entrega.js (CÓDIGO COMPLETO Y CORREGIDO)
 import mongoose, { Schema } from "mongoose";
 
-const EntregaSchema = new Schema(
+const EntregaSchema = new mongoose.Schema(
     {
-        solicitudId: { type: Schema.Types.ObjectId, ref: 'Solicitud', required: true, unique: true, sparse: true, index: true },
+        solicitudId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Solicitud',
+            required: true,
+            unique: true, 
+            index: true
+            
+        },
         donacionId: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
         donanteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         receptorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+        
         horarioPropuesto: {
             type: {
                 fecha: { type: Date, required: true },
@@ -16,6 +23,7 @@ const EntregaSchema = new Schema(
             _id: false,
             required: true,
         },
+        
         horarioEntregaConfirmadoSolicitante: { type: Boolean, default: false },
         fechaHorarioConfirmado: { type: Date, default: null },
         codigoConfirmacionReceptor: { type: String, required: true },
@@ -30,7 +38,7 @@ const EntregaSchema = new Schema(
                 'CANCELADA_POR_DONANTE',
                 'CANCELADA_POR_SOLICITANTE',
             ],
-            default: "PENDIENTE_CONFIRMACION_SOLICITANTE",
+            default: "PENDIENTE_CONFIRMACION_SOLICITANTE", 
             required: true, 
             index: true,
         },
@@ -46,5 +54,5 @@ const EntregaSchema = new Schema(
 
 EntregaSchema.index({ donacionId: 1, receptorId: 1 });
 
-// LA SOLUCIÓN: Verifica si el modelo ya existe.
+
 export default mongoose.models.Entrega || mongoose.model('Entrega', EntregaSchema);
