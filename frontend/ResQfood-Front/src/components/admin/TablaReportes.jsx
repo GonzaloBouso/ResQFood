@@ -1,4 +1,3 @@
-// frontend/src/components/admin/TablaReportes.jsx (NUEVO ARCHIVO)
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Check, UserX, Trash2 } from 'lucide-react';
@@ -23,15 +22,29 @@ const TablaReportes = ({ reportes, onResolver, onSuspenderUsuario, onEliminarDon
                 <tbody className="divide-y divide-gray-200">
                     {reportes.map(reporte => (
                         <tr key={reporte._id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3"><Link to={`/donacion/${reporte.donacionReportada._id}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{reporte.donacionReportada.titulo}</Link></td>
-                            <td className="px-4 py-3"><Link to={`/perfil/${reporte.usuarioReportado._id}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{reporte.usuarioReportado.nombre}</Link></td>
+                            
+                            <td className="px-4 py-3">
+                                {reporte.donacionReportada ? (
+                                    <Link to={`/donacion/${reporte.donacionReportada._id}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{reporte.donacionReportada.titulo}</Link>
+                                ) : (
+                                    <span className="text-gray-400 italic">Donación eliminada</span>
+                                )}
+                            </td>
+                            <td className="px-4 py-3">
+                                {reporte.usuarioReportado ? (
+                                    <Link to={`/perfil/${reporte.usuarioReportado._id}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{reporte.usuarioReportado.nombre}</Link>
+                                ) : (
+                                    <span className="text-gray-400 italic">Usuario eliminado</span>
+                                )}
+                            </td>
                             <td className="px-4 py-3">{reporte.motivo}</td>
-                            <td className="px-4 py-3">{reporte.reportadoPor.nombre}</td>
+                            <td className="px-4 py-3">{reporte.reportadoPor ? reporte.reportadoPor.nombre : <span className="text-gray-400 italic">Usuario eliminado</span>}</td>
                             <td className="px-4 py-3">
                                 <div className="flex items-center gap-2">
                                     <button onClick={() => onResolver(reporte._id)} title="Desestimar Reporte" className="p-2 text-green-600 hover:bg-green-100 rounded-full"><Check size={16} /></button>
-                                    <button onClick={() => onEliminarDonacion(reporte.donacionReportada._id, reporte._id)} title="Eliminar Donación" className="p-2 text-orange-600 hover:bg-orange-100 rounded-full"><Trash2 size={16} /></button>
-                                    <button onClick={() => onSuspenderUsuario(reporte.usuarioReportado._id, reporte._id)} title="Suspender Usuario Reportado" className="p-2 text-red-600 hover:bg-red-100 rounded-full"><UserX size={16} /></button>
+                                    
+                                    <button disabled={!reporte.donacionReportada} onClick={() => onEliminarDonacion(reporte.donacionReportada._id, reporte._id)} title="Eliminar Donación" className="p-2 text-orange-600 hover:bg-orange-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"><Trash2 size={16} /></button>
+                                    <button disabled={!reporte.usuarioReportado} onClick={() => onSuspenderUsuario(reporte.usuarioReportado._id, reporte._id)} title="Suspender Usuario Reportado" className="p-2 text-red-600 hover:bg-red-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"><UserX size={16} /></button>
                                 </div>
                             </td>
                         </tr>

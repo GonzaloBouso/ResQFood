@@ -1,4 +1,3 @@
-// frontend/src/pages/AdminDashboardPage.jsx (CÓDIGO COMPLETO Y FINAL)
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
@@ -13,7 +12,7 @@ const UserTable = ({ users, onEditUser }) => {
     if (!users || users.length === 0) {
         return <p className="text-center text-gray-500 py-10">No se encontraron usuarios con los filtros actuales.</p>;
     }
-    // Tu JSX para la tabla de usuarios va aquí...
+    
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full bg-white text-sm">
@@ -114,10 +113,10 @@ const AdminDashboardPage = () => {
         }
     }, [page, filters, vistaActual, fetchUsers, fetchReportes]);
     
-    // --- ¡LA FUNCIÓN QUE FALTABA ESTÁ AQUÍ! ---
+    
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setPage(1); // Reinicia a la página 1 al cambiar un filtro
+        setPage(1); 
         setFilters(prev => ({ ...prev, [name]: value }));
     };
 
