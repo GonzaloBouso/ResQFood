@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
@@ -13,19 +12,25 @@ const MyRequestsPage = () => {
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
+    // Esta función centralizada para obtener datos es la clave
     const fetchSolicitudes = useCallback(async () => {
-        setIsLoading(true);
+        // No reiniciamos isLoading a true aquí para una actualización más suave
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Error al cargar tus solicitudes.');
             const data = await response.json();
             setSolicitudes(data.solicitudes);
-        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
+        } catch (err) { setError(err.message); } finally { setIsLoading(false); } // Solo se quita el loader inicial
     }, [getToken]);
 
-    useEffect(() => { fetchSolicitudes(); }, [fetchSolicitudes]);
+    // Carga inicial de datos
+    useEffect(() => {
+        setIsLoading(true); // Se activa el loader solo en la primera carga
+        fetchSolicitudes();
+    }, [fetchSolicitudes]);
 
+    // La llamada a fetchSolicitudes() al final de esta función es lo que refresca la UI
     const handleConfirmarHorario = async (entregaId) => {
         setIsSubmitting(true);
         const toastId = toast.loading('Confirmando horario...');
@@ -34,7 +39,7 @@ const MyRequestsPage = () => {
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
             toast.success('¡Horario confirmado! El donante será notificado.', { id: toastId });
-            fetchSolicitudes();
+            fetchSolicitudes(); // <-- ¡ESTA LÍNEA ES LA SOLUCIÓN!
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
@@ -63,7 +68,7 @@ const MyRequestsPage = () => {
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
             toast.success('Propuesta rechazada. El donante será notificado.', { id: toastId });
-            fetchSolicitudes();
+            fetchSolicitudes(); // <-- Refresco de UI también aquí
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
@@ -76,6 +81,7 @@ const MyRequestsPage = () => {
         toast.success('¡Código copiado!');
     };
     
+    // Tu lógica de renderizado ya es correcta y maneja todos los estados
     const renderCardContent = (solicitud) => {
         const entrega = solicitud.entregaId;
         switch (solicitud.estadoSolicitud) {
@@ -97,6 +103,7 @@ const MyRequestsPage = () => {
                     </div>
                 );
             default:
+                // Esta lógica se activará después de llamar a fetchSolicitudes() con éxito
                 if (entrega && entrega.estadoEntrega === 'LISTA_PARA_RETIRO') {
                     return (
                         <div className="bg-green-50 p-3 rounded-md">
