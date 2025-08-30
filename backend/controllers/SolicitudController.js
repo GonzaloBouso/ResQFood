@@ -123,7 +123,6 @@ export class SolicitudController {
                 throw new Error('El formato de fecha u hora proporcionado es inválido.');
             }
 
-        
             const nuevaEntrega = new Entrega({
                 solicitudId: solicitudAceptada._id, 
                 donacionId: solicitudAceptada.donacionId, 
@@ -137,7 +136,6 @@ export class SolicitudController {
                 codigoConfirmacionReceptor: generarCodigo(),
                  estadoEntrega: 'PENDIENTE_CONFIRMACION_SOLICITANTE',
             });
-        
             await nuevaEntrega.save({ session });
             
             solicitudAceptada.estadoSolicitud = 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO';
@@ -203,8 +201,8 @@ export class SolicitudController {
     }
         
     static async rechazarSolicitud(req, res){
-        const { solicitudId } = req.params;
-        const { motivoRechazo } = req.body;
+        const {solicitudId} = req.params;
+        const motivoRechazo = req.body?.motivoRechazo; // Forma segura de leer
         const donanteClerkId = req.auth?.userId;
         const session = await mongoose.startSession();
         session.startTransaction();
@@ -306,7 +304,7 @@ export class SolicitudController {
             const solicitud = await Solicitud.findById(solicitudId);
             if (!solicitud) return res.status(404).json({ message: 'Solicitud no encontrada.' });
             const solicitante = await User.findById(solicitud.solicitanteId);
-            if (solicitante.clerkUserId !== solicitanteClerkId) { return res.status(403).json({ message: 'No tienes permiso para cancelar esta solicitud.' }); }
+            if (!solicitante || solicitante.clerkUserId !== solicitanteClerkId) { return res.status(403).json({ message: 'No tienes permiso para cancelar esta solicitud.' }); }
             if (solicitud.estadoSolicitud !== 'PENDIENTE_APROBACION') { return res.status(400).json({ message: 'No puedes cancelar una solicitud que ya ha sido gestionada.' }); }
             solicitud.estadoSolicitud = 'CANCELADA_RECEPTOR';
             solicitud.fechaCancelacion = new Date();
@@ -314,11 +312,6 @@ export class SolicitudController {
             res.status(200).json({ message: 'Solicitud cancelada exitosamente.', solicitud });
         } catch (error) {
             console.error('Error al cancelar la solicitud:', error);
-            console.error("--- ERROR FATAL en aceptarSolicitudYProponerHorario ---");
-            console.error("Mensaje:", error.message);
-            console.error("Stack Trace:", error.stack);
-            console.error("----------------------------------------------------");
-            res.status(500).json({ message: `Error interno al aceptar la solicitud: ${error.message}` });
             res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
         }
     }
