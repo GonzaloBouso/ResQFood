@@ -17,6 +17,8 @@ const SolicitudSchema = new Schema(
                 'CANCELADA_RECEPTOR',
                 'COMPLETADA_CON_ENTREGA',
                 'FALLIDA_ENTREGA_CERRADA',
+                'HORARIO_CONFIRMADO' 
+
             ],
             default: 'PENDIENTE_APROBACION',
             required: true,

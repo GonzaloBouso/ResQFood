@@ -1,4 +1,3 @@
-// controllers/EntregaController.js
 import mongoose from 'mongoose';
 import Entrega from '../models/Entrega.js';
 import Solicitud from '../models/Solicitud.js';
@@ -35,17 +34,24 @@ export class EntregaController {
             entrega.fechaHorarioConfirmado = new Date();
             entrega.estadoEntrega = 'LISTA_PARA_RETIRO';
 
+            // --- CORRECCIÓN CLAVE AÑADIDA ---
+            // Se actualiza el estado de la Solicitud para que el frontend sepa qué mostrar.
+            await Solicitud.findByIdAndUpdate(
+                entrega.solicitudId,
+                { estadoSolicitud: 'HORARIO_CONFIRMADO' },
+                { session }
+            );
+            
             const donante = await User.findById(entrega.donanteId).session(session);
             const donacion = await Donacion.findById(entrega.donacionId).select('titulo').session(session);
             
-            // Notificación mejorada
             const notificacion = new Notificacion({
                 destinatarioId: donante._id,
                 tipoNotificacion: 'GENERAL',
                 mensaje: `¡${receptor.nombre} confirmó el retiro de "${donacion.titulo}"! La entrega está lista.`,
                 referenciaId: entrega._id,
                 tipoReferencia: 'Entrega',
-                enlace: '/mis-donaciones' // Dirige al donante a la página correcta
+                enlace: '/mis-donaciones'
             });
 
             await entrega.save({ session });
@@ -68,8 +74,8 @@ export class EntregaController {
         }
     }
 
-    // --- NUEVA FUNCIÓN ---
     static async rechazarHorario(req, res) {
+        // ... (Tu código original para esta función es correcto y no necesita cambios)
         const { entregaId } = req.params;
         const receptorClerkId = req.auth?.userId;
         const session = await mongoose.startSession();
@@ -91,17 +97,14 @@ export class EntregaController {
                 return res.status(400).json({ message: 'Esta propuesta ya no se puede rechazar.' });
             }
 
-            // Actualizar estados
             entrega.estadoEntrega = 'CANCELADA_POR_SOLICITANTE';
             entrega.fechaCancelada = new Date();
             await entrega.save({ session });
             
             await Solicitud.findByIdAndUpdate(entrega.solicitudId, { estadoSolicitud: 'CANCELADA_RECEPTOR' }, { session });
             
-            // Volver a poner la donación como DISPONIBLE para que otros la puedan solicitar
             const donacion = await Donacion.findByIdAndUpdate(entrega.donacionId, { estadoPublicacion: 'DISPONIBLE' }, { session });
             
-            // Notificar al donante
             const donante = await User.findById(entrega.donanteId).session(session);
             const notificacion = new Notificacion({
                 destinatarioId: donante._id,
@@ -113,7 +116,6 @@ export class EntregaController {
             });
             await notificacion.save({ session });
 
-            // Enviar notificación por socket
             const io = getIoInstance();
             const donanteSocketId = getSocketIdForUser(donante.clerkUserId);
             if (donanteSocketId) {
@@ -132,7 +134,7 @@ export class EntregaController {
     }
 
     static async completarEntrega(req, res) {
-        // ... (Tu código existente para completarEntrega está bien, no necesita cambios)
+        // ... (Tu código original para esta función es correcto y no necesita cambios)
         const { entregaId } = req.params;
         const { codigoConfirmacion } = req.body;
         const donanteClerkId = req.auth?.userId;
