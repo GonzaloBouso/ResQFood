@@ -59,7 +59,7 @@ const useGlobalState = () => {
     const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
 
     const hasNewDonationNotifications = useMemo(() => 
-        notifications.some(n => !n.leida && n.tipoNotificacion === 'SOLICITUD'), 
+        notifications.some(n => !n.leida && ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO'].includes(n.tipoNotificacion)), 
         [notifications]
     );
 

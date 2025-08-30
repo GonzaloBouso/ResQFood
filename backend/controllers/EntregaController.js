@@ -47,7 +47,7 @@ export class EntregaController {
             
             const notificacion = new Notificacion({
                 destinatarioId: donante._id,
-                tipoNotificacion: 'GENERAL',
+                tipoNotificacion: 'HORARIO_CONFIRMADO',
                 mensaje: `¡${receptor.nombre} confirmó el retiro de "${donacion.titulo}"! La entrega está lista.`,
                 referenciaId: entrega._id,
                 tipoReferencia: 'Entrega',
@@ -75,7 +75,6 @@ export class EntregaController {
     }
 
     static async rechazarHorario(req, res) {
-        // ... (Tu código original para esta función es correcto y no necesita cambios)
         const { entregaId } = req.params;
         const receptorClerkId = req.auth?.userId;
         const session = await mongoose.startSession();
@@ -108,7 +107,7 @@ export class EntregaController {
             const donante = await User.findById(entrega.donanteId).session(session);
             const notificacion = new Notificacion({
                 destinatarioId: donante._id,
-                tipoNotificacion: 'GENERAL',
+                tipoNotificacion: 'HORARIO_RECHAZADO',
                 mensaje: `${receptor.nombre} no pudo aceptar el horario para "${donacion.titulo}". La donación vuelve a estar disponible.`,
                 referenciaId: entrega.solicitudId,
                 tipoReferencia: 'Solicitud',

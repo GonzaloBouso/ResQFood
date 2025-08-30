@@ -10,7 +10,7 @@ const notificacionSchema = new mongoose.Schema(
         },
         tipoNotificacion:{
             type:String,
-            enum: ['SOLICITUD', 'APROBACION', 'RECHAZO', 'ENTREGA', 'GENERAL'],
+            enum: ['SOLICITUD', 'APROBACION', 'RECHAZO', 'ENTREGA', 'GENERAL', 'HORARIO_CONFIRMADO', 'HORARIO RECHAZADO'],
             required:true,
         },
         mensaje:{

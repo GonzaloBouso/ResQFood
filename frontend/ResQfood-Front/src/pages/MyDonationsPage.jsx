@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { ChevronDown, Loader2, CheckCircle, Clock, XCircle } from 'lucide-react';
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
 import toast from 'react-hot-toast';
-
+import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {
     const pendientes = solicitudes.filter(s => s.estadoSolicitud === 'PENDIENTE_APROBACION');
@@ -60,6 +60,7 @@ const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
 
 const MyDonationsPage = () => {
     const { getToken } = useAuth();
+    const { setNotifications } = useContext(ProfileStatusContext);
     const [donaciones, setDonaciones] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -80,7 +81,7 @@ const MyDonationsPage = () => {
 
     useEffect(() => { fetchDonations(); }, [fetchDonations]);
 
-    const handleAcceptAndPropose = async (solicitudId, propuesta) => {
+     const handleAcceptAndPropose = async (solicitudId, propuesta) => {
         setIsSubmitting(true);
         const toastId = toast.loading('Enviando propuesta...');
         try {
@@ -95,8 +96,18 @@ const MyDonationsPage = () => {
                 throw new Error(errorPayload.message);
             }
             toast.success('¡Propuesta enviada!', { id: toastId });
+            if (setNotifications) {
+                setNotifications(prev => 
+                    prev.map(n => 
+                        (n.referenciaId === solicitudId && n.tipoNotificacion === 'SOLICITUD') 
+                        ? { ...n, leida: true } 
+                        : n
+                    )
+                );
+            }
+
             setSolicitudParaAceptar(null);
-            fetchDonations();
+            fetchDonations(); // Refresca los datos de la donación
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
