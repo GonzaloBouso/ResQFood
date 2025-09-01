@@ -12,25 +12,23 @@ const MyRequestsPage = () => {
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Esta función centralizada para obtener datos es la clave
     const fetchSolicitudes = useCallback(async () => {
-        // No reiniciamos isLoading a true aquí para una actualización más suave
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Error al cargar tus solicitudes.');
             const data = await response.json();
-            setSolicitudes(data.solicitudes);
-        } catch (err) { setError(err.message); } finally { setIsLoading(false); } // Solo se quita el loader inicial
+            
+            const solicitudesValidas = data.solicitudes.filter(s => s.donacionId && s.donanteId);
+            setSolicitudes(solicitudesValidas);
+        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     }, [getToken]);
 
-    // Carga inicial de datos
     useEffect(() => {
-        setIsLoading(true); // Se activa el loader solo en la primera carga
+        setIsLoading(true);
         fetchSolicitudes();
     }, [fetchSolicitudes]);
 
-    // La llamada a fetchSolicitudes() al final de esta función es lo que refresca la UI
     const handleConfirmarHorario = async (entregaId) => {
         setIsSubmitting(true);
         const toastId = toast.loading('Confirmando horario...');
@@ -39,7 +37,7 @@ const MyRequestsPage = () => {
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
             toast.success('¡Horario confirmado! El donante será notificado.', { id: toastId });
-            fetchSolicitudes(); // <-- ¡ESTA LÍNEA ES LA SOLUCIÓN!
+            fetchSolicitudes();
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
@@ -68,7 +66,7 @@ const MyRequestsPage = () => {
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
             toast.success('Propuesta rechazada. El donante será notificado.', { id: toastId });
-            fetchSolicitudes(); // <-- Refresco de UI también aquí
+            fetchSolicitudes();
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
@@ -81,7 +79,6 @@ const MyRequestsPage = () => {
         toast.success('¡Código copiado!');
     };
     
-    // Tu lógica de renderizado ya es correcta y maneja todos los estados
     const renderCardContent = (solicitud) => {
         const entrega = solicitud.entregaId;
         switch (solicitud.estadoSolicitud) {
@@ -103,7 +100,6 @@ const MyRequestsPage = () => {
                     </div>
                 );
             default:
-                // Esta lógica se activará después de llamar a fetchSolicitudes() con éxito
                 if (entrega && entrega.estadoEntrega === 'LISTA_PARA_RETIRO') {
                     return (
                         <div className="bg-green-50 p-3 rounded-md">
@@ -131,10 +127,11 @@ const MyRequestsPage = () => {
                 <div className="space-y-4">
                     {solicitudes.map(solicitud => (
                         <div key={solicitud._id} className="border rounded-lg bg-white shadow-sm p-4 flex items-start gap-4">
-                            <img src={solicitud.donacionId.imagenesUrl[0]} alt={solicitud.donacionId.titulo} className="w-20 h-20 rounded-md object-cover" />
+                           
+                            <img src={solicitud.donacionId?.imagenesUrl?.[0]} alt={solicitud.donacionId?.titulo} className="w-20 h-20 rounded-md object-cover" />
                             <div className="flex-grow">
-                                <h3 className="font-semibold text-gray-900">{solicitud.donacionId.titulo}</h3>
-                                <p className="text-sm text-gray-600">Donado por: {solicitud.donanteId.nombre}</p>
+                                <h3 className="font-semibold text-gray-900">{solicitud.donacionId?.titulo || "Donación eliminada"}</h3>
+                                <p className="text-sm text-gray-600">Donado por: {solicitud.donanteId?.nombre || "Usuario eliminado"}</p>
                                 <div className="mt-3">{renderCardContent(solicitud)}</div>
                             </div>
                         </div>

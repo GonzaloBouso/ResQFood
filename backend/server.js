@@ -63,15 +63,15 @@ app.get('/healthz', (req, res) => {
 
 // Rutas principales de la API
 app.use('/api/usuario', UserRoutes);
-//app.use('/api/donacion', DonacionRoutes);
-//app.use('/api/solicitud', SolicitudRoutes);
-//app.use('/api/calificacion', CalificacionRoutes);
-//app.use('/api/notificacion', NotificacionRoutes);
-//app.use('/api/entrega', EntregaRoutes);
-//app.use('/api/reporte', ReporteRoutes);
-//app.use('/api/bitacoraAdmin', BitacoraRoutes);
-//app.use('/api/voluntario', VoluntarioRoutes);
-//app.use('/api/contacto', ContactoRoutes);
+app.use('/api/donacion', DonacionRoutes);
+app.use('/api/solicitud', SolicitudRoutes);
+app.use('/api/calificacion', CalificacionRoutes);
+app.use('/api/notificacion', NotificacionRoutes);
+app.use('/api/entrega', EntregaRoutes);
+app.use('/api/reporte', ReporteRoutes);
+app.use('/api/bitacoraAdmin', BitacoraRoutes);
+app.use('/api/voluntario', VoluntarioRoutes);
+app.use('/api/contacto', ContactoRoutes);
 
 // --- MANEJO DE ERRORES (sin cambios) ---
 app.use((req, res, next) => {
