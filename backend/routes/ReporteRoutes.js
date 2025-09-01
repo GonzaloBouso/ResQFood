@@ -12,7 +12,7 @@ router.post('/donacion/:donacionId', requireAuth, ReporteController.createReport
 
 // Rutas solo para administradores
 // Si no tienes requireAdmin, puedes quitarlo temporalmente para probar, pero es importante para la seguridad
-router.get('/', requireAuth, /* requireAdmin, */ ReporteController.getReportesPendientes);
-router.patch('/:reporteId/resolver', requireAuth, /* requireAdmin, */ ReporteController.resolverReporte);
+router.get('/', requireAuth, ReporteController.getReportesPendientes);
+router.patch('/:reporteId/resolver', requireAuth, ReporteController.resolverReporte);
 
 export default router;
