@@ -7,7 +7,8 @@ const EntregaSchema = new mongoose.Schema(
             ref: 'Solicitud',
             required: true,
             unique: true, 
-            index: true
+            index: true,
+            sparse: true
             
         },
         donacionId: { type: Schema.Types.ObjectId, ref: 'Donacion', required: true, index: true },
