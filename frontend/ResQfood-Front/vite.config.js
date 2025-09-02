@@ -7,6 +7,18 @@ export default defineConfig({
   base: '/', // Esto es importante para que Clerk y React Router funcionen correctamente en producción
 
   build: {
+    rollupOptions: {
+      output: {
+        // Le decimos a Vite que, al construir los archivos para producción,
+        // les ponga un "hash" (un código único) en el nombre.
+        // Por ejemplo: index-a1b2c3d4.js en lugar de index.js
+        // Esto fuerza al navegador a descargar el nuevo archivo porque
+        // el nombre ha cambiado, invalidando la caché.
+        entryFileNames: `assets/[name]-[hash].js`,
+        chunkFileNames: `assets/[name]-[hash].js`,
+        assetFileNames: `assets/[name]-[hash].[ext]`
+      }
+    },
     outDir: 'dist', // Carpeta de salida para Vercel
     emptyOutDir: true
   },
