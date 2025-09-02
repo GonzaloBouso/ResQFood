@@ -63,20 +63,25 @@ const Header = () => {
   }
 
   // --- LÓGICA DE NOTIFICACIONES CORREGIDA Y CENTRALIZADA ---
-  const markAsRead = async (type) => {
+ const markAsRead = async (type) => {
+    // Si getToken no está listo, no hacemos nada para evitar errores.
+    if (!getToken) return;
+
     const typesToUpdate = type === 'donations'
       ? ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO', 'GENERAL']
       : ['APROBACION', 'RECHAZO', 'ENTREGA'];
     
-    // 1. Actualización optimista
+    // 1. Actualización optimista (el estado visual cambia al instante)
     if (setNotifications) {
         setNotifications(prev => prev.map(n => typesToUpdate.includes(n.tipoNotificacion) ? { ...n, leida: true } : n));
     }
     
-    // 2. Sincronización con el backend (con el token)
+    // 2. Sincronización con el backend (ahora con la garantía de tener el token)
     try {
         const endpoint = type === 'donations' ? 'marcar-donaciones-leidas' : 'marcar-solicitudes-leidas';
-        const token = await getToken(); // Se obtiene el token justo antes de la llamada
+        const token = await getToken();
+        if (!token) return; // Doble chequeo de seguridad
+        
         await fetch(`${API_BASE_URL}/api/notificacion/${endpoint}`, {
             method: 'PATCH',
             headers: { 'Authorization': `Bearer ${token}` }
