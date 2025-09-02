@@ -1,21 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { ChevronDown, Loader2, CheckCircle, Clock, XCircle } from 'lucide-react';
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
 import toast from 'react-hot-toast';
+import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {
-    
-    const pendientes = (solicitudes || []).filter(s => s.estadoSolicitud === 'PENDIENTE_APROBACION');
+    // Se mantiene la comprobación de seguridad para solicitudes
+    const pendientes = (solicitudes || []).filter(s => s && s.estadoSolicitud === 'PENDIENTE_APROBACION');
     
     if (pendientes.length === 0) {
-        const rechazoReciente = (solicitudes || []).find(s => s.estadoSolicitud === 'CANCELADA_RECEPTOR' && s.entregaId);
+        const rechazoReciente = (solicitudes || []).find(s => s && s.estadoSolicitud === 'CANCELADA_RECEPTOR' && s.entregaId);
         if (rechazoReciente) {
             return (
                 <div className="p-3 bg-red-50 border-t text-red-700 text-xs flex items-center gap-2">
                     <XCircle size={16}/>
+                    {/* Se añade optional chaining para seguridad */}
                     <span>El horario propuesto a <strong>{rechazoReciente.solicitanteId?.nombre}</strong> fue rechazado. La donación vuelve a estar disponible.</span>
                 </div>
             );
@@ -26,10 +28,11 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
     return (
         <div className="space-y-2 p-3 bg-gray-50 border-t">
             {pendientes.map(solicitud => (
-                <div key={solicitud._id} className="flex justify-between items-center bg-white p-2 rounded border shadow-sm">
+                // Se añade optional chaining para seguridad
+                <div key={solicitud?._id} className="flex justify-between items-center bg-white p-2 rounded border shadow-sm">
                     <div className="flex items-center gap-2">
-                        <img src={solicitud.solicitanteId?.fotoDePerfilUrl} alt={solicitud.solicitanteId?.nombre} className="w-8 h-8 rounded-full object-cover" />
-                        <span className="text-sm font-medium">{solicitud.solicitanteId?.nombre}</span>
+                        <img src={solicitud?.solicitanteId?.fotoDePerfilUrl} alt={solicitud?.solicitanteId?.nombre} className="w-8 h-8 rounded-full object-cover" />
+                        <span className="text-sm font-medium">{solicitud?.solicitanteId?.nombre}</span>
                     </div>
                     <div className="flex gap-2">
                         <button disabled={isSubmitting} onClick={() => onReject(solicitud)} className="px-2 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200 disabled:opacity-50">Rechazar</button>
@@ -57,6 +60,9 @@ const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
 
 const MyDonationsPage = () => {
     const { getToken } = useAuth();
+    // Se extrae la función 'setNotifications' del contexto para la lógica de notificación
+    const { setNotifications, currentUserDataFromDB } = useContext(ProfileStatusContext);
+
     const [donaciones, setDonaciones] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -92,6 +98,12 @@ const MyDonationsPage = () => {
                 throw new Error(errorPayload.message);
             }
             toast.success('¡Propuesta enviada!', { id: toastId });
+            
+            // Marca la notificación de solicitud como leída
+            if (setNotifications) {
+                setNotifications(prev => prev.map(n => (n.referenciaId === solicitudId && n.tipoNotificacion === 'SOLICITUD') ? { ...n, leida: true } : n));
+            }
+
             setSolicitudParaAceptar(null);
             fetchDonations();
         } catch (err) {
@@ -104,10 +116,10 @@ const MyDonationsPage = () => {
     const handleReject = (solicitud) => {
         toast((t) => (
             <div className="flex flex-col items-center gap-3 p-2">
-                <span className="text-center font-semibold">¿Rechazar la solicitud de {solicitud.solicitanteId?.nombre}?</span>
+                <span className="text-center font-semibold">¿Rechazar la solicitud de {solicitud?.solicitanteId?.nombre}?</span>
                 <div className="flex gap-3">
                     <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button onClick={() => { toast.dismiss(t.id); executeReject(solicitud._id); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Rechazar</button>
+                    <button onClick={() => { toast.dismiss(t.id); executeReject(solicitud?._id); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Rechazar</button>
                 </div>
             </div>
         ), { duration: 6000 });
@@ -159,6 +171,11 @@ const MyDonationsPage = () => {
         }
     };
 
+    // --- RENDERIZADO DEFENSIVO ---
+    if (!currentUserDataFromDB) {
+        return <div className="text-center py-20">Cargando datos de usuario...</div>;
+    }
+
     if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
 
@@ -168,50 +185,50 @@ const MyDonationsPage = () => {
             {donaciones.length > 0 ? (
                 <div className="space-y-4">
                     {donaciones.map(donacion => {
-                        
-                        const solicitudes = donacion.solicitudes || [];
-                        const isExpanded = expandedDonationId === donacion._id;
-                        const solicitudAceptada = solicitudes.find(s => s.entregaId && s.estadoSolicitud !== 'CANCELADA_RECEPTOR');
+                        // Se añade optional chaining a toda la cadena de acceso para máxima seguridad
+                        const solicitudes = donacion?.solicitudes || [];
+                        const isExpanded = expandedDonationId === donacion?._id;
+                        const solicitudAceptada = solicitudes.find(s => s?.entregaId && s?.estadoSolicitud !== 'CANCELADA_RECEPTOR');
                         const entregaActiva = solicitudAceptada?.entregaId;
 
                         return (
-                            <div key={donacion._id} className="border rounded-lg bg-white shadow-sm overflow-hidden">
-                                <div className="p-4 flex justify-between items-center cursor-pointer" onClick={() => setExpandedDonationId(isExpanded ? null : donacion._id)}>
+                            <div key={donacion?._id} className="border rounded-lg bg-white shadow-sm overflow-hidden">
+                                <div className="p-4 flex justify-between items-center cursor-pointer" onClick={() => setExpandedDonationId(isExpanded ? null : donacion?._id)}>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900">{donacion.titulo}</h3>
+                                        <h3 className="font-semibold text-gray-900">{donacion?.titulo}</h3>
                                         <div className={`text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block ${
-                                            donacion.estadoPublicacion === 'DISPONIBLE' ? 'bg-green-100 text-green-800' :
-                                            donacion.estadoPublicacion === 'PENDIENTE-ENTREGA' ? 'bg-blue-100 text-blue-800' :
+                                            donacion?.estadoPublicacion === 'DISPONIBLE' ? 'bg-green-100 text-green-800' :
+                                            donacion?.estadoPublicacion === 'PENDIENTE-ENTREGA' ? 'bg-blue-100 text-blue-800' :
                                             'bg-gray-100 text-gray-800'
-                                        }`}>{donacion.estadoPublicacion.replace('-', ' ')}</div>
+                                        }`}>{donacion?.estadoPublicacion?.replace('-', ' ')}</div>
                                     </div>
                                     <ChevronDown className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} size={20} />
                                 </div>
                                 
                                 {isExpanded && (
                                     <div className="animate-fade-in-up">
-                                        {donacion.estadoPublicacion === 'DISPONIBLE' && (
+                                        {donacion?.estadoPublicacion === 'DISPONIBLE' && (
                                             <SolicitudesList solicitudes={solicitudes} onAcceptClick={setSolicitudParaAceptar} onReject={handleReject} isSubmitting={isSubmitting} />
                                         )}
                                         
-                                        {donacion.estadoPublicacion === 'PENDIENTE-ENTREGA' && entregaActiva && (
+                                        {donacion?.estadoPublicacion === 'PENDIENTE-ENTREGA' && entregaActiva && (
                                             <div className="p-4 bg-gray-50 border-t">
-                                                <p className="font-semibold text-sm mb-2">Estado para: <span className="font-bold">{solicitudAceptada.solicitanteId?.nombre}</span></p>
+                                                <p className="font-semibold text-sm mb-2">Estado para: <span className="font-bold">{solicitudAceptada?.solicitanteId?.nombre}</span></p>
                                                 
-                                                {entregaActiva.estadoEntrega === 'PENDIENTE_CONFIRMACION_SOLICITANTE' && (
+                                                {entregaActiva?.estadoEntrega === 'PENDIENTE_CONFIRMACION_SOLICITANTE' && (
                                                     <div className="flex items-center gap-2 text-yellow-700 bg-yellow-100 p-2 rounded-md">
                                                         <Clock size={16} />
                                                         <span className="text-xs font-medium">Esperando confirmación del horario por el receptor.</span>
                                                     </div>
                                                 )}
 
-                                                {entregaActiva.estadoEntrega === 'LISTA_PARA_RETIRO' && (
+                                                {entregaActiva?.estadoEntrega === 'LISTA_PARA_RETIRO' && (
                                                     <>
                                                         <div className="flex items-center gap-2 text-green-700 bg-green-100 p-2 rounded-md mb-3">
                                                             <CheckCircle size={16} />
                                                             <span className="text-xs font-medium">¡Horario confirmado! Listo para el retiro.</span>
                                                         </div>
-                                                        <ConfirmarEntregaForm onConfirm={(codigo) => handleCompleteDelivery(entregaActiva._id, codigo)} isSubmitting={isSubmitting} />
+                                                        <ConfirmarEntregaForm onConfirm={(codigo) => handleCompleteDelivery(entregaActiva?._id, codigo)} isSubmitting={isSubmitting} />
                                                     </>
                                                 )}
                                             </div>
@@ -237,4 +254,3 @@ const MyDonationsPage = () => {
 };
 
 export default MyDonationsPage;
-

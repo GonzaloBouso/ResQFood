@@ -1,31 +1,36 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
+    const { currentUserDataFromDB } = useContext(ProfileStatusContext); // Se extrae para la guarda de renderizado
+
     const [solicitudes, setSolicitudes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const fetchSolicitudes = useCallback(async () => {
+        // No se resetea isLoading aquí para permitir recargas suaves
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Error al cargar tus solicitudes.');
             const data = await response.json();
             
+            // Se mantiene el filtro de seguridad por si hay datos inconsistentes
             const solicitudesValidas = data.solicitudes.filter(s => s.donacionId && s.donanteId);
             setSolicitudes(solicitudesValidas);
         } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     }, [getToken]);
 
     useEffect(() => {
-        setIsLoading(true);
+        setIsLoading(true); // Se activa el loader solo en la primera carga
         fetchSolicitudes();
     }, [fetchSolicitudes]);
 
@@ -80,8 +85,9 @@ const MyRequestsPage = () => {
     };
     
     const renderCardContent = (solicitud) => {
-        const entrega = solicitud.entregaId;
-        switch (solicitud.estadoSolicitud) {
+        // Se añade optional chaining para máxima seguridad
+        const entrega = solicitud?.entregaId;
+        switch (solicitud?.estadoSolicitud) {
             case 'PENDIENTE_APROBACION': return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
             case 'RECHAZADA_DONANTE': return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
             case 'CANCELADA_RECEPTOR': return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
@@ -99,7 +105,7 @@ const MyRequestsPage = () => {
                         </div>
                     </div>
                 );
-            default:
+            case 'HORARIO_CONFIRMADO': // Caso añadido del flujo anterior
                 if (entrega && entrega.estadoEntrega === 'LISTA_PARA_RETIRO') {
                     return (
                         <div className="bg-green-50 p-3 rounded-md">
@@ -113,9 +119,16 @@ const MyRequestsPage = () => {
                         </div>
                     );
                 }
-                return <p className="text-gray-500">{solicitud.estadoSolicitud}</p>;
+                return <p className="text-gray-500">Horario Confirmado</p>;
+            default:
+                return <p className="text-gray-500">{solicitud?.estadoSolicitud}</p>;
         }
     };
+
+    // --- RENDERIZADO DEFENSIVO AÑADIDO ---
+    if (!currentUserDataFromDB) {
+        return <div className="text-center py-20">Cargando datos de usuario...</div>;
+    }
 
     if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
@@ -126,12 +139,13 @@ const MyRequestsPage = () => {
             {solicitudes.length > 0 ? (
                 <div className="space-y-4">
                     {solicitudes.map(solicitud => (
-                        <div key={solicitud._id} className="border rounded-lg bg-white shadow-sm p-4 flex items-start gap-4">
+                        <div key={solicitud?._id} className="border rounded-lg bg-white shadow-sm p-4 flex items-start gap-4">
                            
-                            <img src={solicitud.donacionId?.imagenesUrl?.[0]} alt={solicitud.donacionId?.titulo} className="w-20 h-20 rounded-md object-cover" />
+                            {/* Se utiliza optional chaining en toda la cadena de acceso para máxima seguridad */}
+                            <img src={solicitud?.donacionId?.imagenesUrl?.[0]} alt={solicitud?.donacionId?.titulo} className="w-20 h-20 rounded-md object-cover" />
                             <div className="flex-grow">
-                                <h3 className="font-semibold text-gray-900">{solicitud.donacionId?.titulo || "Donación eliminada"}</h3>
-                                <p className="text-sm text-gray-600">Donado por: {solicitud.donanteId?.nombre || "Usuario eliminado"}</p>
+                                <h3 className="font-semibold text-gray-900">{solicitud?.donacionId?.titulo || "Donación eliminada"}</h3>
+                                <p className="text-sm text-gray-600">Donado por: {solicitud?.donanteId?.nombre || "Usuario eliminado"}</p>
                                 <div className="mt-3">{renderCardContent(solicitud)}</div>
                             </div>
                         </div>
