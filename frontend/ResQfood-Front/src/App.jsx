@@ -107,53 +107,71 @@ const useGlobalState = () => {
         );
     }, []); 
 
+        // --- useEffect CORREGIDO PARA UNA LIMPIEZA ROBUSTA ---
     useEffect(() => {
         if (!isAuthLoaded) return; 
+
+        // --- FUNCIÓN DE LIMPIEZA ---
+        // Centraliza la lógica para borrar todos los datos de un usuario.
+        const resetUserState = () => {
+            updateProfileState(null);
+            setActiveSearchLocation(null);
+            setNotifications([]);
+        };
         
         const fetchUserProfileFunction = async () => {
+            // Si el usuario cierra sesión, limpiamos todo y terminamos.
             if (!isSignedIn) {
-                updateProfileState(null);
-                setActiveSearchLocation(null);
-                setNotifications([]);
+                resetUserState();
                 return;
             }
 
+            // --- LA CORRECCIÓN CLAVE ---
+            // Si es un nuevo inicio de sesión, limpiamos el estado anterior ANTES de cargar el nuevo.
+            resetUserState(); 
             setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
             
             try {
                 const token = await getToken();
                 
-                const [profileResponse, notificationsResponse] = await Promise.all([
-                    fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${API_BASE_URL}/api/notificacion`, { headers: { 'Authorization': `Bearer ${token}` } })
-                ]);
+                // 1. Primero, intentamos obtener el perfil. Esto es crítico.
+                const profileResponse = await fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 
                 if (profileResponse.status === 404) {
                     setProfileStatus({ isLoadingUserProfile: false, isComplete: false, currentUserRole: null, currentUserDataFromDB: null });
-                    setNotifications([]); 
                     return;
                 }
                 
                 if (!profileResponse.ok) {
                   const errorData = await profileResponse.json();
-                  throw new Error(errorData.message || "Error al obtener el perfil del usuario.");
+                  throw new Error(errorData.message || "Error al obtener el perfil.");
                 }
-                if (!notificationsResponse.ok) throw new Error("Failed to fetch notifications");
-                
+
                 const profileData = await profileResponse.json();
-                const notificationsData = await notificationsResponse.json();
+                updateProfileState(profileData.user);
 
-                updateProfileState(profileData.user); 
-                setNotifications(notificationsData.notificaciones || []);
+                // 2. Después, intentamos obtener las notificaciones. Esto NO es crítico.
+                try {
+                    const notificationsResponse = await fetch(`${API_BASE_URL}/api/notificacion`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (notificationsResponse.ok) {
+                        const notificationsData = await notificationsResponse.json();
+                        setNotifications(notificationsData.notificaciones || []);
+                    } else {
+                        console.warn("No se pudieron cargar las notificaciones.");
+                    }
+                } catch (notifError) {
+                    console.error("Error al obtener notificaciones:", notifError);
+                }
 
-            } catch (error) {
-                console.error("Error en fetchUserProfileFunction:", error.message);
-                setProfileStatus({ isLoadingUserProfile: false, isComplete: false, currentUserRole: null, currentUserDataFromDB: null });
+            } catch (error) { // Este catch ahora solo se ocupa de errores críticos del perfil.
+                console.error("Error crítico en fetchUserProfileFunction:", error.message);
+                // Si el perfil falla, reseteamos todo el estado.
+                resetUserState();
             }
         };
 
         fetchUserProfileFunction();
-    }, [isAuthLoaded, isSignedIn, getToken]); 
+    }, [isAuthLoaded, isSignedIn, getToken]);
 
     // Se retornan todos los valores, incluyendo las nuevas funciones
     return {
