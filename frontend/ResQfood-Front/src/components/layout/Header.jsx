@@ -64,29 +64,8 @@ const Header = () => {
     displayLocationTextShort = latLngText;
   }
 
- const handleMarkAsRead = async () => {
-        // Si no hay nada que marcar, no hacemos nada
-        if (unreadCount === 0) return;
-
-        // 1. Actualización optimista: cambiamos el estado local INMEDIATAMENTE
-        //    para que el usuario vea el cambio al instante.
-        if (setNotifications) {
-            setNotifications(prev => prev.map(n => ({ ...n, leida: true })));
-        }
-
-        // 2. En segundo plano, le decimos al backend que actualice la base de datos.
-        try {
-            const token = await getToken();
-            await fetch(`${API_BASE_URL}/api/notificacion/marcar-como-leidas`, {
-                method: 'PATCH',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-        } catch (error) {
-            console.error("Fallo al sincronizar el estado 'leído' con el servidor:", error);
-            // Opcional: podrías revertir el estado local si la llamada falla
-        }
-    };
-
+  // --- CORRECCIÓN: Se elimina la función handleMarkAsRead, ya que la lógica ahora es específica por enlace ---
+  
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-2 sm:px-4 lg:px-8">
@@ -123,11 +102,8 @@ const Header = () => {
                 <UserButton afterSignOutUrl="/" />
                 {!isLoadingUserProfile && isComplete && (
                   <button
-                     onClick={() => {
-                        toggleProfileMenu();
-                        // Se llama a la función al abrir el menú
-                        handleMarkAsRead(); 
-                    }}
+                     // El onClick del botón principal solo abre/cierra el menú
+                     onClick={toggleProfileMenu}
                      className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100"
                      aria-label="Opciones de perfil"
                   >
