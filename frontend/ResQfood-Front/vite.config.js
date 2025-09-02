@@ -4,70 +4,39 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/', // Esto es importante para que Clerk y React Router funcionen correctamente en producción
+  base: '/',
 
   build: {
     rollupOptions: {
       output: {
-        // Le decimos a Vite que, al construir los archivos para producción,
-        // les ponga un "hash" (un código único) en el nombre.
-        // Por ejemplo: index-a1b2c3d4.js en lugar de index.js
-        // Esto fuerza al navegador a descargar el nuevo archivo porque
-        // el nombre ha cambiado, invalidando la caché.
         entryFileNames: `assets/[name]-[hash].js`,
         chunkFileNames: `assets/[name]-[hash].js`,
         assetFileNames: `assets/[name]-[hash].[ext]`
       }
     },
-    outDir: 'dist', // Carpeta de salida para Vercel
+    outDir: 'dist',
     emptyOutDir: true
   },
 
   server: {
-    port: 5173, // Puerto por defecto de Vite
+    port: 5173,
 
+    // --- SECCIÓN DE PROXY CORREGIDA Y SIMPLIFICADA ---
     proxy: {
-      // Proxy para las rutas de usuario
-      '/usuario': {
-        target: 'http://localhost:5000',
+      // ESTE ES EL ÚNICO PROXY QUE NECESITAS PARA SOLUCIONAR EL PROBLEMA DE CLERK.
+      // Le dice al servidor de desarrollo de Vite: "Cualquier petición que empiece
+      // con '/__clerk' no es para ti. Reenvíala a mi backend en localhost:5000".
+      // En producción (Vercel), esta regla no se aplica, pero la configuración que haremos
+      // en el backend funcionará directamente.
+      '/__clerk': {
+        target: 'http://localhost:5000', // Asumiendo que tu backend corre en el puerto 5000
         changeOrigin: true,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log(`[Vite Proxy /usuario] Redirigiendo ${req.method} ${req.originalUrl} a ${options.target}${proxyReq.path}`);
-          });
-          proxy.on('error', (err, req, res) => {
-            console.error('[Vite Proxy /usuario] Error:', err);
-            if (res && !res.headersSent) {
-              res.writeHead?.(500, { 'Content-Type': 'text/plain' });
-              res.end?.('Error en el proxy de Vite');
-            } else if (res && res.end) {
-              res.end?.();
-            }
-          });
-        }
       },
 
-      // Proxy para las rutas de donación
-      '/donacion': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log(`[Vite Proxy /donacion] Redirigiendo ${req.method} ${req.originalUrl} a ${options.target}${proxyReq.path}`);
-          });
-          proxy.on('error', (err, req, res) => {
-            console.error('[Vite Proxy /donacion] Error:', err);
-            if (res && !res.headersSent) {
-              res.writeHead?.(500, { 'Content-Type': 'text/plain' });
-              res.end?.('Error en el proxy de Vite');
-            } else if (res && res.end) {
-              res.end?.();
-            }
-          });
-        }
-      }
-
-      // Aquí puedes seguir agregando más rutas si tu backend las tiene.
+      // Ya no necesitas los proxies para '/usuario', '/donacion', etc.
+      // Tu aplicación ya maneja esto correctamente usando la variable de entorno
+      // API_BASE_URL en tu archivo 'src/api/config.js'.
+      // Mantenerlos podría causar conflictos.
     }
   }
 });

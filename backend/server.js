@@ -20,6 +20,7 @@ import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
 import VoluntarioRoutes from './routes/VoluntarioRoutes.js';
 import ContactoRoutes from './routes/ContactoRoutes.js';
 import { handleClerkWebhook } from './controllers/webhookController.js';
+import { ClerkExpressRequireAuth, ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'; 
 
 if (!process.env.CLERK_SECRET_KEY) {
     console.error("ERROR: CLERK_SECRET_KEY no está definida.");
@@ -72,6 +73,11 @@ const PORT = process.env.PORT || 5000;
 app.get('/healthz', (req, res) => {
     res.status(200).send('OK');
 });
+
+app.use(ClerkExpressWithAuth());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Rutas principales de la API
 app.use('/api/usuario', UserRoutes);
