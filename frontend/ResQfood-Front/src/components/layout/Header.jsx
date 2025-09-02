@@ -25,8 +25,6 @@ const Header = () => {
     unreadCount,
     hasNewDonationNotifications,
     hasNewRequestNotifications,
-    markDonationNotificationsAsRead,
-    markRequestNotificationsAsRead,
   } = useContext(ProfileStatusContext) || {};
 
   const profilePath = "/mi-perfil";
@@ -64,8 +62,30 @@ const Header = () => {
     displayLocationTextShort = latLngText;
   }
 
-  // --- CORRECCIÓN: Se elimina la función handleMarkAsRead, ya que la lógica ahora es específica por enlace ---
-  
+  // --- LÓGICA DE NOTIFICACIONES CORREGIDA Y CENTRALIZADA ---
+  const markAsRead = async (type) => {
+    const typesToUpdate = type === 'donations'
+      ? ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO', 'GENERAL']
+      : ['APROBACION', 'RECHAZO', 'ENTREGA'];
+    
+    // 1. Actualización optimista
+    if (setNotifications) {
+        setNotifications(prev => prev.map(n => typesToUpdate.includes(n.tipoNotificacion) ? { ...n, leida: true } : n));
+    }
+    
+    // 2. Sincronización con el backend (con el token)
+    try {
+        const endpoint = type === 'donations' ? 'marcar-donaciones-leidas' : 'marcar-solicitudes-leidas';
+        const token = await getToken(); // Se obtiene el token justo antes de la llamada
+        await fetch(`${API_BASE_URL}/api/notificacion/${endpoint}`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (error) {
+        console.error(`Fallo al sincronizar notificaciones de '${type}' como leídas:`, error);
+    }
+  };
+
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-2 sm:px-4 lg:px-8">
@@ -102,7 +122,6 @@ const Header = () => {
                 <UserButton afterSignOutUrl="/" />
                 {!isLoadingUserProfile && isComplete && (
                   <button
-                     // El onClick del botón principal solo abre/cierra el menú
                      onClick={toggleProfileMenu}
                      className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100"
                      aria-label="Opciones de perfil"
@@ -139,7 +158,7 @@ const Header = () => {
                           to={misDonacionesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
                           onClick={() => {
-                            if (markDonationNotificationsAsRead) markDonationNotificationsAsRead();
+                            markAsRead('donations');
                             toggleProfileMenu();
                           }}
                         >
@@ -155,7 +174,7 @@ const Header = () => {
                           to={misSolicitudesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
                           onClick={() => {
-                            if (markRequestNotificationsAsRead) markRequestNotificationsAsRead();
+                            markAsRead('requests');
                             toggleProfileMenu();
                           }}
                         >

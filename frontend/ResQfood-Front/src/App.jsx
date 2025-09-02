@@ -98,27 +98,6 @@ const useGlobalState = () => {
         });
     }, []);
 
-    const markDonationNotificationsAsRead = useCallback(async () => {
-        const hasUnread = notifications.some(n => !n.leida && DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion));
-        if (!hasUnread) return;
-
-        setNotifications(prev => prev.map(n => DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion) ? { ...n, leida: true } : n));
-        try {
-            const token = await getToken();
-            await fetch(`${API_BASE_URL}/api/notificacion/marcar-donaciones-leidas`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
-        } catch (error) { console.error("Fallo al sincronizar 'donaciones leídas':", error); }
-    }, [getToken, notifications, DONATION_NOTIFICATION_TYPES]);
-
-    const markRequestNotificationsAsRead = useCallback(async () => {
-        const hasUnread = notifications.some(n => !n.leida && REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion));
-        if (!hasUnread) return;
-
-        setNotifications(prev => prev.map(n => REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion) ? { ...n, leida: true } : n));
-        try {
-            const token = await getToken();
-            await fetch(`${API_BASE_URL}/api/notificacion/marcar-solicitudes-leidas`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
-        } catch (error) { console.error("Fallo al sincronizar 'solicitudes leídas':", error); }
-    }, [getToken, notifications, REQUEST_NOTIFICATION_TYPES]);
 
     useEffect(() => {
         if (!isAuthLoaded) return; 
@@ -193,8 +172,6 @@ const useGlobalState = () => {
         addNotification,
         hasNewRequestNotifications,
         hasNewDonationNotifications,
-        markDonationNotificationsAsRead,
-        markRequestNotificationsAsRead,
     };
 };
 
