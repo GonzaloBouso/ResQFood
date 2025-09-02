@@ -9,9 +9,8 @@ import API_BASE_URL from '../../api/config';
 
 const Header = () => {
   const navigate = useNavigate();
-  const { getToken } = useAuth();
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const { 
     isLoadingUserProfile, 
@@ -21,13 +20,11 @@ const Header = () => {
     setActiveSearchLocation,
     searchQuery,
     setSearchQuery,
-    notifications,
-    markDonationNotificationsAsRead,
-    markRequestNotificationsAsRead,  
-    setNotifications,
     unreadCount,
     hasNewDonationNotifications,
-    hasNewRequestNotifications
+    hasNewRequestNotifications,
+    markDonationNotificationsAsRead,
+    markRequestNotificationsAsRead,
   } = useContext(ProfileStatusContext) || {};
 
   const profilePath = "/mi-perfil";
@@ -39,7 +36,9 @@ const Header = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) setIsProfileMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -63,29 +62,8 @@ const Header = () => {
     displayLocationTextShort = latLngText;
   }
 
-  const handleMarkAsRead = async () => {
-    if (unreadCount === 0) return;
-    try {
-        const token = await getToken();
-        const response = await fetch(`${API_BASE_URL}/api/notificacion/marcar-como-leidas`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        // Solo si el backend confirma que las marcó como leídas,
-        // actualizamos el estado en el frontend.
-        if (response.ok) {
-            setNotifications(prevNotifications => 
-                prevNotifications.map(notif => ({ ...notif, leida: true }))
-            );
-        } else {
-            // Opcional: mostrar un toast de error si falla
-            console.error("El servidor no pudo marcar las notificaciones como leídas.");
-        }
-    } catch (error) {
-        console.error("Error de red al marcar notificaciones como leídas:", error);
-    }
-  };
+  // --- CORRECCIÓN: Se elimina la función 'handleMarkAsRead' que no se usaba correctamente ---
+  // La lógica ahora está directamente en los onClick de los enlaces del menú.
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -123,11 +101,9 @@ const Header = () => {
                 <UserButton afterSignOutUrl="/" />
                 {!isLoadingUserProfile && isComplete && (
                   <button
-                     onClick={() => {
-                        toggleProfileMenu();
-                    }}
-                    className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100"
-                    aria-label="Opciones de perfil"
+                     onClick={toggleProfileMenu}
+                     className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100"
+                     aria-label="Opciones de perfil"
                   >
                     <MoreVertical size={22} />
                     {unreadCount > 0 && (
@@ -143,7 +119,6 @@ const Header = () => {
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
                     <div className="py-1">
                       
-                      {/* El Panel de Admin se muestra solo para el rol ADMIN */}
                       {currentUserRole === 'ADMIN' && (
                         <>
                           <Link to="/admin" className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left font-semibold" onClick={toggleProfileMenu}>
@@ -153,22 +128,19 @@ const Header = () => {
                         </>
                       )}
                       
-                      {/* "Ir a mi perfil" se muestra para TODOS los roles */}
                       <Link to={profilePath} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onClick={toggleProfileMenu}>
                         Ir a mi perfil
                       </Link>
                       
-                      {/* "Mis donaciones" se muestra para LOCAL, GENERAL */}
-                      {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' ) && (
+                      {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
                         <Link
                           to={misDonacionesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
                           onClick={() => {
-                            toggleProfileMenu(); // Cierra el menú
-                            markDonationNotificationsAsRead(); // Marca las notificaciones como leídas
+                            if (markDonationNotificationsAsRead) markDonationNotificationsAsRead();
+                            toggleProfileMenu();
                           }}
                         >
-
                           <span>Mis donaciones</span>
                           {hasNewDonationNotifications && (
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -176,14 +148,13 @@ const Header = () => {
                         </Link>
                       )}
 
-                      {/* "Mis solicitudes" se muestra solo para GENERAL y ADMIN */}
-                      {(currentUserRole === 'GENERAL' ) && (
+                      {(currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
                         <Link
                           to={misSolicitudesPath}
                           className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
                           onClick={() => {
-                            toggleProfileMenu(); // Cierra el menú
-                            markRequestNotificationsAsRead(); // Marca las notificaciones como leídas
+                            if (markRequestNotificationsAsRead) markRequestNotificationsAsRead();
+                            toggleProfileMenu();
                           }}
                         >
                           <span>Mis solicitudes</span>
@@ -192,7 +163,6 @@ const Header = () => {
                           )}
                         </Link>
                       )}
-
                     </div>
                   </div>
                 )}
