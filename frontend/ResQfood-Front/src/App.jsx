@@ -56,21 +56,34 @@ const useGlobalState = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState([]);
 
-    const DONATION_NOTIFICATION_TYPES = ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO'];
+    const DONATION_NOTIFICATION_TYPES = [
+        'SOLICITUD',          // Cuando alguien solicita tu donación
+        'HORARIO_CONFIRMADO', // Cuando el solicitante confirma el horario que propusiste
+        'HORARIO_RECHAZADO',  // Cuando el solicitante rechaza el horario que propusiste
+        'GENERAL'             // Incluimos GENERAL por si lo usas para notificaciones al donante
+    ];
     
-    const REQUEST_NOTIFICATION_TYPES = ['APROBACION', 'RECHAZO']; 
+    // Lista de tipos de notificación que deben mostrar el punto en "Mis Solicitudes"
+    const REQUEST_NOTIFICATION_TYPES = [
+        'APROBACION', // Cuando el donante aprueba tu solicitud y propone horario
+        'RECHAZO',    // Cuando el donante rechaza tu solicitud
+        'ENTREGA'     // Cuando se completa la entrega
+    ];
+
 
     const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
 
      const hasNewDonationNotifications = useMemo(() => 
         notifications.some(n => !n.leida && DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion)), 
-        [notifications]
+        [notifications, DONATION_NOTIFICATION_TYPES]
     );
 
      const hasNewRequestNotifications = useMemo(() => 
         notifications.some(n => !n.leida && REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion)), 
-        [notifications]
+        [notifications, REQUEST_NOTIFICATION_TYPES]
     );
+
+    
 
     const updateProfileState = (userData) => {
         setProfileStatus({ 
@@ -97,7 +110,7 @@ const useGlobalState = () => {
                 DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion) ? { ...n, leida: true } : n
             )
         );
-    }, []); 
+    }, [DONATION_NOTIFICATION_TYPES]); 
 
     const markRequestNotificationsAsRead = useCallback(() => {
         setNotifications(prev =>
@@ -105,7 +118,7 @@ const useGlobalState = () => {
                 REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion) ? { ...n, leida: true } : n
             )
         );
-    }, []); 
+    }, [REQUEST_NOTIFICATION_TYPES]); 
 
         // --- useEffect CORREGIDO PARA UNA LIMPIEZA ROBUSTA ---
     useEffect(() => {
