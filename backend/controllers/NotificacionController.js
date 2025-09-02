@@ -1,6 +1,10 @@
 import Notificacion from '../models/Notificacion.js';
 import User from '../models/User.js';
 
+
+const DONATION_NOTIFICATION_TYPES = ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO', 'GENERAL'];
+const REQUEST_NOTIFICATION_TYPES = ['APROBACION', 'RECHAZO', 'ENTREGA'];
+
 export class NotificacionController {
     
     // Obtener todas las notificaciones del usuario logueado
@@ -23,23 +27,37 @@ export class NotificacionController {
         }
     }
 
-     static async marcarTodasComoLeidas(req, res) {
+    static async marcarSolicitudesComoLeidas(req, res) {
         try {
-            const clerkUserId = req.auth?.userId;
-            const user = await User.findOne({ clerkUserId }).select('_id');
-            if (!user) {
-                return res.status(404).json({ message: "Usuario no encontrado." });
-            }
+            const user = await User.findOne({ clerkUserId: req.auth.userId }).select('_id');
+            if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
 
-            // Usamos updateMany para actualizar todos los documentos que coincidan
+            // Ahora la condición de búsqueda usa la lista completa, incluyendo 'ENTREGA'.
             await Notificacion.updateMany(
-                { destinatarioId: user._id, leida: false }, // Condición: solo las no leídas del usuario
-                { $set: { leida: true, fechaLeida: new Date() } } // Acción: marcar como leídas
+                { destinatarioId: user._id, leida: false, tipoNotificacion: { $in: REQUEST_NOTIFICATION_TYPES } },
+                { $set: { leida: true, fechaLeida: new Date() } }
             );
-
-            res.status(200).json({ message: 'Notificaciones marcadas como leídas.' });
+            res.status(200).json({ message: 'Notificaciones de solicitudes marcadas como leídas.' });
         } catch (error) {
-            console.error("Error al marcar notificaciones como leídas:", error);
+            console.error("Error al marcar notificaciones de solicitudes:", error);
+            res.status(500).json({ message: "Error interno al marcar notificaciones." });
+        }
+    }
+    
+    // --- FUNCIÓN CORREGIDA ---
+    static async marcarDonacionesComoLeidas(req, res) {
+        try {
+            const user = await User.findOne({ clerkUserId: req.auth.userId }).select('_id');
+            if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
+
+            // La condición de búsqueda usa la lista completa para las donaciones.
+            await Notificacion.updateMany(
+                { destinatarioId: user._id, leida: false, tipoNotificacion: { $in: DONATION_NOTIFICATION_TYPES } },
+                { $set: { leida: true, fechaLeida: new Date() } }
+            );
+            res.status(200).json({ message: 'Notificaciones de donaciones marcadas como leídas.' });
+        } catch (error) {
+            console.error("Error al marcar notificaciones de donaciones:", error);
             res.status(500).json({ message: "Error interno al marcar notificaciones." });
         }
     }
