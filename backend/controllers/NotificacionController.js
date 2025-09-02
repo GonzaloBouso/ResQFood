@@ -23,33 +23,23 @@ export class NotificacionController {
         }
     }
 
-      static async marcarDonacionesComoLeidas(req, res) {
+     static async marcarTodasComoLeidas(req, res) {
         try {
-            const user = await User.findOne({ clerkUserId: req.auth.userId }).select('_id');
-            if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
+            const clerkUserId = req.auth?.userId;
+            const user = await User.findOne({ clerkUserId }).select('_id');
+            if (!user) {
+                return res.status(404).json({ message: "Usuario no encontrado." });
+            }
 
+            // Usamos updateMany para actualizar todos los documentos que coincidan
             await Notificacion.updateMany(
-                { destinatarioId: user._id, leida: false, tipoNotificacion: { $in: DONATION_NOTIFICATION_TYPES } },
-                { $set: { leida: true, fechaLeida: new Date() } }
+                { destinatarioId: user._id, leida: false }, // Condición: solo las no leídas del usuario
+                { $set: { leida: true, fechaLeida: new Date() } } // Acción: marcar como leídas
             );
-            res.status(200).json({ message: 'Notificaciones de donaciones marcadas como leídas.' });
-        } catch (error) {
-            res.status(500).json({ message: "Error interno al marcar notificaciones." });
-        }
-    }
 
-    // --- NUEVA FUNCIÓN AÑADIDA ---
-    static async marcarSolicitudesComoLeidas(req, res) {
-        try {
-            const user = await User.findOne({ clerkUserId: req.auth.userId }).select('_id');
-            if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
-
-            await Notificacion.updateMany(
-                { destinatarioId: user._id, leida: false, tipoNotificacion: { $in: REQUEST_NOTIFICATION_TYPES } },
-                { $set: { leida: true, fechaLeida: new Date() } }
-            );
-            res.status(200).json({ message: 'Notificaciones de solicitudes marcadas como leídas.' });
+            res.status(200).json({ message: 'Notificaciones marcadas como leídas.' });
         } catch (error) {
+            console.error("Error al marcar notificaciones como leídas:", error);
             res.status(500).json({ message: "Error interno al marcar notificaciones." });
         }
     }
