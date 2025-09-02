@@ -27,24 +27,36 @@ export class NotificacionController {
         }
     }
 
+     // --- FUNCIÓN CON LOGS DE DEPURACIÓN ---
     static async marcarSolicitudesComoLeidas(req, res) {
+        console.log("--- INICIANDO marcarSolicitudesComoLeidas ---");
         try {
             const clerkUserId = req.auth?.userId;
             if (!clerkUserId) {
+                console.log("Error: No se encontró clerkUserId en req.auth");
                 return res.status(401).json({ message: "Usuario no autenticado." });
             }
+            console.log(`Buscando usuario con clerkUserId: ${clerkUserId}`);
             const user = await User.findOne({ clerkUserId }).select('_id');
             if (!user) {
+                console.log("Error: Usuario no encontrado en la base de datos.");
                 return res.status(404).json({ message: "Usuario no encontrado." });
             }
+            console.log(`Usuario encontrado. ID: ${user._id}. Tipos a actualizar:`, REQUEST_NOTIFICATION_TYPES);
 
-            await Notificacion.updateMany(
+            const result = await Notificacion.updateMany(
                 { destinatarioId: user._id, leida: false, tipoNotificacion: { $in: REQUEST_NOTIFICATION_TYPES } },
                 { $set: { leida: true, fechaLeida: new Date() } }
             );
+
+            console.log("Resultado de updateMany:", result);
+            console.log(`Se encontraron ${result.matchedCount} notificaciones y se modificaron ${result.modifiedCount}.`);
+            console.log("--- FINALIZANDO marcarSolicitudesComoLeidas ---");
+            
             res.status(200).json({ message: 'Notificaciones de solicitudes marcadas como leídas.' });
         } catch (error) {
-            console.error("Error al marcar notificaciones de solicitudes:", error);
+            console.error("--- ERROR FATAL en marcarSolicitudesComoLeidas ---");
+            console.error(error);
             res.status(500).json({ message: "Error interno al marcar notificaciones." });
         }
     }

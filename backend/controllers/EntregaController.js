@@ -196,7 +196,12 @@ export class EntregaController {
 
             await entrega.save({ session });
             await receptor.save({ session });
+            
+            console.log("--- Creando Notificación de ENTREGA ---");
+            console.log("Datos de la notificación a guardar:", notificacion);
+            
             await notificacion.save({ session });
+            console.log("Notificación de ENTREGA guardada con éxito.");
 
             const io = getIoInstance();
             const receptorSocketId = getSocketIdForUser(receptor.clerkUserId);
