@@ -18,7 +18,7 @@ import EntregaRoutes from './routes/EntregaRoutes.js';
 import ReporteRoutes from './routes/ReporteRoutes.js';
 import BitacoraRoutes from './routes/BitacoraAdminRoutes.js';
 import VoluntarioRoutes from './routes/VoluntarioRoutes.js';
-import ContactoRoutes from './routes/ContactoRoutes.js'
+import ContactoRoutes from './routes/ContactoRoutes.js';
 import { handleClerkWebhook } from './controllers/webhookController.js';
 
 if (!process.env.CLERK_SECRET_KEY) {
@@ -29,34 +29,46 @@ if (!process.env.CLERK_SECRET_KEY) {
 const app = express();
 const httpServer = createServer(app);
 
+// --- CONFIGURACIÓN DE CORS A PRUEBA DE BALAS (LA SOLUCIÓN) ---
 
+// 1. Define las opciones de CORS de forma explícita y robusta.
 const corsOptions = {
   origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], 
-  allowedHeaders: ['Content-Type', 'Authorization'], 
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // ¡Se añade OPTIONS!
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 };
 
+// 2. Habilita el manejo de peticiones "preflight" para TODAS las rutas.
+// Esto soluciona el error 'Response to preflight request doesn't pass access control check'.
 app.options('*', cors(corsOptions));
 
+// 3. Aplica el middleware de CORS a todas las peticiones subsecuentes.
 app.use(cors(corsOptions));
 
+// 4. Configura Socket.IO con las mismas opciones de CORS para consistencia.
 const io = new SocketIOServer(httpServer, {
     cors: corsOptions
 });
 
+// Pasamos la instancia 'io' ya creada a nuestro archivo 'socket.js'
 configureSocket(io);
 
+// --- FIN DE LA CONFIGURACIÓN DE CORS ---
 
+// Ruta especial para el webhook de Clerk (debe ir antes de express.json())
 app.post('/api/webhooks/clerk', express.raw({ type: 'application/json' }), handleClerkWebhook);
 
+// Middlewares de parseo de JSON para el resto de las rutas de la API.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// --- CONEXIÓN A LA BASE DE DATOS ---
 connectDB();
 
 const PORT = process.env.PORT || 5000;
 
+// --- RUTAS DE LA APLICACIÓN (sin cambios) ---
 app.get('/healthz', (req, res) => {
     res.status(200).send('OK');
 });
