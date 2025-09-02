@@ -23,28 +23,24 @@ export class NotificacionController {
         }
     }
 
-    static async marcarNotificacionesComoLeidas(req, res) {
+     static async marcarTodasComoLeidas(req, res) {
         try {
             const clerkUserId = req.auth?.userId;
-            const user = await User.findOne({ clerkUserId });
-
+            const user = await User.findOne({ clerkUserId }).select('_id');
             if (!user) {
                 return res.status(404).json({ message: "Usuario no encontrado." });
             }
 
-            // Actualiza todas las notificaciones NO leídas de este usuario a LEÍDAS
-            const resultado = await Notificacion.updateMany(
-                { destinatarioId: user._id, leida: false },
-                { $set: { leida: true } }
+            // Usamos updateMany para actualizar todos los documentos que coincidan
+            await Notificacion.updateMany(
+                { destinatarioId: user._id, leida: false }, // Condición: solo las no leídas del usuario
+                { $set: { leida: true, fechaLeida: new Date() } } // Acción: marcar como leídas
             );
 
-            res.status(200).json({ 
-                message: 'Notificaciones marcadas como leídas.',
-                modifiedCount: resultado.modifiedCount // Devuelve cuántas se actualizaron
-            });
+            res.status(200).json({ message: 'Notificaciones marcadas como leídas.' });
         } catch (error) {
             console.error("Error al marcar notificaciones como leídas:", error);
-            res.status(500).json({ message: "Error interno del servidor." });
+            res.status(500).json({ message: "Error interno al marcar notificaciones." });
         }
     }
 }
