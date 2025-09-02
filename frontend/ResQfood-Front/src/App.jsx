@@ -40,7 +40,6 @@ const RootRedirector = () => {
   return <HomePageUnregistered />;
 };
 
-// --- Hook de estado global CORREGIDO Y COMPLETO ---
 const useGlobalState = () => {
     const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
     
@@ -56,34 +55,32 @@ const useGlobalState = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [notifications, setNotifications] = useState([]);
 
-    const DONATION_NOTIFICATION_TYPES = [
-        'SOLICITUD',          // Cuando alguien solicita tu donación
-        'HORARIO_CONFIRMADO', // Cuando el solicitante confirma el horario que propusiste
-        'HORARIO_RECHAZADO',  // Cuando el solicitante rechaza el horario que propusiste
-        'GENERAL'             // Incluimos GENERAL por si lo usas para notificaciones al donante
-    ];
+    // --- Definición de los tipos de notificación ---
+    const DONATION_NOTIFICATION_TYPES = useMemo(() => [
+        'SOLICITUD',
+        'HORARIO_CONFIRMADO',
+        'HORARIO_RECHAZado',
+        'GENERAL'
+    ], []);
     
-    // Lista de tipos de notificación que deben mostrar el punto en "Mis Solicitudes"
-    const REQUEST_NOTIFICATION_TYPES = [
-        'APROBACION', // Cuando el donante aprueba tu solicitud y propone horario
-        'RECHAZO',    // Cuando el donante rechaza tu solicitud
-        'ENTREGA'     // Cuando se completa la entrega
-    ];
+    const REQUEST_NOTIFICATION_TYPES = useMemo(() => [
+        'APROBACION',
+        'RECHAZO',
+        'ENTREGA'
+    ], []);
 
-
+    // --- Lógica de indicadores (sin cambios) ---
     const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
 
-     const hasNewDonationNotifications = useMemo(() => 
+    const hasNewDonationNotifications = useMemo(() => 
         notifications.some(n => !n.leida && DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion)), 
         [notifications, DONATION_NOTIFICATION_TYPES]
     );
 
-     const hasNewRequestNotifications = useMemo(() => 
+    const hasNewRequestNotifications = useMemo(() => 
         notifications.some(n => !n.leida && REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion)), 
         [notifications, REQUEST_NOTIFICATION_TYPES]
     );
-
-    
 
     const updateProfileState = (userData) => {
         setProfileStatus({ 
@@ -103,29 +100,50 @@ const useGlobalState = () => {
         });
     }, []);
 
-    // --- FUNCIONES NUEVAS AÑADIDAS ---
-    const markDonationNotificationsAsRead = useCallback(() => {
+    // --- FUNCIONES CORREGIDAS PARA SINCRONIZAR CON EL BACKEND ---
+    const markDonationNotificationsAsRead = useCallback(async () => {
+        // Actualización optimista: cambia el estado local inmediatamente
         setNotifications(prev => 
             prev.map(n => 
                 DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion) ? { ...n, leida: true } : n
             )
         );
-    }, [DONATION_NOTIFICATION_TYPES]); 
+        
+        // En segundo plano, actualiza la base de datos
+        try {
+            const token = await getToken();
+            await fetch(`${API_BASE_URL}/api/notificacion/marcar-donaciones-leidas`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        } catch (error) {
+            console.error("Fallo al sincronizar 'donaciones leídas' con el servidor:", error);
+        }
+    }, [getToken, DONATION_NOTIFICATION_TYPES]);
 
-    const markRequestNotificationsAsRead = useCallback(() => {
+    const markRequestNotificationsAsRead = useCallback(async () => {
+        // Actualización optimista
         setNotifications(prev =>
             prev.map(n =>
                 REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion) ? { ...n, leida: true } : n
             )
         );
-    }, [REQUEST_NOTIFICATION_TYPES]); 
+        
+        // Sincronización con el backend
+        try {
+            const token = await getToken();
+            await fetch(`${API_BASE_URL}/api/notificacion/marcar-solicitudes-leidas`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        } catch (error) {
+            console.error("Fallo al sincronizar 'solicitudes leídas' con el servidor:", error);
+        }
+    }, [getToken, REQUEST_NOTIFICATION_TYPES]);
 
-        // --- useEffect CORREGIDO PARA UNA LIMPIEZA ROBUSTA ---
     useEffect(() => {
         if (!isAuthLoaded) return; 
-
-        // --- FUNCIÓN DE LIMPIEZA ---
-        // Centraliza la lógica para borrar todos los datos de un usuario.
+        
         const resetUserState = () => {
             updateProfileState(null);
             setActiveSearchLocation(null);
@@ -133,28 +151,22 @@ const useGlobalState = () => {
         };
         
         const fetchUserProfileFunction = async () => {
-            // Si el usuario cierra sesión, limpiamos todo y terminamos.
             if (!isSignedIn) {
                 resetUserState();
                 return;
             }
 
-            // --- LA CORRECCIÓN CLAVE ---
-            // Si es un nuevo inicio de sesión, limpiamos el estado anterior ANTES de cargar el nuevo.
             resetUserState(); 
             setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
             
             try {
                 const token = await getToken();
-                
-                // 1. Primero, intentamos obtener el perfil. Esto es crítico.
                 const profileResponse = await fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 
                 if (profileResponse.status === 404) {
                     setProfileStatus({ isLoadingUserProfile: false, isComplete: false, currentUserRole: null, currentUserDataFromDB: null });
                     return;
                 }
-                
                 if (!profileResponse.ok) {
                   const errorData = await profileResponse.json();
                   throw new Error(errorData.message || "Error al obtener el perfil.");
@@ -163,7 +175,6 @@ const useGlobalState = () => {
                 const profileData = await profileResponse.json();
                 updateProfileState(profileData.user);
 
-                // 2. Después, intentamos obtener las notificaciones. Esto NO es crítico.
                 try {
                     const notificationsResponse = await fetch(`${API_BASE_URL}/api/notificacion`, { headers: { 'Authorization': `Bearer ${token}` } });
                     if (notificationsResponse.ok) {
@@ -176,17 +187,15 @@ const useGlobalState = () => {
                     console.error("Error al obtener notificaciones:", notifError);
                 }
 
-            } catch (error) { // Este catch ahora solo se ocupa de errores críticos del perfil.
+            } catch (error) {
                 console.error("Error crítico en fetchUserProfileFunction:", error.message);
-                // Si el perfil falla, reseteamos todo el estado.
                 resetUserState();
             }
         };
 
         fetchUserProfileFunction();
-    }, [isAuthLoaded, isSignedIn, getToken]);
+    }, [isAuthLoaded, isSignedIn, getToken, updateProfileState]); // Se añadió updateProfileState a las dependencias
 
-    // Se retornan todos los valores, incluyendo las nuevas funciones
     return {
         ...profileStatus,
         updateProfileState,
@@ -220,9 +229,6 @@ const AppContent = () => {
   const appStateHook = useGlobalState();
   useSocket(appStateHook.addNotification);
 
-  // --- CORRECCIÓN #2: Simplificar las dependencias de useMemo ---
-  // Pasar el objeto 'appStateHook' completo es suficiente y más limpio.
-  // React detectará cambios en sus propiedades internas.
   const contextValueForProvider = useMemo(() => appStateHook, [appStateHook]);
 
   return (
