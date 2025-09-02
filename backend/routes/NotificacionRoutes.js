@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.get('/', requireAuth, NotificacionController.getMisNotificaciones);
 
-router.patch('/marcar-como-leidas', requireAuth, NotificacionController.marcarNotificacionesComoLeidas);
+router.patch('/marcar-como-leidas', requireAuth, NotificacionController.marcarTodasComoLeidas);
 
 export default router;
