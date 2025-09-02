@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Donacion from '../models/Donacion.js';
 import User from '../models/User.js';
 import Solicitud from '../models/Solicitud.js';
+import Entrega from '../models/Entrega.js';
 import { createDonacionSchema } from '../validations/DonacionValidation.js';
 import { z } from 'zod';
 import multer from 'multer';
@@ -290,4 +291,54 @@ export class DonacionController {
             console.error("Error en getMisDonacionesActivasConSolicitudes:", error);
             res.status(500).json({ message: "Error interno del servidor.", errorDetails: error.message });
         }
-    }}
+    }
+    
+    static async getHistorialHechas(req, res) {
+        try {
+            const donanteClerkId = req.auth?.userId;
+            const donante = await User.findOne({ clerkUserId: donanteClerkId });
+            if (!donante) return res.status(404).json({ message: "Usuario no encontrado." });
+
+            const donacionesHechas = await Donacion.find({
+                donanteId: donante._id,
+                estadoPublicacion: 'ENTREGADA' 
+            })
+            .sort({ updatedAt: -1 })
+            .populate({
+                path: 'solicitudes', 
+                match: { estadoSolicitud: 'COMPLETADA_CON_ENTREGA' }, 
+                populate: { path: 'solicitanteId', select: 'nombre' } 
+            });
+
+            res.status(200).json({ donaciones: donacionesHechas });
+        } catch (error) {
+            console.error("Error en getHistorialHechas:", error);
+            res.status(500).json({ message: "Error al obtener el historial de donaciones hechas." });
+        }
+    }
+
+    static async getHistorialRecibidas(req, res) {
+        try {
+            const receptorClerkId = req.auth?.userId;
+            const receptor = await User.findOne({ clerkUserId: receptorClerkId });
+            if (!receptor) return res.status(404).json({ message: "Usuario no encontrado." });
+            
+            
+            const entregasCompletadas = await Entrega.find({
+                receptorId: receptor._id,
+                estadoEntrega: 'COMPLETADA'
+            })
+            .sort({ updatedAt: -1 })
+            .populate({
+                path: 'donacionId', 
+                select: 'titulo imagenesUrl categoria',
+                populate: { path: 'donanteId', select: 'nombre' }
+            });
+
+            res.status(200).json({ entregas: entregasCompletadas });
+        } catch (error) {
+            console.error("Error en getHistorialRecibidas:", error);
+            res.status(500).json({ message: "Error al obtener el historial de donaciones recibidas." });
+        }
+    }
+}
