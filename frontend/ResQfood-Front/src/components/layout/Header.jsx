@@ -7,68 +7,8 @@ import { ProfileStatusContext } from '../../context/ProfileStatusContext';
 import { LocationModalWorkflow } from '../map/Location';
 import API_BASE_URL from '../../api/config';
 
-// --- NUEVO COMPONENTE INTERNO ---
-// Extraemos el menú a su propio componente. Esto asegura que cada vez que se abre,
-// se renderiza con los props más frescos del contexto, evitando mostrar un estado "viejo".
-const ProfileMenu = ({
-  currentUserRole,
-  hasNewDonationNotifications,
-  hasNewRequestNotifications,
-  onLinkClick,
-  profilePath,
-  misDonacionesPath,
-  misSolicitudesPath
-}) => {
-  return (
-    <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
-      <div className="py-1">
-        
-        {currentUserRole === 'ADMIN' && (
-          <>
-            <Link to="/admin" className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left font-semibold" onClick={() => onLinkClick()}>
-              Panel de Admin
-            </Link>
-            <div className="border-t border-gray-100 my-1"></div>
-          </>
-        )}
-        
-        <Link to={profilePath} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => onLinkClick()}>
-          Ir a mi perfil
-        </Link>
-        
-        {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
-          <Link
-            to={misDonacionesPath}
-            className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
-            onClick={() => onLinkClick('donations')}
-          >
-            <span>Mis donaciones</span>
-            {hasNewDonationNotifications && (
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            )}
-          </Link>
-        )}
-
-        {(currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
-          <Link
-            to={misSolicitudesPath}
-            className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
-            onClick={() => onLinkClick('requests')}
-          >
-            <span>Mis solicitudes</span>
-            {hasNewRequestNotifications && (
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            )}
-          </Link>
-        )}
-
-      </div>
-    </div>
-  );
-};
-
-
 const Header = () => {
+  const { getToken } = useAuth(); 
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -81,6 +21,7 @@ const Header = () => {
     setActiveSearchLocation,
     searchQuery,
     setSearchQuery,
+    setNotifications,
     unreadCount,
     hasNewDonationNotifications,
     hasNewRequestNotifications,
@@ -97,7 +38,9 @@ const Header = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) setIsProfileMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -121,15 +64,28 @@ const Header = () => {
     displayLocationTextShort = latLngText;
   }
 
-  // --- FUNCIÓN UNIFICADA PARA MANEJAR CLICS DEL MENÚ ---
-  const handleLinkClick = (type) => {
-    if (type === 'donations' && markDonationNotificationsAsRead) {
-      markDonationNotificationsAsRead();
-    } else if (type === 'requests' && markRequestNotificationsAsRead) {
-      markRequestNotificationsAsRead();
-    }
-    toggleProfileMenu(); // Cierra el menú después de cualquier clic
-  };
+ const handleMarkAsRead = async () => {
+        // Si no hay nada que marcar, no hacemos nada
+        if (unreadCount === 0) return;
+
+        // 1. Actualización optimista: cambiamos el estado local INMEDIATAMENTE
+        //    para que el usuario vea el cambio al instante.
+        if (setNotifications) {
+            setNotifications(prev => prev.map(n => ({ ...n, leida: true })));
+        }
+
+        // 2. En segundo plano, le decimos al backend que actualice la base de datos.
+        try {
+            const token = await getToken();
+            await fetch(`${API_BASE_URL}/api/notificacion/marcar-como-leidas`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        } catch (error) {
+            console.error("Fallo al sincronizar el estado 'leído' con el servidor:", error);
+            // Opcional: podrías revertir el estado local si la llamada falla
+        }
+    };
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -167,7 +123,11 @@ const Header = () => {
                 <UserButton afterSignOutUrl="/" />
                 {!isLoadingUserProfile && isComplete && (
                   <button
-                     onClick={toggleProfileMenu}
+                     onClick={() => {
+                        toggleProfileMenu();
+                        // Se llama a la función al abrir el menú
+                        handleMarkAsRead(); 
+                    }}
                      className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100"
                      aria-label="Opciones de perfil"
                   >
@@ -182,15 +142,55 @@ const Header = () => {
                 )}
 
                 {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
-                  <ProfileMenu
-                    currentUserRole={currentUserRole}
-                    hasNewDonationNotifications={hasNewDonationNotifications}
-                    hasNewRequestNotifications={hasNewRequestNotifications}
-                    onLinkClick={handleLinkClick}
-                    profilePath={profilePath}
-                    misDonacionesPath={misDonacionesPath}
-                    misSolicitudesPath={misSolicitudesPath}
-                  />
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
+                    <div className="py-1">
+                      
+                      {currentUserRole === 'ADMIN' && (
+                        <>
+                          <Link to="/admin" className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left font-semibold" onClick={toggleProfileMenu}>
+                            Panel de Admin
+                          </Link>
+                          <div className="border-t border-gray-100 my-1"></div>
+                        </>
+                      )}
+                      
+                      <Link to={profilePath} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onClick={toggleProfileMenu}>
+                        Ir a mi perfil
+                      </Link>
+                      
+                      {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
+                        <Link
+                          to={misDonacionesPath}
+                          className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
+                          onClick={() => {
+                            if (markDonationNotificationsAsRead) markDonationNotificationsAsRead();
+                            toggleProfileMenu();
+                          }}
+                        >
+                          <span>Mis donaciones</span>
+                          {hasNewDonationNotifications && (
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                          )}
+                        </Link>
+                      )}
+
+                      {(currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
+                        <Link
+                          to={misSolicitudesPath}
+                          className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
+                          onClick={() => {
+                            if (markRequestNotificationsAsRead) markRequestNotificationsAsRead();
+                            toggleProfileMenu();
+                          }}
+                        >
+                          <span>Mis solicitudes</span>
+                          {hasNewRequestNotifications && (
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                          )}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </SignedIn>
