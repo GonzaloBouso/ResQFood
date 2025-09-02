@@ -123,6 +123,14 @@ export class SolicitudController {
                 throw new Error('El formato de fecha u hora proporcionado es inválido.');
             }
 
+            // --- CORRECCIÓN CLAVE AÑADIDA ---
+            // Se marca la notificación de 'SOLICITUD' original como leída.
+            await Notificacion.updateMany(
+                { referenciaId: solicitudAceptada._id, tipoNotificacion: 'SOLICITUD' },
+                { $set: { leida: true, fechaLeida: new Date() } },
+                { session }
+            );
+
             const nuevaEntrega = new Entrega({
                 solicitudId: solicitudAceptada._id, 
                 donacionId: solicitudAceptada.donacionId, 
@@ -202,7 +210,7 @@ export class SolicitudController {
         
     static async rechazarSolicitud(req, res){
         const {solicitudId} = req.params;
-        const motivoRechazo = req.body?.motivoRechazo; // Forma segura de leer
+        const motivoRechazo = req.body?.motivoRechazo;
         const donanteClerkId = req.auth?.userId;
         const session = await mongoose.startSession();
         session.startTransaction();

@@ -30,6 +30,14 @@ export class EntregaController {
                 return res.status(400).json({ message: 'Esta propuesta ya no es válida.' });
             }
 
+            // --- CORRECCIÓN CLAVE AÑADIDA ---
+            // Se marca la notificación de 'APROBACION' que recibió el solicitante como leída.
+            await Notificacion.updateMany(
+                { referenciaId: entrega._id, tipoNotificacion: 'APROBACION' },
+                { $set: { leida: true, fechaLeida: new Date() } },
+                { session }
+            );
+
             entrega.horarioEntregaConfirmadoSolicitante = true;
             entrega.fechaHorarioConfirmado = new Date();
             entrega.estadoEntrega = 'LISTA_PARA_RETIRO';
@@ -78,7 +86,6 @@ export class EntregaController {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-            // 1. Buscar todos los documentos necesarios al principio
             const entrega = await Entrega.findById(entregaId).session(session);
             if (!entrega) { throw new Error('Registro de entrega no encontrado.'); }
             
@@ -93,21 +100,19 @@ export class EntregaController {
             const donante = await User.findById(entrega.donanteId).session(session);
             if (!donante) { throw new Error('El donante asociado ya no existe.'); }
 
-            // 2. Realizar todas las actualizaciones de estado
             entrega.estadoEntrega = 'CANCELADA_POR_SOLICITANTE';
             entrega.fechaCancelada = new Date();
             
             await Solicitud.findByIdAndUpdate(entrega.solicitudId, { estadoSolicitud: 'CANCELADA_RECEPTOR' }, { session });
             
-            donacion.estadoPublicacion = 'DISPONIBLE'; // Volver a poner la donación como DISPONIBLE
+            donacion.estadoPublicacion = 'DISPONIBLE';
             
             await entrega.save({ session });
             await donacion.save({ session });
             
-            // 3. Crear y enviar la notificación de forma segura
             const notificacion = new Notificacion({
                 destinatarioId: donante._id,
-                tipoNotificacion: 'HORARIO_RECHAZADO', // Usando un tipo más específico
+                tipoNotificacion: 'HORARIO_RECHAZADO',
                 mensaje: `${receptor.nombre} no pudo aceptar el horario para "${donacion.titulo}". La donación vuelve a estar disponible.`,
                 referenciaId: entrega.solicitudId,
                 tipoReferencia: 'Solicitud',
@@ -121,7 +126,6 @@ export class EntregaController {
                 io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject());
             }
 
-            // 4. Confirmar la transacción
             await session.commitTransaction();
             res.status(200).json({ message: 'Propuesta de horario rechazada. La donación vuelve a estar disponible.' });
         } catch (error) {
@@ -134,7 +138,6 @@ export class EntregaController {
     }
 
     static async completarEntrega(req, res) {
-        // ... (Tu código original para esta función es correcto y no necesita cambios)
         const { entregaId } = req.params;
         const { codigoConfirmacion } = req.body;
         const donanteClerkId = req.auth?.userId;
@@ -162,6 +165,14 @@ export class EntregaController {
                 await session.abortTransaction(); session.endSession();
                 return res.status(400).json({ message: 'La entrega no está lista para ser completada.' });
             }
+
+            // --- CORRECCIÓN CLAVE AÑADIDA ---
+            // Se marca la notificación de 'HORARIO_CONFIRMADO' que recibió el donante como leída.
+            await Notificacion.updateMany(
+                { referenciaId: entrega._id, tipoNotificacion: 'HORARIO_CONFIRMADO' },
+                { $set: { leida: true, fechaLeida: new Date() } },
+                { session }
+            );
             
             entrega.estadoEntrega = 'COMPLETADA';
             entrega.fechaCompletada = new Date();
