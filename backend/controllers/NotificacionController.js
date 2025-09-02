@@ -29,10 +29,15 @@ export class NotificacionController {
 
     static async marcarSolicitudesComoLeidas(req, res) {
         try {
-            const user = await User.findOne({ clerkUserId: req.auth.userId }).select('_id');
-            if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
+            const clerkUserId = req.auth?.userId;
+            if (!clerkUserId) {
+                return res.status(401).json({ message: "Usuario no autenticado." });
+            }
+            const user = await User.findOne({ clerkUserId }).select('_id');
+            if (!user) {
+                return res.status(404).json({ message: "Usuario no encontrado." });
+            }
 
-            // Ahora la condición de búsqueda usa la lista completa, incluyendo 'ENTREGA'.
             await Notificacion.updateMany(
                 { destinatarioId: user._id, leida: false, tipoNotificacion: { $in: REQUEST_NOTIFICATION_TYPES } },
                 { $set: { leida: true, fechaLeida: new Date() } }
@@ -44,13 +49,18 @@ export class NotificacionController {
         }
     }
     
-    // --- FUNCIÓN CORREGIDA ---
+    // --- FUNCIÓN CORREGIDA Y ROBUSTA ---
     static async marcarDonacionesComoLeidas(req, res) {
         try {
-            const user = await User.findOne({ clerkUserId: req.auth.userId }).select('_id');
-            if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
+            const clerkUserId = req.auth?.userId;
+            if (!clerkUserId) {
+                return res.status(401).json({ message: "Usuario no autenticado." });
+            }
+            const user = await User.findOne({ clerkUserId }).select('_id');
+            if (!user) {
+                return res.status(404).json({ message: "Usuario no encontrado." });
+            }
 
-            // La condición de búsqueda usa la lista completa para las donaciones.
             await Notificacion.updateMany(
                 { destinatarioId: user._id, leida: false, tipoNotificacion: { $in: DONATION_NOTIFICATION_TYPES } },
                 { $set: { leida: true, fechaLeida: new Date() } }
