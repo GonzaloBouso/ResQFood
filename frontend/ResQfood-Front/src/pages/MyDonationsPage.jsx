@@ -42,10 +42,7 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
 
 const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
     const [codigo, setCodigo] = useState('');
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onConfirm(codigo);
-    };
+    const handleSubmit = (e) => { e.preventDefault(); onConfirm(codigo); };
     return (
         <form onSubmit={handleSubmit} className="p-3 bg-blue-50 border-t flex items-center gap-2">
             <input type="text" value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())} placeholder="Ingresar código del receptor" className="flex-grow p-1 border rounded text-sm uppercase tracking-wider" maxLength="6" required />
@@ -80,7 +77,6 @@ const MyDonationsPage = () => {
 
     const handleAcceptAndPropose = async (solicitudId, propuesta) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Enviando propuesta...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/aceptar-y-proponer`, {
@@ -92,38 +88,23 @@ const MyDonationsPage = () => {
                 const errorPayload = await response.json().catch(() => ({ message: 'Error desconocido' }));
                 throw new Error(errorPayload.message);
             }
-            
-            toast.dismiss(toastId);
-            toast.success('¡Propuesta enviada!');
+            console.log('¡Propuesta enviada!');
             
             if (setNotifications) {
                 setNotifications(prev => prev.map(n => (n.referenciaId === solicitudId && n.tipoNotificacion === 'SOLICITUD') ? { ...n, leida: true } : n));
             }
 
             setSolicitudParaAceptar(null);
-            setTimeout(() => fetchDonations(), 50); // Delay para prevenir race condition
+            fetchDonations();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            alert(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleReject = (solicitud) => {
-        toast((t) => (
-            <div className="flex flex-col items-center gap-3 p-2">
-                <span className="text-center font-semibold">¿Rechazar la solicitud de {solicitud?.solicitanteId?.nombre}?</span>
-                <div className="flex gap-3 mt-2">
-                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button onClick={() => { toast.dismiss(t.id); executeReject(solicitud?._id); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Rechazar</button>
-                </div>
-            </div>
-        ), { duration: 6000 });
-    };
-
     const executeReject = async (solicitudId) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Rechazando...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/rechazar`, {
@@ -135,21 +116,23 @@ const MyDonationsPage = () => {
                 const errorData = await response.json().catch(() => ({ message: 'No se pudo procesar la respuesta.' }));
                 throw new Error(errorData.message || 'Falló el rechazo de la solicitud.');
             }
-
-            toast.dismiss(toastId);
-            toast.success('Solicitud rechazada.');
-            
-            setTimeout(() => fetchDonations(), 50);
+            console.log('Solicitud rechazada.');
+            fetchDonations();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            alert(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+    
+    const handleReject = (solicitud) => {
+        if (window.confirm(`¿Rechazar la solicitud de ${solicitud?.solicitanteId?.nombre}?`)) {
+            executeReject(solicitud?._id);
         }
     };
 
     const handleCompleteDelivery = async (entregaId, codigo) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Confirmando entrega...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/completar`, {
@@ -161,13 +144,10 @@ const MyDonationsPage = () => {
                 const errorData = await response.json();
                 throw new Error(errorData.message);
             }
-            
-            toast.dismiss(toastId);
-            toast.success('¡Entrega completada con éxito!');
-            
-            setTimeout(() => fetchDonations(), 50);
+            console.log('¡Entrega completada con éxito!');
+            fetchDonations();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            alert(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -177,7 +157,7 @@ const MyDonationsPage = () => {
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
 
-    if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
+    if (isLoading) return <div className="text-center py-20"><span>Cargando...</span></div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
 
     return (
@@ -202,11 +182,11 @@ const MyDonationsPage = () => {
                                             'bg-gray-100 text-gray-800'
                                         }`}>{donacion.estadoPublicacion?.replace('-', ' ')}</div>
                                     </div>
-                                    <ChevronDown className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} size={20} />
+                                    <span className={`transition-transform inline-block ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
                                 </div>
                                 
                                 {isExpanded && (
-                                    <div className="animate-fade-in-up">
+                                    <div>
                                         {donacion.estadoPublicacion === 'DISPONIBLE' && (
                                             <SolicitudesList solicitudes={solicitudes} onAcceptClick={setSolicitudParaAceptar} onReject={handleReject} isSubmitting={isSubmitting} />
                                         )}
@@ -217,16 +197,16 @@ const MyDonationsPage = () => {
                                                 
                                                 {entregaActiva.estadoEntrega === 'PENDIENTE_CONFIRMACION_SOLICITANTE' && (
                                                     <div className="flex items-center gap-2 text-yellow-700 bg-yellow-100 p-2 rounded-md">
-                                                        <Clock size={16} />
-                                                        <span className="text-xs font-medium">Esperando confirmación del horario por el receptor.</span>
+                                                        <span>🕒</span>
+                                                        <span className="text-xs font-medium">Esperando confirmación...</span>
                                                     </div>
                                                 )}
 
                                                 {entregaActiva.estadoEntrega === 'LISTA_PARA_RETIRO' && (
                                                     <>
                                                         <div className="flex items-center gap-2 text-green-700 bg-green-100 p-2 rounded-md mb-3">
-                                                            <CheckCircle size={16} />
-                                                            <span className="text-xs font-medium">¡Horario confirmado! Listo para el retiro.</span>
+                                                            <span>✔️</span>
+                                                            <span className="text-xs font-medium">¡Listo para el retiro!</span>
                                                         </div>
                                                         <ConfirmarEntregaForm onConfirm={(codigo) => handleCompleteDelivery(entregaActiva._id, codigo)} isSubmitting={isSubmitting} />
                                                     </>
