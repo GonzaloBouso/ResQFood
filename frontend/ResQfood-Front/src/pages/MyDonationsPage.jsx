@@ -8,16 +8,18 @@ import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {
-    // Se añade optional chaining para máxima seguridad
     const pendientes = (solicitudes || []).filter(s => s?.estadoSolicitud === 'PENDIENTE_APROBACION');
-    
+    console.log("SolicitudesList → solicitudes:", solicitudes);
+    console.log("SolicitudesList → pendientes:", pendientes);
+
     if (pendientes.length === 0) {
         const rechazoReciente = (solicitudes || []).find(s => s?.estadoSolicitud === 'CANCELADA_RECEPTOR' && s?.entregaId);
         if (rechazoReciente) {
+            console.log("SolicitudesList → rechazoReciente:", rechazoReciente);
             return (
                 <div className="p-3 bg-red-50 border-t text-red-700 text-xs flex items-center gap-2">
                     <XCircle size={16}/>
-                    <span>El horario propuesto a <strong>{rechazoReciente.solicitanteId?.nombre}</strong> fue rechazado. La donación vuelve a estar disponible.</span>
+                    <span>El horario propuesto a <strong>{rechazoReciente.solicitanteId?.nombre}</strong> fue rechazado.</span>
                 </div>
             );
         }
@@ -26,26 +28,30 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
 
     return (
         <div className="space-y-2 p-3 bg-gray-50 border-t">
-            {pendientes.map(solicitud => (
-                <div key={solicitud?._id} className="flex justify-between items-center bg-white p-2 rounded border shadow-sm">
-                    <div className="flex items-center gap-2">
-                        <img src={solicitud?.solicitanteId?.fotoDePerfilUrl} alt={solicitud?.solicitanteId?.nombre} className="w-8 h-8 rounded-full object-cover" />
-                        <span className="text-sm font-medium">{solicitud?.solicitanteId?.nombre || 'Usuario Desconocido'}</span>
+            {pendientes.map(solicitud => {
+                console.log("SolicitudesList → renderizando solicitud pendiente:", solicitud);
+                return (
+                    <div key={solicitud?._id} className="flex justify-between items-center bg-white p-2 rounded border shadow-sm">
+                        <div className="flex items-center gap-2">
+                            <img src={solicitud?.solicitanteId?.fotoDePerfilUrl} alt={solicitud?.solicitanteId?.nombre} className="w-8 h-8 rounded-full object-cover" />
+                            <span className="text-sm font-medium">{solicitud?.solicitanteId?.nombre || 'Usuario Desconocido'}</span>
+                        </div>
+                        <div className="flex gap-2">
+                            <button disabled={isSubmitting} onClick={() => { console.log("Click → Rechazar solicitud:", solicitud); onReject(solicitud); }} className="px-2 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200 disabled:opacity-50">Rechazar</button>
+                            <button disabled={isSubmitting} onClick={() => { console.log("Click → Aceptar solicitud:", solicitud); onAcceptClick(solicitud); }} className="px-2 py-1 text-xs text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">Aceptar</button>
+                        </div>
                     </div>
-                    <div className="flex gap-2">
-                        <button disabled={isSubmitting} onClick={() => onReject(solicitud)} className="px-2 py-1 text-xs text-red-700 bg-red-100 rounded hover:bg-red-200 disabled:opacity-50">Rechazar</button>
-                        <button disabled={isSubmitting} onClick={() => onAcceptClick(solicitud)} className="px-2 py-1 text-xs text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">Aceptar</button>
-                    </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 };
 
 const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
-    const [codigo, setCodigo] = useState(''); // <-- LA COMA FALTANTE HA SIDO AÑADIDA
+    const [codigo, setCodigo] = useState('');
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log("ConfirmarEntregaForm → código ingresado:", codigo);
         onConfirm(codigo);
     };
     return (
@@ -68,19 +74,29 @@ const MyDonationsPage = () => {
     const [solicitudParaAceptar, setSolicitudParaAceptar] = useState(null);
 
     const fetchDonations = useCallback(async () => {
+        console.log("fetchDonations → iniciando...");
         setIsLoading(true); setError(null);
         try {
             const token = await getToken();
+            console.log("fetchDonations → token obtenido:", token);
             const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones-activas`, { headers: { 'Authorization': `Bearer ${token}` } });
+            console.log("fetchDonations → response status:", response.status);
             if (!response.ok) throw new Error('No se pudieron cargar tus donaciones.');
             const data = await response.json();
-            setDonaciones(data.donaciones || []); // Fallback a array vacío
-        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
+            console.log("fetchDonations → data recibida:", data);
+            setDonaciones(data.donaciones || []);
+        } catch (err) {
+            console.error("fetchDonations → error:", err);
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
     }, [getToken]);
 
     useEffect(() => { fetchDonations(); }, [fetchDonations]);
 
     const handleAcceptAndPropose = async (solicitudId, propuesta) => {
+        console.log("handleAcceptAndPropose → solicitudId:", solicitudId, "propuesta:", propuesta);
         setIsSubmitting(true);
         const toastId = toast.loading('Enviando propuesta...');
         try {
@@ -90,19 +106,19 @@ const MyDonationsPage = () => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(propuesta),
             });
+            console.log("handleAcceptAndPropose → response status:", response.status);
             if (!response.ok) {
                 const errorPayload = await response.json().catch(() => ({ message: 'Error desconocido' }));
                 throw new Error(errorPayload.message);
             }
             toast.success('¡Propuesta enviada!', { id: toastId });
-            
             if (setNotifications) {
                 setNotifications(prev => prev.map(n => (n.referenciaId === solicitudId && n.tipoNotificacion === 'SOLICITUD') ? { ...n, leida: true } : n));
             }
-
             setSolicitudParaAceptar(null);
             fetchDonations();
         } catch (err) {
+            console.error("handleAcceptAndPropose → error:", err);
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
             setIsSubmitting(false);
@@ -110,6 +126,7 @@ const MyDonationsPage = () => {
     };
 
     const handleReject = (solicitud) => {
+        console.log("handleReject → solicitud:", solicitud);
         toast((t) => (
             <div className="flex flex-col items-center gap-3 p-2">
                 <span className="text-center font-semibold">¿Rechazar la solicitud de {solicitud?.solicitanteId?.nombre}?</span>
@@ -122,6 +139,7 @@ const MyDonationsPage = () => {
     };
 
     const executeReject = async (solicitudId) => {
+        console.log("executeReject → solicitudId:", solicitudId);
         setIsSubmitting(true);
         const toastId = toast.loading('Rechazando...');
         try {
@@ -131,6 +149,7 @@ const MyDonationsPage = () => {
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
             });
+            console.log("executeReject → response status:", response.status);
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ message: 'No se pudo procesar la respuesta.' }));
                 throw new Error(errorData.message || 'Falló el rechazo de la solicitud.');
@@ -138,6 +157,7 @@ const MyDonationsPage = () => {
             toast.success('Solicitud rechazada.', { id: toastId });
             fetchDonations();
         } catch (err) {
+            console.error("executeReject → error:", err);
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
             setIsSubmitting(false);
@@ -145,6 +165,7 @@ const MyDonationsPage = () => {
     };
 
     const handleCompleteDelivery = async (entregaId, codigo) => {
+        console.log("handleCompleteDelivery → entregaId:", entregaId, "codigo:", codigo);
         setIsSubmitting(true);
         const toastId = toast.loading('Confirmando entrega...');
         try {
@@ -154,6 +175,7 @@ const MyDonationsPage = () => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ codigoConfirmacion: codigo }),
             });
+            console.log("handleCompleteDelivery → response status:", response.status);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message);
@@ -161,6 +183,7 @@ const MyDonationsPage = () => {
             toast.success('¡Entrega completada con éxito!', { id: toastId });
             fetchDonations();
         } catch (err) {
+            console.error("handleCompleteDelivery → error:", err);
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
             setIsSubmitting(false);
@@ -168,11 +191,14 @@ const MyDonationsPage = () => {
     };
 
     if (!currentUserDataFromDB) {
+        console.log("MyDonationsPage → currentUserDataFromDB todavía no disponible");
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
 
     if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
+
+    console.log("MyDonationsPage → donaciones a renderizar:", donaciones);
 
     return (
         <div className="max-w-4xl mx-auto py-10 px-4">
@@ -180,14 +206,16 @@ const MyDonationsPage = () => {
             {donaciones && donaciones.length > 0 ? (
                 <div className="space-y-4">
                     {donaciones.filter(d => d).map(donacion => {
+                        console.log("Renderizando donacion:", donacion);
                         const solicitudes = donacion.solicitudes || [];
                         const isExpanded = expandedDonationId === donacion._id;
                         const solicitudAceptada = solicitudes.find(s => s?.entregaId && s?.estadoSolicitud !== 'CANCELADA_RECEPTOR');
                         const entregaActiva = solicitudAceptada?.entregaId;
+                        console.log("Donacion:", donacion._id, "→ solicitudes:", solicitudes, "solicitudAceptada:", solicitudAceptada, "entregaActiva:", entregaActiva);
 
                         return (
                             <div key={donacion._id} className="border rounded-lg bg-white shadow-sm overflow-hidden">
-                                <div className="p-4 flex justify-between items-center cursor-pointer" onClick={() => setExpandedDonationId(isExpanded ? null : donacion._id)}>
+                                <div className="p-4 flex justify-between items-center cursor-pointer" onClick={() => { console.log("Click expandir/cerrar donación:", donacion._id); setExpandedDonationId(isExpanded ? null : donacion._id); }}>
                                     <div>
                                         <h3 className="font-semibold text-gray-900">{donacion.titulo}</h3>
                                         <div className={`text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block ${
@@ -241,7 +269,7 @@ const MyDonationsPage = () => {
             )}
             
             {solicitudParaAceptar && (
-                <ProposeScheduleModal solicitud={solicitudParaAceptar} onClose={() => setSolicitudParaAceptar(null)} onSubmit={handleAcceptAndPropose} isSubmitting={isSubmitting} />
+                <ProposeScheduleModal solicitud={solicitudParaAceptar} onClose={() => { console.log("Cerrando ProposeScheduleModal"); setSolicitudParaAceptar(null); }} onSubmit={handleAcceptAndPropose} isSubmitting={isSubmitting} />
             )}
         </div>
     );

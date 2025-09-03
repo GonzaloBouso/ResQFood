@@ -6,25 +6,30 @@ import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lu
 import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
-// --- COMPONENTE INTERNO REFACTORIZADO Y ROBUSTO ---
-// La lógica de cada tarjeta ahora vive en su propio componente aislado.
 const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy }) => {
-    
-    // Guarda de seguridad: si la solicitud o sus datos críticos son inválidos, no renderizamos la tarjeta.
     if (!solicitud || !solicitud.donacionId || !solicitud.donanteId) {
+        console.log("⚠️ Solicitud inválida en SolicitudCard:", solicitud);
         return null;
     }
 
     const entrega = solicitud.entregaId;
 
     const renderContent = () => {
+        console.log("📦 Renderizando contenido de solicitud:", solicitud._id, solicitud.estadoSolicitud);
         switch (solicitud.estadoSolicitud) {
-            case 'PENDIENTE_APROBACION': return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
-            case 'RECHAZADA_DONANTE': return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
-            case 'CANCELADA_RECEPTOR': return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
-            case 'COMPLETADA_CON_ENTREGA': return <div className="flex items-center gap-2 text-green-700 font-semibold"><CheckCircle size={16} /><span>¡Retiro exitoso!</span></div>;
+            case 'PENDIENTE_APROBACION':
+                return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
+            case 'RECHAZADA_DONANTE':
+                return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
+            case 'CANCELADA_RECEPTOR':
+                return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
+            case 'COMPLETADA_CON_ENTREGA':
+                return <div className="flex items-center gap-2 text-green-700 font-semibold"><CheckCircle size={16} /><span>¡Retiro exitoso!</span></div>;
             case 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO':
-                if (!entrega?.horarioPropuesto) return <div className="text-gray-500">Cargando detalles...</div>;
+                if (!entrega?.horarioPropuesto) {
+                    console.log("⌛ Esperando horario en entrega:", entrega);
+                    return <div className="text-gray-500">Cargando detalles...</div>;
+                }
                 return (
                     <div className="bg-blue-50 p-3 rounded-md">
                         <p className="font-semibold text-blue-800">¡Aprobada! Confirma el horario:</p>
@@ -38,6 +43,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
                 );
             case 'HORARIO_CONFIRMADO':
                 if (entrega?.estadoEntrega === 'LISTA_PARA_RETIRO') {
+                    console.log("✅ Horario confirmado, entrega lista:", entrega);
                     return (
                         <div className="bg-green-50 p-3 rounded-md">
                             <p className="font-semibold text-green-800">¡Listo para retirar!</p>
@@ -52,10 +58,11 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
                 }
                 return <p className="text-gray-500">Horario Confirmado</p>;
             default:
+                console.log("ℹ️ Estado no controlado:", solicitud.estadoSolicitud);
                 return <p className="text-gray-500">{solicitud.estadoSolicitud}</p>;
         }
     };
-    
+
     return (
         <div className="border rounded-lg bg-white shadow-sm p-4 flex items-start gap-4">
             <img 
@@ -72,7 +79,6 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
     );
 };
 
-
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
@@ -80,62 +86,64 @@ const MyRequestsPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     const fetchSolicitudes = useCallback(async () => {
-        // isLoading no se resetea aquí para recargas suaves
+        console.log("🔄 Fetching solicitudes...");
         try {
             const token = await getToken();
+            console.log("🔑 Token obtenido:", token ? "OK" : "FALLÓ");
             const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${token}` } });
+            console.log("📡 Respuesta de solicitudes:", response.status);
             if (!response.ok) throw new Error('Error al cargar tus solicitudes.');
             const data = await response.json();
+            console.log("📥 Data de solicitudes:", data);
             setSolicitudes(data.solicitudes || []);
-        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
+        } catch (err) { 
+            console.error("❌ Error en fetchSolicitudes:", err); 
+            setError(err.message); 
+        } finally { 
+            setIsLoading(false); 
+        }
     }, [getToken]);
 
     useEffect(() => {
+        console.log("⚡ useEffect ejecutado en MyRequestsPage");
         setIsLoading(true);
         fetchSolicitudes();
     }, [fetchSolicitudes]);
 
     const handleConfirmarHorario = async (entregaId) => {
+        console.log("🟦 Confirmar horario con entregaId:", entregaId);
         setIsSubmitting(true);
         const toastId = toast.loading('Confirmando horario...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            console.log("📡 Respuesta confirmar horario:", response.status);
             if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
             toast.success('¡Horario confirmado! El donante será notificado.', { id: toastId });
             fetchSolicitudes();
         } catch (err) {
+            console.error("❌ Error confirmando horario:", err);
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleRechazarHorario = (entregaId) => {
-        toast((t) => (
-            <div className="flex flex-col items-center gap-3 p-2">
-                <span className="text-center font-semibold">¿Seguro que no puedes en este horario?</span>
-                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible para otros.</p>
-                <div className="flex gap-3 mt-2">
-                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Sí, rechazar</button>
-                </div>
-            </div>
-        ), { duration: 8000 });
-    };
-
     const executeRechazarHorario = async (entregaId) => {
+        console.log("🟥 Rechazar horario con entregaId:", entregaId);
         setIsSubmitting(true);
         const toastId = toast.loading('Rechazando propuesta...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            console.log("📡 Respuesta rechazar horario:", response.status);
             if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
             toast.success('Propuesta rechazada. El donante será notificado.', { id: toastId });
             fetchSolicitudes();
         } catch (err) {
+            console.error("❌ Error al rechazar horario:", err);
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
             setIsSubmitting(false);
@@ -143,16 +151,20 @@ const MyRequestsPage = () => {
     };
     
     const copyToClipboard = (text) => {
+        console.log("📋 Copiando código:", text);
         navigator.clipboard.writeText(text);
         toast.success('¡Código copiado!');
     };
 
     if (!currentUserDataFromDB) {
+        console.log("⏳ Esperando currentUserDataFromDB...");
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
     
     if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
+
+    console.log("✅ Renderizando solicitudes:", solicitudes);
 
     return (
         <div className="max-w-4xl mx-auto py-10 px-4">
@@ -165,7 +177,7 @@ const MyRequestsPage = () => {
                             solicitud={solicitud}
                             isSubmitting={isSubmitting}
                             onConfirm={handleConfirmarHorario}
-                            onReject={handleRechazarHorario}
+                            onReject={(id) => executeRechazarHorario(id)}
                             onCopy={copyToClipboard}
                         />
                     ))}
