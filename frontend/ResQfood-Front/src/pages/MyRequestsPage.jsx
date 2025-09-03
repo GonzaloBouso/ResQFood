@@ -70,6 +70,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
     );
 };
 
+
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
