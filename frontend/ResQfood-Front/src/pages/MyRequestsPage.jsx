@@ -3,25 +3,31 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lucide-react';
-import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast'; // --- ELIMINADO ---
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 // --- COMPONENTE HIJO "TONTO" ---
-// Solo recibe props y renderiza. No tiene lógica de API.
+// Aislado para prevenir errores de renderizado en cascada.
 const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy }) => {
     
+    // Guarda de seguridad por si llegan datos inconsistentes del backend.
     if (!solicitud || !solicitud.donacionId || !solicitud.donanteId) {
         return null;
     }
 
     const entrega = solicitud.entregaId;
 
+    // Esta función interna renderiza el contenido dinámico de la tarjeta.
     const renderContent = () => {
         switch (solicitud.estadoSolicitud) {
-            case 'PENDIENTE_APROBACION': return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
-            case 'RECHAZADA_DONANTE': return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
-            case 'CANCELADA_RECEPTOR': return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
-            case 'COMPLETADA_CON_ENTREGA': return <div className="flex items-center gap-2 text-green-700 font-semibold"><CheckCircle size={16} /><span>¡Retiro exitoso!</span></div>;
+            case 'PENDIENTE_APROBACION': 
+                return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
+            case 'RECHAZADA_DONANTE': 
+                return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
+            case 'CANCELADA_RECEPTOR': 
+                return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
+            case 'COMPLETADA_CON_ENTREGA': 
+                return <div className="flex items-center gap-2 text-green-700 font-semibold"><CheckCircle size={16} /><span>¡Retiro exitoso!</span></div>;
             case 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO':
                 if (!entrega?.horarioPropuesto) return <div className="text-gray-500">Cargando detalles...</div>;
                 return (
@@ -71,7 +77,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
     );
 };
 
-// --- COMPONENTE PADRE (MANEJA TODA LA LÓGICA) ---
+// --- COMPONENTE PADRE (CON LÓGICA DE DATOS) ---
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
@@ -101,15 +107,14 @@ const MyRequestsPage = () => {
 
     const handleConfirmarHorario = async (entregaId) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Confirmando horario...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
-            toast.success('¡Horario confirmado! El donante será notificado.', { id: toastId });
+            console.log('¡Horario confirmado! El donante será notificado.');
             fetchSolicitudes();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            alert(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -117,38 +122,30 @@ const MyRequestsPage = () => {
 
     const executeRechazarHorario = async (entregaId) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Rechazando propuesta...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
-            toast.success('Propuesta rechazada. El donante será notificado.', { id: toastId });
+            console.log('Propuesta rechazada. El donante será notificado.');
             fetchSolicitudes();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            alert(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleRechazarHorario = (entregaId) => {
-        toast((t) => (
-            <div className="flex flex-col items-center gap-3 p-2">
-                <span className="text-center font-semibold">¿Seguro que no puedes en este horario?</span>
-                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible para otros.</p>
-                <div className="flex gap-3 mt-2">
-                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Sí, rechazar</button>
-                </div>
-            </div>
-        ), { duration: 8000 });
+        if (window.confirm("¿Seguro que no puedes en este horario? La donación volverá a estar disponible para otros.")) {
+            executeRechazarHorario(entregaId);
+        }
     };
     
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text);
-        toast.success('¡Código copiado!');
+        alert('¡Código copiado!');
     };
-
+    
     if (!currentUserDataFromDB) {
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
@@ -183,4 +180,5 @@ const MyRequestsPage = () => {
         </div>
     );
 };
+
 export default MyRequestsPage;
