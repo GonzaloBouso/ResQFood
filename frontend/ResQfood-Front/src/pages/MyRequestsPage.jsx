@@ -42,7 +42,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
                             <p className="text-sm">Tu código de confirmación es:</p>
                             <div className="flex items-center justify-center gap-2 my-2 p-2 bg-green-200 rounded">
                                 <span className="font-bold text-lg tracking-widest">{entrega.codigoConfirmacionReceptor}</span>
-                                <button onClick={() => onCopy(entrega.codigoConfirmacionReceptor)} title="Copiar código" className="text-sm">(Copiar)</button>
+                                <button onClick={() => onCopy(entrega.codigoConfirmacionReceptor)} title="Copiar código" className="text-sm font-medium text-blue-600 hover:underline">(Copiar)</button>
                             </div>
                             <p className="text-xs text-center">Muestra este código al donante al momento del retiro.</p>
                         </div>
@@ -57,7 +57,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
     return (
         <div className="border rounded-lg bg-white shadow-sm p-4 flex items-start gap-4">
             <img 
-                src={solicitud.donacionId?.imagenesUrl?.[0] || 'url_a_imagen_por_defecto.png'} 
+                src={solicitud.donacionId?.imagenesUrl?.[0] || 'https://via.placeholder.com/150'} // URL de fallback
                 alt={solicitud.donacionId?.titulo} 
                 className="w-20 h-20 rounded-md object-cover" 
             />
@@ -70,6 +70,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
     );
 };
 
+
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
@@ -78,16 +79,81 @@ const MyRequestsPage = () => {
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const fetchSolicitudes = useCallback(async () => { /* ... (sin cambios) */ }, [getToken]);
-    useEffect(() => { setIsLoading(true); fetchSolicitudes(); }, [fetchSolicitudes]);
-    const handleConfirmarHorario = async (entregaId) => { /* ... (sin cambios) */ };
-    const handleRechazarHorario = (entregaId) => { /* ... (sin cambios) */ };
-    const executeRechazarHorario = async (entregaId) => { /* ... (sin cambios) */ };
-    const copyToClipboard = (text) => { /* ... (sin cambios) */ };
+    const fetchSolicitudes = useCallback(async () => {
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Error al cargar tus solicitudes.');
+            const data = await response.json();
+            setSolicitudes(data.solicitudes || []);
+        } catch (err) { 
+            setError(err.message); 
+        } finally { 
+            setIsLoading(false); 
+        }
+    }, [getToken]);
 
-    if (!currentUserDataFromDB) return <div className="text-center py-20">Cargando datos de usuario...</div>;
+    useEffect(() => {
+        setIsLoading(true);
+        fetchSolicitudes();
+    }, [fetchSolicitudes]);
+
+    const handleConfirmarHorario = async (entregaId) => {
+        setIsSubmitting(true);
+        const toastId = toast.loading('Confirmando horario...');
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
+            toast.success('¡Horario confirmado! El donante será notificado.', { id: toastId });
+            fetchSolicitudes();
+        } catch (err) {
+            toast.error(`Error: ${err.message}`, { id: toastId });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const executeRechazarHorario = async (entregaId) => {
+        setIsSubmitting(true);
+        const toastId = toast.loading('Rechazando propuesta...');
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
+            toast.success('Propuesta rechazada. El donante será notificado.', { id: toastId });
+            fetchSolicitudes();
+        } catch (err) {
+            toast.error(`Error: ${err.message}`, { id: toastId });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
     
-    // Se reemplaza el icono de Loader por texto simple
+    const handleRechazarHorario = (entregaId) => {
+        toast((t) => (
+            <div className="flex flex-col items-center gap-3 p-2">
+                <span className="text-center font-semibold">¿Seguro que no puedes en este horario?</span>
+                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible para otros.</p>
+                <div className="flex gap-3 mt-2">
+                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
+                    <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Sí, rechazar</button>
+                </div>
+            </div>
+        ), { duration: 8000 });
+    };
+    
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        toast.success('¡Código copiado!');
+    };
+
+    // Guarda de renderizado
+    if (!currentUserDataFromDB) {
+        return <div className="text-center py-20">Cargando datos de usuario...</div>;
+    }
+    
+    // Se reemplaza el icono de Loader por texto simple para la prueba
     if (isLoading) return <div className="text-center py-20"><span>Cargando...</span></div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
 
