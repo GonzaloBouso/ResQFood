@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
-import { Loader2, Gift } from 'lucide-react';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
+    
+    // Se mantiene la gestión de estado simple
     const [solicitudes, setSolicitudes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -31,36 +32,37 @@ const MyRequestsPage = () => {
         fetchSolicitudes();
     }, [fetchSolicitudes]);
 
-    // Guarda de renderizado para prevenir la "race condition"
+    // Guarda de renderizado
     if (!currentUserDataFromDB) {
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
     
-    if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
-    if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
+    if (isLoading) return <div className="text-center py-20"><span>Cargando...</span></div>;
+    if (error) return <div className="text-center py-20" style={{color: 'red'}}><strong>Error:</strong> {error}</div>;
 
     return (
-        <div className="max-w-4xl mx-auto py-10 px-4">
-            <h1 className="text-3xl font-bold text-gray-800 mb-8">Mis Solicitudes</h1>
+        <div style={{ maxWidth: '40rem', margin: 'auto', padding: '2.5rem 1rem' }}>
+            <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '2rem' }}>Mis Solicitudes</h1>
+            
             {solicitudes && solicitudes.length > 0 ? (
-                <div className="space-y-4">
-                    {/* --- RENDERIZADO EXTREMADAMENTE SIMPLE PARA DEPURACIÓN --- */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {/* --- RENDERIZADO MÍNIMO --- */}
                     {solicitudes.map(solicitud => (
-                        <div key={solicitud?._id} className="border rounded-lg bg-white shadow-sm p-4">
-                            <h3 className="font-semibold text-gray-900">
+                        <div key={solicitud?._id} style={{ border: '1px solid #e5e7eb', borderRadius: '0.5rem', padding: '1rem' }}>
+                            <h3 style={{ fontWeight: '600' }}>
                                 {solicitud?.donacionId?.titulo || "Donación sin título"}
                             </h3>
-                            <p className="text-sm text-gray-600">
+                            <p style={{ fontSize: '0.875rem', color: '#4b5563' }}>
                                 Estado: {solicitud?.estadoSolicitud || "Desconocido"}
                             </p>
                         </div>
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-10 border-2 border-dashed rounded-lg">
-                    <p className="text-gray-600 mb-4">Aún no has realizado ninguna solicitud.</p>
-                    <Link to="/dashboard" className="inline-block bg-primary text-white font-bold py-2 px-4 rounded hover:bg-brandPrimaryDarker">
-                        <Gift className="inline-block mr-2" size={16} /> Ver donaciones
+                <div style={{ textAlign: 'center', padding: '2.5rem 0', border: '2px dashed #e5e7eb', borderRadius: '0.5rem' }}>
+                    <p style={{ color: '#4b5563', marginBottom: '1rem' }}>Aún no has realizado ninguna solicitud.</p>
+                    <Link to="/dashboard" style={{ display: 'inline-block', backgroundColor: '#007bff', color: 'white', fontWeight: 'bold', padding: '0.5rem 1rem', borderRadius: '0.25rem' }}>
+                        Ver donaciones
                     </Link>
                 </div>
             )}
