@@ -2,20 +2,13 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
-import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lucide-react'; // <-- REINTRODUCIDO
 import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
-import CodigoRetiroModal from '../components/modals/CodigoRetiroModal'; // <-- IMPORTAMOS EL NUEVO MODAL
+import CodigoRetiroModal from '../components/modals/CodigoRetiroModal';
 
-// --- COMPONENTE HIJO "TONTO" ---
-// No tiene lógica de API. Solo recibe props y renderiza la UI.
 const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy }) => {
-    
-    // Guarda de seguridad para prevenir errores con datos inconsistentes.
-    if (!solicitud || !solicitud.donacionId || !solicitud.donanteId) {
-        return null;
-    }
-
+    if (!solicitud || !solicitud.donacionId || !solicitud.donanteId) { return null; }
     const entrega = solicitud.entregaId;
 
     const renderContent = () => {
@@ -80,8 +73,6 @@ const MyRequestsPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
-    // --- NUEVO ESTADO PARA CONTROLAR EL MODAL ---
     const [codigoParaMostrar, setCodigoParaMostrar] = useState(null);
     
     const fetchSolicitudes = useCallback(async () => {
@@ -90,42 +81,22 @@ const MyRequestsPage = () => {
             const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Error al cargar tus solicitudes.');
             const data = await response.json();
-            const solicitudesValidas = (data.solicitudes || []).filter(s => s.donacionId && s.donanteId);
-            setSolicitudes(solicitudesValidas);
+            setSolicitudes(data.solicitudes || []);
         } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     }, [getToken]);
 
-    useEffect(() => {
-        setIsLoading(true);
-        fetchSolicitudes();
-    }, [fetchSolicitudes]);
+    useEffect(() => { setIsLoading(true); fetchSolicitudes(); }, [fetchSolicitudes]);
 
-    // --- FUNCIÓN 'handleConfirmarHorario' CORREGIDA PARA USAR EL MODAL ---
     const handleConfirmarHorario = async (entregaId) => {
         setIsSubmitting(true);
         const toastId = toast.loading('Confirmando horario...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
-            
-            if (!response.ok) {
-                throw new Error((await response.json()).message || 'Error al confirmar');
-            }
-            
-            // 1. Convertimos la respuesta a JSON
-            const data = await response.json(); 
-            
-            // 2. Extraemos el código de forma segura usando optional chaining
-            const codigo = data?.entrega?.codigoConfirmacionReceptor;
-
-            // 3. Comprobamos si el código existe antes de continuar
-            if (codigo) {
-                toast.dismiss(toastId);
-                setCodigoParaMostrar(codigo); // Mostramos el modal
-            } else {
-                throw new Error("No se recibió el código de confirmación del servidor.");
-            }
-
+            if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
+            const data = await response.json();
+            toast.dismiss(toastId);
+            setCodigoParaMostrar(data?.entrega?.codigoConfirmacionReceptor);
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
@@ -146,8 +117,11 @@ const MyRequestsPage = () => {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
-            toast.success('Propuesta rechazada. El donante será notificado.', { id: toastId });
-            fetchSolicitudes();
+            
+            toast.dismiss(toastId);
+            toast.success('Propuesta rechazada. El donante será notificado.');
+            
+            setTimeout(() => fetchSolicitudes(), 50);
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
@@ -159,7 +133,7 @@ const MyRequestsPage = () => {
         toast((t) => (
             <div className="flex flex-col items-center gap-3 p-2">
                 <span className="text-center font-semibold">¿Seguro que no puedes en este horario?</span>
-                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible para otros.</p>
+                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible.</p>
                 <div className="flex gap-3 mt-2">
                     <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
                     <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Sí, rechazar</button>
@@ -173,15 +147,11 @@ const MyRequestsPage = () => {
         toast.success('¡Código copiado!');
     };
 
-    if (!currentUserDataFromDB) {
-        return <div className="text-center py-20">Cargando datos de usuario...</div>;
-    }
-    
-    if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /></div>;
+    if (!currentUserDataFromDB) return <div className="text-center py-20">Cargando datos de usuario...</div>;
+    if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
 
     return (
-        // Se envuelve en un Fragment (<>) para poder tener el modal como hermano del div principal
         <>
             <div className="max-w-4xl mx-auto py-10 px-4">
                 <h1 className="text-3xl font-bold text-gray-800 mb-8">Mis Solicitudes</h1>
@@ -207,12 +177,7 @@ const MyRequestsPage = () => {
                     </div>
                 )}
             </div>
-
-            {/* --- SE RENDERIZA EL MODAL CONDICIONALMENTE --- */}
-            <CodigoRetiroModal 
-                codigo={codigoParaMostrar} 
-                onClose={handleCloseModal} 
-            />
+            <CodigoRetiroModal codigo={codigoParaMostrar} onClose={handleCloseModal} />
         </>
     );
 };
