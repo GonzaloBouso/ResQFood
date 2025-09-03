@@ -6,11 +6,10 @@ import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lu
 import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
-// --- COMPONENTE AISLADO PARA CADA TARJETA ---
-// Esto previene los errores de renderizado en móviles.
+// --- COMPONENTE HIJO "TONTO" ---
+// Solo recibe props y renderiza. No tiene lógica de API.
 const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy }) => {
     
-    // Guarda de seguridad por si llegan datos inconsistentes
     if (!solicitud || !solicitud.donacionId || !solicitud.donanteId) {
         return null;
     }
@@ -72,12 +71,10 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
     );
 };
 
-
+// --- COMPONENTE PADRE (MANEJA TODA LA LÓGICA) ---
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
-
-    // --- SE VUELVE A TU LÓGICA DE ESTADO ORIGINAL Y ROBUSTA ---
     const [solicitudes, setSolicitudes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -91,9 +88,9 @@ const MyRequestsPage = () => {
             const data = await response.json();
             setSolicitudes(data.solicitudes || []);
         } catch (err) { 
-            setError(err.message);
+            setError(err.message); 
         } finally { 
-            setIsLoading(false);
+            setIsLoading(false); 
         }
     }, [getToken]);
 
@@ -118,19 +115,6 @@ const MyRequestsPage = () => {
         }
     };
 
-    const handleRechazarHorario = (entregaId) => {
-        toast((t) => (
-            <div className="flex flex-col items-center gap-3 p-2">
-                <span className="text-center font-semibold">¿Seguro que no puedes en este horario?</span>
-                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible para otros.</p>
-                <div className="flex gap-3 mt-2">
-                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Sí, rechazar</button>
-                </div>
-            </div>
-        ), { duration: 8000 });
-    };
-
     const executeRechazarHorario = async (entregaId) => {
         setIsSubmitting(true);
         const toastId = toast.loading('Rechazando propuesta...');
@@ -146,13 +130,25 @@ const MyRequestsPage = () => {
             setIsSubmitting(false);
         }
     };
+
+    const handleRechazarHorario = (entregaId) => {
+        toast((t) => (
+            <div className="flex flex-col items-center gap-3 p-2">
+                <span className="text-center font-semibold">¿Seguro que no puedes en este horario?</span>
+                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible para otros.</p>
+                <div className="flex gap-3 mt-2">
+                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
+                    <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Sí, rechazar</button>
+                </div>
+            </div>
+        ), { duration: 8000 });
+    };
     
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text);
         toast.success('¡Código copiado!');
     };
 
-    // Guarda de renderizado para prevenir la "race condition"
     if (!currentUserDataFromDB) {
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
