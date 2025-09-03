@@ -109,7 +109,7 @@ const MyRequestsPage = () => {
             toast.dismiss(toastId);
             toast.success('¡Horario confirmado! El donante será notificado.');
             
-            fetchSolicitudes();
+            setTimeout(() => fetchSolicitudes(), 50);
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
@@ -128,7 +128,7 @@ const MyRequestsPage = () => {
             toast.dismiss(toastId);
             toast.success('Propuesta rechazada. El donante será notificado.');
             
-            fetchSolicitudes();
+            setTimeout(() => fetchSolicitudes(), 50);
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         } finally {
