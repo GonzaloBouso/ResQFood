@@ -107,13 +107,24 @@ const MyRequestsPage = () => {
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
             
-            const data = await response.json(); // Se extrae la respuesta del backend
+            if (!response.ok) {
+                throw new Error((await response.json()).message || 'Error al confirmar');
+            }
             
-            toast.dismiss(toastId);
-            // En lugar de refrescar, se muestra el modal con el código.
-            setCodigoParaMostrar(data.entrega.codigoConfirmacionReceptor);
+            // 1. Convertimos la respuesta a JSON
+            const data = await response.json(); 
+            
+            // 2. Extraemos el código de forma segura usando optional chaining
+            const codigo = data?.entrega?.codigoConfirmacionReceptor;
+
+            // 3. Comprobamos si el código existe antes de continuar
+            if (codigo) {
+                toast.dismiss(toastId);
+                setCodigoParaMostrar(codigo); // Mostramos el modal
+            } else {
+                throw new Error("No se recibió el código de confirmación del servidor.");
+            }
 
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
@@ -122,11 +133,10 @@ const MyRequestsPage = () => {
         }
     };
 
-    // --- NUEVA FUNCIÓN PARA MANEJAR EL CIERRE DEL MODAL ---
     const handleCloseModal = () => {
         setCodigoParaMostrar(null);
-        setIsLoading(true); // Muestra el spinner mientras refresca
-        fetchSolicitudes(); // Refresca la página AHORA, de forma segura.
+        setIsLoading(true);
+        fetchSolicitudes();
     };
 
     const executeRechazarHorario = async (entregaId) => {

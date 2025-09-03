@@ -9,12 +9,12 @@ import { getIoInstance, getSocketIdForUser } from '../socket.js';
 export class EntregaController {
 
     static async confirmarHorario(req, res) {
-        const { entregaId } = req.params;
-        const receptorClerkId = req.auth?.userId;
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
-            const entrega = await Entrega.findById(entregaId).session(session);
+    const { entregaId } = req.params;
+    const receptorClerkId = req.auth?.userId;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const entrega = await Entrega.findById(entregaId).session(session);
             if (!entrega) {
                 await session.abortTransaction(); session.endSession();
                 return res.status(404).json({ message: 'Registro de entrega no encontrado.' });
@@ -70,7 +70,10 @@ export class EntregaController {
             }
             
             await session.commitTransaction();
-            res.status(200).json({ message: 'Horario confirmado.' });
+            res.status(200).json({ 
+            message: 'Horario confirmado.', 
+            entrega: entrega.toObject()
+            }) // Se envía el documento de entrega completo
         } catch (error) {
             await session.abortTransaction();
             console.error("Error al confirmar horario:", error);
