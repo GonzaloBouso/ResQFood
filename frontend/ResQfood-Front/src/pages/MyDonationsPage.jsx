@@ -8,7 +8,6 @@ import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {
-    // Se mantiene la comprobación de seguridad para solicitudes
     const pendientes = (solicitudes || []).filter(s => s && s.estadoSolicitud === 'PENDIENTE_APROBACION');
     
     if (pendientes.length === 0) {
@@ -17,7 +16,6 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
             return (
                 <div className="p-3 bg-red-50 border-t text-red-700 text-xs flex items-center gap-2">
                     <XCircle size={16}/>
-                    {/* Se añade optional chaining para seguridad */}
                     <span>El horario propuesto a <strong>{rechazoReciente.solicitanteId?.nombre}</strong> fue rechazado. La donación vuelve a estar disponible.</span>
                 </div>
             );
@@ -28,7 +26,6 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
     return (
         <div className="space-y-2 p-3 bg-gray-50 border-t">
             {pendientes.map(solicitud => (
-                // Se añade optional chaining para seguridad
                 <div key={solicitud?._id} className="flex justify-between items-center bg-white p-2 rounded border shadow-sm">
                     <div className="flex items-center gap-2">
                         <img src={solicitud?.solicitanteId?.fotoDePerfilUrl} alt={solicitud?.solicitanteId?.nombre} className="w-8 h-8 rounded-full object-cover" />
@@ -60,7 +57,6 @@ const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
 
 const MyDonationsPage = () => {
     const { getToken } = useAuth();
-    // Se extrae la función 'setNotifications' del contexto para la lógica de notificación
     const { setNotifications, currentUserDataFromDB } = useContext(ProfileStatusContext);
 
     const [donaciones, setDonaciones] = useState([]);
@@ -99,7 +95,6 @@ const MyDonationsPage = () => {
             }
             toast.success('¡Propuesta enviada!', { id: toastId });
             
-            // Marca la notificación de solicitud como leída
             if (setNotifications) {
                 setNotifications(prev => prev.map(n => (n.referenciaId === solicitudId && n.tipoNotificacion === 'SOLICITUD') ? { ...n, leida: true } : n));
             }
@@ -171,7 +166,7 @@ const MyDonationsPage = () => {
         }
     };
 
-    // --- RENDERIZADO DEFENSIVO ---
+    // --- RENDERIZADO DEFENSIVO AÑADIDO ---
     if (!currentUserDataFromDB) {
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
@@ -185,7 +180,7 @@ const MyDonationsPage = () => {
             {donaciones.length > 0 ? (
                 <div className="space-y-4">
                     {donaciones.map(donacion => {
-                        // Se añade optional chaining a toda la cadena de acceso para máxima seguridad
+                        // Se utiliza optional chaining en toda la cadena para máxima seguridad
                         const solicitudes = donacion?.solicitudes || [];
                         const isExpanded = expandedDonationId === donacion?._id;
                         const solicitudAceptada = solicitudes.find(s => s?.entregaId && s?.estadoSolicitud !== 'CANCELADA_RECEPTOR');
