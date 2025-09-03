@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
-import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lucide-react'; // <-- REINTRODUCIDO
 import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 import CodigoRetiroModal from '../components/modals/CodigoRetiroModal';
@@ -13,10 +12,10 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
 
     const renderContent = () => {
         switch (solicitud.estadoSolicitud) {
-            case 'PENDIENTE_APROBACION': return <div className="flex items-center gap-2 text-yellow-600"><Clock size={16} /><span>Pendiente de aprobación</span></div>;
-            case 'RECHAZADA_DONANTE': return <div className="flex items-center gap-2 text-red-600"><XCircle size={16} /><span>Rechazada por el donante</span></div>;
-            case 'CANCELADA_RECEPTOR': return <div className="flex items-center gap-2 text-gray-500"><ThumbsDown size={16} /><span>Cancelaste esta solicitud</span></div>;
-            case 'COMPLETADA_CON_ENTREGA': return <div className="flex items-center gap-2 text-green-700 font-semibold"><CheckCircle size={16} /><span>¡Retiro exitoso!</span></div>;
+            case 'PENDIENTE_APROBACION': return <div className="flex items-center gap-2 text-yellow-600 font-medium text-sm"><span>🕒</span><span>Pendiente de aprobación</span></div>;
+            case 'RECHAZADA_DONANTE': return <div className="flex items-center gap-2 text-red-600 font-medium text-sm"><span>❌</span><span>Rechazada por el donante</span></div>;
+            case 'CANCELADA_RECEPTOR': return <div className="flex items-center gap-2 text-gray-500 font-medium text-sm"><span>👎</span><span>Cancelaste esta solicitud</span></div>;
+            case 'COMPLETADA_CON_ENTREGA': return <div className="flex items-center gap-2 text-green-700 font-semibold text-sm"><span>✔️</span><span>¡Retiro exitoso!</span></div>;
             case 'APROBADA_ESPERANDO_CONFIRMACION_HORARIO':
                 if (!entrega?.horarioPropuesto) return <div className="text-gray-500">Cargando detalles...</div>;
                 return (
@@ -38,9 +37,9 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
                             <p className="text-sm">Tu código de confirmación es:</p>
                             <div className="flex items-center justify-center gap-2 my-2 p-2 bg-green-200 rounded">
                                 <span className="font-bold text-lg tracking-widest">{entrega.codigoConfirmacionReceptor}</span>
-                                <button onClick={() => onCopy(entrega.codigoConfirmacionReceptor)} title="Copiar código"><Copy size={16} /></button>
+                                <button onClick={() => onCopy(entrega.codigoConfirmacionReceptor)} title="Copiar código" className="text-sm font-medium text-blue-600 hover:underline">(Copiar)</button>
                             </div>
-                            <p className="text-xs text-center">Muestra este código al donante al momento del retiro.</p>
+                            <p className="text-xs text-center">Muestra este código al donante.</p>
                         </div>
                     );
                 }
@@ -112,18 +111,14 @@ const MyRequestsPage = () => {
 
     const executeRechazarHorario = async (entregaId) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Rechazando propuesta...');
+        const toastId = toast.loading('Rechazando...');
         try {
             const token = await getToken();
-            const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
-            
-            toast.dismiss(toastId);
-            toast.success('Propuesta rechazada. El donante será notificado.');
-            
-            setTimeout(() => fetchSolicitudes(), 50);
+            await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            toast.success('Propuesta rechazada.');
+            fetchSolicitudes();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            toast.error(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -133,13 +128,12 @@ const MyRequestsPage = () => {
         toast((t) => (
             <div className="flex flex-col items-center gap-3 p-2">
                 <span className="text-center font-semibold">¿Seguro que no puedes en este horario?</span>
-                <p className="text-xs text-center text-gray-600">La donación volverá a estar disponible.</p>
                 <div className="flex gap-3 mt-2">
-                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Sí, rechazar</button>
+                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 ...">Cancelar</button>
+                    <button onClick={() => { toast.dismiss(t.id); executeRechazarHorario(entregaId); }} className="px-3 py-1 ...">Sí, rechazar</button>
                 </div>
             </div>
-        ), { duration: 8000 });
+        ));
     };
     
     const copyToClipboard = (text) => {
@@ -147,14 +141,14 @@ const MyRequestsPage = () => {
         toast.success('¡Código copiado!');
     };
 
-    if (!currentUserDataFromDB) return <div className="text-center py-20">Cargando datos de usuario...</div>;
-    if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
-    if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
+    if (!currentUserDataFromDB) return <div className="text-center py-20">Cargando...</div>;
+    if (isLoading) return <div className="text-center py-20"><span>Cargando...</span></div>;
+    if (error) return <div className="text-center py-20" style={{color: 'red'}}>{error}</div>;
 
     return (
         <>
             <div className="max-w-4xl mx-auto py-10 px-4">
-                <h1 className="text-3xl font-bold text-gray-800 mb-8">Mis Solicitudes</h1>
+                <h1 className="text-3xl font-bold mb-8">Mis Solicitudes</h1>
                 {solicitudes && solicitudes.length > 0 ? (
                     <div className="space-y-4">
                         {solicitudes.map(solicitud => (
@@ -171,8 +165,8 @@ const MyRequestsPage = () => {
                 ) : (
                     <div className="text-center py-10 border-2 border-dashed rounded-lg">
                         <p className="text-gray-600 mb-4">Aún no has realizado ninguna solicitud.</p>
-                        <Link to="/dashboard" className="inline-block bg-primary text-white font-bold py-2 px-4 rounded hover:bg-brandPrimaryDarker">
-                            <Gift className="inline-block mr-2" size={16} /> Ver donaciones
+                        <Link to="/dashboard" className="inline-block bg-primary ...">
+                            <span>🎁 Ver donaciones</span>
                         </Link>
                     </div>
                 )}
