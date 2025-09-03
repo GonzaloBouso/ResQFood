@@ -3,12 +3,25 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'; // Se mantiene solo para acciones seguras
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
+// --- COMPONENTES HIJOS "TONTOS" Y "LIMPIOS" (SIN ICONOS) ---
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {
     const pendientes = (solicitudes || []).filter(s => s && s.estadoSolicitud === 'PENDIENTE_APROBACION');
-    if (pendientes.length === 0) return <p className="text-xs text-gray-500 italic px-4 py-3 bg-gray-50 border-t">No hay nuevas solicitudes pendientes.</p>;
+    
+    if (pendientes.length === 0) {
+        const rechazoReciente = (solicitudes || []).find(s => s && s.estadoSolicitud === 'CANCELADA_RECEPTOR' && s.entregaId);
+        if (rechazoReciente) {
+            return (
+                <div className="p-3 bg-red-50 border-t text-red-700 text-xs flex items-center gap-2">
+                    <span>❌</span>
+                    <span>El horario propuesto a <strong>{rechazoReciente.solicitanteId?.nombre}</strong> fue rechazado.</span>
+                </div>
+            );
+        }
+        return <p className="text-xs text-gray-500 italic px-4 py-3 bg-gray-50 border-t">No hay nuevas solicitudes pendientes.</p>;
+    }
 
     return (
         <div className="space-y-2 p-3 bg-gray-50 border-t">
@@ -38,6 +51,7 @@ const ConfirmarEntregaForm = ({ onConfirm, isSubmitting }) => {
         </form>
     );
 };
+
 
 const MyDonationsPage = () => {
     const { getToken } = useAuth();
@@ -75,9 +89,12 @@ const MyDonationsPage = () => {
                 const errorPayload = await response.json().catch(() => ({ message: 'Error desconocido' }));
                 throw new Error(errorPayload.message);
             }
+            console.log('¡Propuesta enviada!');
+            
             if (setNotifications) {
                 setNotifications(prev => prev.map(n => (n.referenciaId === solicitudId && n.tipoNotificacion === 'SOLICITUD') ? { ...n, leida: true } : n));
             }
+
             setSolicitudParaAceptar(null);
             fetchDonations();
         } catch (err) {
@@ -97,6 +114,7 @@ const MyDonationsPage = () => {
                 body: JSON.stringify({})
             });
             if (!response.ok) throw new Error((await response.json()).message || 'Falló el rechazo.');
+            console.log('Solicitud rechazada.');
             fetchDonations();
         } catch (err) {
             alert(`Error: ${err.message}`);
@@ -120,6 +138,7 @@ const MyDonationsPage = () => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ codigoConfirmacion: codigo }),
             });
+            console.log('¡Entrega completada con éxito!');
             fetchDonations();
         } catch (err) {
             alert(`Error: ${err.message}`);
@@ -148,7 +167,11 @@ const MyDonationsPage = () => {
                                 <div className="p-4 flex justify-between items-center cursor-pointer" onClick={() => setExpandedDonationId(isExpanded ? null : donacion._id)}>
                                     <div>
                                         <h3 className="font-semibold text-gray-900">{donacion.titulo}</h3>
-                                        <div className={`text-xs ...`}>{donacion.estadoPublicacion?.replace('-', ' ')}</div>
+                                        <div className={`text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block ${
+                                            donacion.estadoPublicacion === 'DISPONIBLE' ? 'bg-green-100 text-green-800' :
+                                            donacion.estadoPublicacion === 'PENDIENTE-ENTREGA' ? 'bg-blue-100 text-blue-800' :
+                                            'bg-gray-100 text-gray-800'
+                                        }`}>{donacion.estadoPublicacion?.replace('-', ' ')}</div>
                                     </div>
                                     <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
                                 </div>
