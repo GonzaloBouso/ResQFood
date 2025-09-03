@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
+// import { ChevronDown, Loader2, CheckCircle, Clock, XCircle } from 'lucide-react'; // --- ELIMINADO ---
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'; // Se mantiene solo para acciones seguras
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {
@@ -15,7 +16,7 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
             return (
                 <div className="p-3 bg-red-50 border-t text-red-700 text-xs flex items-center gap-2">
                     <span>❌</span>
-                    <span>El horario propuesto a <strong>{rechazoReciente.solicitanteId?.nombre}</strong> fue rechazado. La donación vuelve a estar disponible.</span>
+                    <span>El horario propuesto a <strong>{rechazoReciente.solicitanteId?.nombre}</strong> fue rechazado.</span>
                 </div>
             );
         }
@@ -80,7 +81,6 @@ const MyDonationsPage = () => {
 
     const handleAcceptAndPropose = async (solicitudId, propuesta) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Enviando propuesta...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/aceptar-y-proponer`, {
@@ -92,7 +92,7 @@ const MyDonationsPage = () => {
                 const errorPayload = await response.json().catch(() => ({ message: 'Error desconocido' }));
                 throw new Error(errorPayload.message);
             }
-            toast.success('¡Propuesta enviada!', { id: toastId });
+            console.log('¡Propuesta enviada!');
             
             if (setNotifications) {
                 setNotifications(prev => prev.map(n => (n.referenciaId === solicitudId && n.tipoNotificacion === 'SOLICITUD') ? { ...n, leida: true } : n));
@@ -101,27 +101,14 @@ const MyDonationsPage = () => {
             setSolicitudParaAceptar(null);
             fetchDonations();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            alert(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleReject = (solicitud) => {
-        toast((t) => (
-            <div className="flex flex-col items-center gap-3 p-2">
-                <span className="text-center font-semibold">¿Rechazar la solicitud de {solicitud?.solicitanteId?.nombre}?</span>
-                <div className="flex gap-3">
-                    <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button onClick={() => { toast.dismiss(t.id); executeReject(solicitud?._id); }} className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700">Rechazar</button>
-                </div>
-            </div>
-        ), { duration: 6000 });
-    };
-
     const executeReject = async (solicitudId) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Rechazando...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/rechazar`, {
@@ -133,18 +120,23 @@ const MyDonationsPage = () => {
                 const errorData = await response.json().catch(() => ({ message: 'No se pudo procesar la respuesta.' }));
                 throw new Error(errorData.message || 'Falló el rechazo de la solicitud.');
             }
-            toast.success('Solicitud rechazada.', { id: toastId });
+            console.log('Solicitud rechazada.');
             fetchDonations();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            alert(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+    
+    const handleReject = (solicitud) => {
+        if (window.confirm(`¿Rechazar la solicitud de ${solicitud?.solicitanteId?.nombre}?`)) {
+            executeReject(solicitud?._id);
         }
     };
 
     const handleCompleteDelivery = async (entregaId, codigo) => {
         setIsSubmitting(true);
-        const toastId = toast.loading('Confirmando entrega...');
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/completar`, {
@@ -156,10 +148,10 @@ const MyDonationsPage = () => {
                 const errorData = await response.json();
                 throw new Error(errorData.message);
             }
-            toast.success('¡Entrega completada con éxito!', { id: toastId });
+            console.log('¡Entrega completada con éxito!');
             fetchDonations();
         } catch (err) {
-            toast.error(`Error: ${err.message}`, { id: toastId });
+            alert(`Error: ${err.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -198,7 +190,7 @@ const MyDonationsPage = () => {
                                 </div>
                                 
                                 {isExpanded && (
-                                    <div className="animate-fade-in-up">
+                                    <div>
                                         {donacion.estadoPublicacion === 'DISPONIBLE' && (
                                             <SolicitudesList solicitudes={solicitudes} onAcceptClick={setSolicitudParaAceptar} onReject={handleReject} isSubmitting={isSubmitting} />
                                         )}
