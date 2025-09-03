@@ -57,7 +57,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
     return (
         <div className="border rounded-lg bg-white shadow-sm p-4 flex items-start gap-4">
             <img 
-                src={solicitud.donacionId?.imagenesUrl?.[0] || 'https://via.placeholder.com/150'} // URL de fallback
+                src={solicitud.donacionId?.imagenesUrl?.[0] || 'https://via.placeholder.com/150'}
                 alt={solicitud.donacionId?.titulo} 
                 className="w-20 h-20 rounded-md object-cover" 
             />
@@ -69,7 +69,6 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
         </div>
     );
 };
-
 
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
@@ -105,7 +104,10 @@ const MyRequestsPage = () => {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/confirmar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al confirmar');
-            toast.success('¡Horario confirmado! El donante será notificado.', { id: toastId });
+            
+            toast.dismiss(toastId);
+            toast.success('¡Horario confirmado! El donante será notificado.');
+            
             fetchSolicitudes();
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
@@ -121,7 +123,10 @@ const MyRequestsPage = () => {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/entrega/${entregaId}/rechazar-horario`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error((await response.json()).message || 'Error al rechazar');
-            toast.success('Propuesta rechazada. El donante será notificado.', { id: toastId });
+
+            toast.dismiss(toastId);
+            toast.success('Propuesta rechazada. El donante será notificado.');
+            
             fetchSolicitudes();
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
@@ -148,12 +153,10 @@ const MyRequestsPage = () => {
         toast.success('¡Código copiado!');
     };
 
-    // Guarda de renderizado
     if (!currentUserDataFromDB) {
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
     
-    // Se reemplaza el icono de Loader por texto simple para la prueba
     if (isLoading) return <div className="text-center py-20"><span>Cargando...</span></div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
 
@@ -184,4 +187,5 @@ const MyRequestsPage = () => {
         </div>
     );
 };
+
 export default MyRequestsPage;
