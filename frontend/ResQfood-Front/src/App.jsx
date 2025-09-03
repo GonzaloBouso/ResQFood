@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, ClerkLoaded, useAuth } from '@clerk/clerk-react';
-import { Toaster } from 'react-hot-toast';
 import { useJsApiLoader } from '@react-google-maps/api';
+import { Toaster } from 'react-hot-toast';
 
 import Header from './components/layout/Header';
 import BottomNavigationBar from './components/layout/BottomNavigationBar';
@@ -42,12 +42,12 @@ const RootRedirector = () => {
 
 const useGlobalState = () => {
   const { isLoaded: isAuthLoaded, isSignedIn, getToken, userId } = useAuth();
-  
-  const [profileStatus, setProfileStatus] = useState({ 
-    isLoadingUserProfile: true, 
-    isComplete: false, 
-    currentUserRole: null, 
-    currentUserDataFromDB: null 
+
+  const [profileStatus, setProfileStatus] = useState({
+    isLoadingUserProfile: true,
+    isComplete: false,
+    currentUserRole: null,
+    currentUserDataFromDB: null,
   });
 
   const [activeSearchLocation, setActiveSearchLocation] = useState(null);
@@ -55,118 +55,136 @@ const useGlobalState = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState([]);
 
-  const DONATION_NOTIFICATION_TYPES = useMemo(() => [
-      'SOLICITUD','HORARIO_CONFIRMADO','HORARIO_RECHAZADO','GENERAL'
-  ], []);
-  
-  const REQUEST_NOTIFICATION_TYPES = useMemo(() => [
-      'APROBACION','RECHAZO','ENTREGA'
-  ], []);
+  const DONATION_NOTIFICATION_TYPES = useMemo(() => ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO', 'GENERAL'], []);
+  const REQUEST_NOTIFICATION_TYPES = useMemo(() => ['APROBACION', 'RECHAZO', 'ENTREGA'], []);
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.leida).length, [notifications]);
 
-  const hasNewDonationNotifications = useMemo(() => 
-      notifications.some(n => !n.leida && DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion)), 
-      [notifications, DONATION_NOTIFICATION_TYPES]
+  const hasNewDonationNotifications = useMemo(
+    () => notifications.some(n => !n.leida && DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion)),
+    [notifications, DONATION_NOTIFICATION_TYPES]
   );
 
-  const hasNewRequestNotifications = useMemo(() => 
-      notifications.some(n => !n.leida && REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion)), 
-      [notifications, REQUEST_NOTIFICATION_TYPES]
+  const hasNewRequestNotifications = useMemo(
+    () => notifications.some(n => !n.leida && REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion)),
+    [notifications, REQUEST_NOTIFICATION_TYPES]
   );
 
-  const updateProfileState = useCallback((userData) => {
-      setProfileStatus({ 
-        isLoadingUserProfile: false, 
-        isComplete: !!userData?.rol, 
-        currentUserRole: userData?.rol || null, 
-        currentUserDataFromDB: userData 
-      });
+  const updateProfileState = useCallback(userData => {
+    setProfileStatus({
+      isLoadingUserProfile: false,
+      isComplete: !!userData?.rol,
+      currentUserRole: userData?.rol || null,
+      currentUserDataFromDB: userData,
+    });
   }, []);
 
-  const triggerDonationReFetch = () => { setDonationCreationTimestamp(Date.now()); };
+  const triggerDonationReFetch = () => {
+    setDonationCreationTimestamp(Date.now());
+  };
 
-  const addNotification = useCallback((newNotification) => {
-      setNotifications(prev => {
-          if (prev.some(n => n._id === newNotification._id)) return prev;
-          return [newNotification, ...prev];
-      });
+  const addNotification = useCallback(newNotification => {
+    setNotifications(prev => {
+      if (prev.some(n => n._id === newNotification._id)) return prev;
+      return [newNotification, ...prev];
+    });
   }, []);
 
   useEffect(() => {
-      if (!isAuthLoaded) return; 
+    if (!isAuthLoaded) return;
 
-      const resetUserState = () => {
-          updateProfileState(null);
-          setActiveSearchLocation(null);
-          setNotifications([]);
-      };
-      
-      const fetchUserProfileFunction = async () => {
-          if (!isSignedIn) {
-              resetUserState();
-              return;
+    const resetUserState = () => {
+      updateProfileState(null);
+      setActiveSearchLocation(null);
+      setNotifications([]);
+    };
+
+    const fetchUserProfileFunction = async () => {
+      if (!isSignedIn) {
+        resetUserState();
+        return;
+      }
+
+      resetUserState();
+      setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
+
+      try {
+        const token = await getToken();
+
+        const profileResponse = await fetch(`${API_BASE_URL}/api/usuario/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (profileResponse.status === 404) {
+          setProfileStatus({
+            isLoadingUserProfile: false,
+            isComplete: false,
+            currentUserRole: null,
+            currentUserDataFromDB: null,
+          });
+          return;
+        }
+
+        if (!profileResponse.ok) {
+          const errorData = await profileResponse.json();
+          throw new Error(errorData.message || 'Error al obtener el perfil.');
+        }
+
+        const profileData = await profileResponse.json();
+        updateProfileState(profileData.user);
+
+        try {
+          const notificationsResponse = await fetch(`${API_BASE_URL}/api/notificacion`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (notificationsResponse.ok) {
+            const notificationsData = await notificationsResponse.json();
+            setNotifications(notificationsData.notificaciones || []);
+          } else {
+            console.warn('No se pudieron cargar las notificaciones.');
           }
+        } catch (notifError) {
+          console.error('Error al obtener notificaciones:', notifError);
+        }
+      } catch (error) {
+        console.error('Error crítico en fetchUserProfileFunction:', error.message);
+        resetUserState();
+      }
+    };
 
-          resetUserState(); 
-          setProfileStatus(prev => ({ ...prev, isLoadingUserProfile: true }));
-          
-          try {
-              const token = await getToken();
-              
-              const profileResponse = await fetch(`${API_BASE_URL}/api/usuario/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-              
-              if (profileResponse.status === 404) {
-                  setProfileStatus({ isLoadingUserProfile: false, isComplete: false, currentUserRole: null, currentUserDataFromDB: null });
-                  return;
-              }
-              
-              if (!profileResponse.ok) {
-                const errorData = await profileResponse.json();
-                throw new Error(errorData.message || "Error al obtener el perfil.");
-              }
-
-              const profileData = await profileResponse.json();
-              updateProfileState(profileData.user);
-
-              try {
-                  const notificationsResponse = await fetch(`${API_BASE_URL}/api/notificacion`, { headers: { 'Authorization': `Bearer ${token}` } });
-                  if (notificationsResponse.ok) {
-                      const notificationsData = await notificationsResponse.json();
-                      setNotifications(notificationsData.notificaciones || []);
-                  } else {
-                      console.warn("No se pudieron cargar las notificaciones.");
-                  }
-              } catch (notifError) {
-                  console.error("Error al obtener notificaciones:", notifError);
-              }
-
-          } catch (error) {
-              console.error("Error crítico en fetchUserProfileFunction:", error.message);
-              resetUserState();
-          }
-      };
-
-      fetchUserProfileFunction();
+    fetchUserProfileFunction();
   }, [isAuthLoaded, isSignedIn, getToken, updateProfileState]);
 
   return {
-      ...profileStatus,
-      updateProfileState,
-      currentClerkUserId: userId,
-      activeSearchLocation,
-      setActiveSearchLocation,
-      donationCreationTimestamp,
-      triggerDonationReFetch,
-      searchQuery,
-      setSearchQuery,
-      notifications,
-      setNotifications,
-      unreadCount,
-      addNotification,
-      hasNewRequestNotifications,
-      hasNewDonationNotifications,
+    ...profileStatus,
+    updateProfileState,
+    currentClerkUserId: userId,
+    activeSearchLocation,
+    setActiveSearchLocation,
+    donationCreationTimestamp,
+    triggerDonationReFetch,
+    searchQuery,
+    setSearchQuery,
+    notifications,
+    setNotifications,
+    unreadCount,
+    addNotification,
+    hasNewRequestNotifications,
+    hasNewDonationNotifications,
   };
+};
+
+const ProtectedLayout = ({ adminOnly = false }) => {
+  const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
+  if (isLoadingUserProfile)
+    return (
+      <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
+        <p>Verificando tu perfil...</p>
+      </div>
+    );
+  if (!isComplete) return <CompleteProfilePage onProfileComplete={updateProfileState} />;
+  if (adminOnly && currentUserRole !== 'ADMIN') return <Navigate to="/dashboard" replace />;
+  return <Outlet />;
 };
 
 const AppContent = () => {
@@ -174,6 +192,15 @@ const AppContent = () => {
   useSocket(appStateHook.addNotification);
 
   const contextValueForProvider = useMemo(() => appStateHook, [appStateHook]);
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries,
+  });
+
+  if (!isLoaded) {
+    return <div className="text-center py-20">Cargando mapas...</div>;
+  }
 
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
@@ -186,17 +213,23 @@ const AppContent = () => {
               <Route path="/" element={<RootRedirector />} />
               <Route path="/sign-in/*" element={<SignInPage />} />
               <Route path="/sign-up/*" element={<SignUpPage />} />
-              
-              {/* 🔥 TEST: rutas sin SignedIn ni ProtectedLayout */}
-              <Route path="/mis-donaciones" element={<MyDonationsPage />} />
-              <Route path="/mis-solicitudes" element={<MyRequestsPage />} />
 
-              {/* resto igual */}
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={appStateHook.triggerDonationReFetch} />} />
-              <Route path="/mi-perfil" element={<MiPerfilPage />} />
-              <Route path="/perfil/:id" element={<UserProfilePage />} />
-              <Route path="/admin" element={<AdminDashboardPage />} />
+              {/* Rutas protegidas */}
+              <Route element={<SignedIn><ProtectedLayout /></SignedIn>}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/publicar-donacion" element={<NewDonationPage onDonationCreated={appStateHook.triggerDonationReFetch} />} />
+                <Route path="/mis-donaciones" element={<MyDonationsPage />} />
+                <Route path="/mis-solicitudes" element={<MyRequestsPage />} />
+                <Route path="/mi-perfil" element={<MiPerfilPage />} />
+                <Route path="/perfil/:id" element={<UserProfilePage />} />
+              </Route>
+
+              {/* Rutas de admin */}
+              <Route element={<SignedIn><ProtectedLayout adminOnly={true} /></SignedIn>}>
+                <Route path="/admin" element={<AdminDashboardPage />} />
+              </Route>
+
+              {/* Rutas públicas */}
               <Route path="/politicaPrivacidad" element={<PoliticaPrivacidad />} />
               <Route path="/formularioContacto" element={<FormularioContacto />} />
               <Route path="/politicaUsoDatos" element={<PoliticaUsoDatos />} />
@@ -216,22 +249,9 @@ const AppContent = () => {
 
 function App() {
   if (!GOOGLE_MAPS_API_KEY) {
-    console.error("ADVERTENCIA: VITE_GOOGLE_MAPS_API_KEY no está definida.");
+    console.error('ADVERTENCIA: VITE_GOOGLE_MAPS_API_KEY no está definida.');
   }
-
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries,
-  });
-
-  if (!isLoaded) return <div>Cargando mapa...</div>;
-
-  return (
-    <>
-      <Toaster position="top-center" reverseOrder={false} />
-      <AppContent />
-    </>
-  );
+  return <AppContent />;
 }
 
 export default App;
