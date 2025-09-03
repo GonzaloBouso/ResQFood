@@ -7,8 +7,7 @@ import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 // --- COMPONENTE INTERNO REFACTORIZADO Y ROBUSTO ---
-// Mover la lógica de cada tarjeta a su propio componente ayuda a aislar el renderizado
-// y a prevenir errores que afecten a toda la página.
+// La lógica de cada tarjeta ahora vive en su propio componente aislado.
 const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy }) => {
     
     // Guarda de seguridad: si la solicitud o sus datos críticos son inválidos, no renderizamos la tarjeta.
@@ -73,6 +72,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
     );
 };
 
+
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
@@ -82,6 +82,7 @@ const MyRequestsPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const fetchSolicitudes = useCallback(async () => {
+        // isLoading no se resetea aquí para recargas suaves
         try {
             const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/solicitud/mis-solicitudes`, { headers: { 'Authorization': `Bearer ${token}` } });
