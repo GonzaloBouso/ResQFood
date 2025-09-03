@@ -175,16 +175,32 @@ const useGlobalState = () => {
 };
 
 const ProtectedLayout = ({ adminOnly = false }) => {
-  const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
-  if (isLoadingUserProfile)
-    return (
-      <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
-        <p>Verificando tu perfil...</p>
-      </div>
-    );
-  if (!isComplete) return <CompleteProfilePage onProfileComplete={updateProfileState} />;
-  if (adminOnly && currentUserRole !== 'ADMIN') return <Navigate to="/dashboard" replace />;
-  return <Outlet />;
+    const { isLoadingUserProfile, isComplete, currentUserRole, currentUserDataFromDB } = useContext(ProfileStatusContext);
+
+    // 1. Muestra un loader mientras la petición del perfil está en curso.
+    if (isLoadingUserProfile) {
+        return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
+    }
+
+    // 2. --- LA CORRECCIÓN CLAVE ---
+    // Si la carga terminó pero NO hay datos de usuario, significa que algo falló.
+    // NO intentamos renderizar la página hija. Esto detiene la "race condition".
+    if (!currentUserDataFromDB) {
+        return <div className="text-center py-20">Error al cargar datos de sesión. Por favor, refresca la página.</div>;
+    }
+
+    // 3. Si el perfil no está completo, SIEMPRE redirige a la página para completarlo.
+    if (!isComplete) {
+        return <CompleteProfilePage onProfileComplete={useContext(ProfileStatusContext).updateProfileState} />;
+    }
+    
+    // 4. Lógica para el rol de admin
+    if (adminOnly && currentUserRole !== 'ADMIN') {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    // 5. Solo si TODAS las comprobaciones anteriores pasan, se permite el renderizado de la página hija.
+    return <Outlet />;
 };
 
 const AppContent = () => {
