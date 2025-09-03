@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
-import { ChevronDown, Loader2, CheckCircle, Clock, XCircle } from 'lucide-react';
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
 import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
@@ -15,7 +14,7 @@ const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting })
         if (rechazoReciente) {
             return (
                 <div className="p-3 bg-red-50 border-t text-red-700 text-xs flex items-center gap-2">
-                    <XCircle size={16}/>
+                    <span>❌</span>
                     <span>El horario propuesto a <strong>{rechazoReciente.solicitanteId?.nombre}</strong> fue rechazado. La donación vuelve a estar disponible.</span>
                 </div>
             );
@@ -59,7 +58,6 @@ const MyDonationsPage = () => {
     const { getToken } = useAuth();
     const { setNotifications, currentUserDataFromDB } = useContext(ProfileStatusContext);
 
-    // --- SE VUELVE A LA LÓGICA DE ESTADO ORIGINAL Y ROBUSTA ---
     const [donaciones, setDonaciones] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -74,7 +72,7 @@ const MyDonationsPage = () => {
             const response = await fetch(`${API_BASE_URL}/api/donacion/mis-donaciones-activas`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('No se pudieron cargar tus donaciones.');
             const data = await response.json();
-            setDonaciones(data.donaciones || []);
+            setDonaciones(data.donaciones);
         } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     }, [getToken]);
 
@@ -171,7 +169,7 @@ const MyDonationsPage = () => {
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
 
-    if (isLoading) return <div className="text-center py-20"><Loader2 className="animate-spin inline-block mr-2" /> Cargando...</div>;
+    if (isLoading) return <div className="text-center py-20"><span>Cargando...</span></div>;
     if (error) return <div className="text-center py-20 text-red-600"><strong>Error:</strong> {error}</div>;
 
     return (
@@ -196,7 +194,7 @@ const MyDonationsPage = () => {
                                             'bg-gray-100 text-gray-800'
                                         }`}>{donacion.estadoPublicacion?.replace('-', ' ')}</div>
                                     </div>
-                                    <ChevronDown className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} size={20} />
+                                    <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
                                 </div>
                                 
                                 {isExpanded && (
@@ -211,7 +209,7 @@ const MyDonationsPage = () => {
                                                 
                                                 {entregaActiva.estadoEntrega === 'PENDIENTE_CONFIRMACION_SOLICITANTE' && (
                                                     <div className="flex items-center gap-2 text-yellow-700 bg-yellow-100 p-2 rounded-md">
-                                                        <Clock size={16} />
+                                                        <span>🕒</span>
                                                         <span className="text-xs font-medium">Esperando confirmación del horario por el receptor.</span>
                                                     </div>
                                                 )}
@@ -219,7 +217,7 @@ const MyDonationsPage = () => {
                                                 {entregaActiva.estadoEntrega === 'LISTA_PARA_RETIRO' && (
                                                     <>
                                                         <div className="flex items-center gap-2 text-green-700 bg-green-100 p-2 rounded-md mb-3">
-                                                            <CheckCircle size={16} />
+                                                            <span>✔️</span>
                                                             <span className="text-xs font-medium">¡Horario confirmado! Listo para el retiro.</span>
                                                         </div>
                                                         <ConfirmarEntregaForm onConfirm={(codigo) => handleCompleteDelivery(entregaActiva._id, codigo)} isSubmitting={isSubmitting} />
