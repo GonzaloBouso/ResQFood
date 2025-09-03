@@ -175,16 +175,41 @@ const useGlobalState = () => {
 };
 
 const ProtectedLayout = ({ adminOnly = false }) => {
-  const { isLoadingUserProfile, isComplete, currentUserRole, updateProfileState } = useContext(ProfileStatusContext);
-  if (isLoadingUserProfile)
-    return (
-      <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
-        <p>Verificando tu perfil...</p>
-      </div>
-    );
-  if (!isComplete) return <CompleteProfilePage onProfileComplete={updateProfileState} />;
-  if (adminOnly && currentUserRole !== 'ADMIN') return <Navigate to="/dashboard" replace />;
-  return <Outlet />;
+    const { 
+        isLoadingUserProfile, 
+        isComplete, 
+        currentUserRole, 
+        updateProfileState, 
+        currentUserDataFromDB 
+    } = useContext(ProfileStatusContext);
+
+
+    if (isLoadingUserProfile) {
+        return (
+            <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
+                <p>Verificando tu perfil...</p>
+            </div>
+        );
+    }
+    
+    if (!currentUserDataFromDB) {
+        return (
+            <div className="text-center py-20">
+                <p>Error al cargar la sesión.</p>
+                <p className="text-sm text-gray-600 mt-2">Por favor, refresca la página o intenta iniciar sesión de nuevo.</p>
+            </div>
+        );
+    }
+
+    if (!isComplete) {
+        return <CompleteProfilePage onProfileComplete={updateProfileState} />;
+    }
+ 
+    if (adminOnly && currentUserRole !== 'ADMIN') {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return <Outlet />;
 };
 
 const AppContent = () => {
