@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignedIn, ClerkLoaded, useAuth } from '@clerk/clerk-react';
-import { LoadScript } from '@react-google-maps/api';
+import { useJsApiLoader } from '@react-google-maps/api';
 import { Toaster } from 'react-hot-toast';
 
 import Header from './components/layout/Header';
@@ -192,10 +192,9 @@ const AppContent = () => {
   return (
     <ProfileStatusContext.Provider value={contextValueForProvider}>
         <div className="flex flex-col min-h-screen bg-gray-50">
-            <Toaster position="top-center" reverseOrder={false} />
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24 md:pb-12">
-            <ClerkLoaded>
+              <ClerkLoaded>
                 <Routes>
                     <Route path="/" element={<RootRedirector />} />
                     <Route path="/sign-in/*" element={<SignInPage />} />
@@ -219,7 +218,7 @@ const AppContent = () => {
                     <Route path="/terminosCondiciones" element={<TerminosCondiciones />} />
                     <Route path="/formulario-voluntario" element={<FormularioVoluntario />} />
                 </Routes>
-            </ClerkLoaded>
+              </ClerkLoaded>
             </main>
             <BottomNavigationBar />
             <Footer />
@@ -229,8 +228,25 @@ const AppContent = () => {
 };
 
 function App() {
-    if (!GOOGLE_MAPS_API_KEY) { console.error("ADVERTENCIA: VITE_GOOGLE_MAPS_API_KEY no está definida."); }
-    return (<LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY} libraries={libraries}><AppContent /></LoadScript>);
+    if (!GOOGLE_MAPS_API_KEY) { 
+      console.error("ADVERTENCIA: VITE_GOOGLE_MAPS_API_KEY no está definida."); 
+    }
+
+    const { isLoaded } = useJsApiLoader({
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+      libraries,
+    });
+
+    if (!isLoaded) {
+      return <div className="text-center py-20">Cargando mapa...</div>;
+    }
+
+    return (
+      <>
+        <Toaster position="top-center" reverseOrder={false} />
+        <AppContent />
+      </>
+    );
 }
 
 export default App;
