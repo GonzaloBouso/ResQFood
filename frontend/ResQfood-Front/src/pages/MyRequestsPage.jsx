@@ -6,10 +6,11 @@ import { Loader2, CheckCircle, XCircle, Clock, Gift, Copy, ThumbsDown } from 'lu
 import toast from 'react-hot-toast';
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
-// --- COMPONENTE INTERNO REFACTORIZADO Y ROBUSTO ---
+// --- COMPONENTE AISLADO PARA CADA TARJETA ---
+// Esto previene los errores de renderizado en móviles.
 const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy }) => {
     
-    // Guarda de seguridad: si la solicitud o sus datos críticos son inválidos, no renderizamos la tarjeta.
+    // Guarda de seguridad por si llegan datos inconsistentes
     if (!solicitud || !solicitud.donacionId || !solicitud.donanteId) {
         return null;
     }
@@ -75,6 +76,8 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy })
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
+
+    // --- SE VUELVE A TU LÓGICA DE ESTADO ORIGINAL Y ROBUSTA ---
     const [solicitudes, setSolicitudes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -88,9 +91,9 @@ const MyRequestsPage = () => {
             const data = await response.json();
             setSolicitudes(data.solicitudes || []);
         } catch (err) { 
-            setError(err.message); 
+            setError(err.message);
         } finally { 
-            setIsLoading(false); 
+            setIsLoading(false);
         }
     }, [getToken]);
 
@@ -149,7 +152,7 @@ const MyRequestsPage = () => {
         toast.success('¡Código copiado!');
     };
 
-    // Guarda de renderizado para evitar errores en móviles
+    // Guarda de renderizado para prevenir la "race condition"
     if (!currentUserDataFromDB) {
         return <div className="text-center py-20">Cargando datos de usuario...</div>;
     }
