@@ -6,7 +6,7 @@ import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModa
 import EditarPerfilModal from '../components/profile/EditarPerfilModal';
 import HistorialDonacion from '../components/layout/HistorialDonacion';
 import HistorialRecepcion from '../components/layout/HistorialRecepcion';
-import { InfoUsuarioGeneralDinamico, InfoUsuarioEmpresaDinamico } from '../components/profile/InfoUsuarioDinamico'; // Asumimos que moveremos los componentes de Info aquí
+import { InfoUsuarioGeneralDinamico, InfoUsuarioEmpresaDinamico } from '../components/profile/InfoUsuarioDinamico';
 
 const MiPerfilPage = () => {
     const { currentUserDataFromDB, isLoadingUserProfile, updateProfileState } = useContext(ProfileStatusContext);

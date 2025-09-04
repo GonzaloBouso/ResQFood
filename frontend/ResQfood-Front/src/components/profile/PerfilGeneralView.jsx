@@ -9,7 +9,7 @@ const PerfilGeneralView = ({ userData, isEditable, onEditPhotoClick, onEditInfoC
 
   return (
     <div>
-     
+      {/* SECCIÓN DE CABECERA DEL PERFIL */}
       <div className="relative flex flex-col items-center sm:flex-row sm:items-start sm:gap-8 p-6 bg-white rounded-xl shadow-lg">
         <div className="relative w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0">
           <div className="w-full h-full rounded-full bg-gray-200 overflow-hidden border-4 border-white shadow-md">
