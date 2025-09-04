@@ -6,13 +6,12 @@ import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModa
 import EditarPerfilModal from '../components/profile/EditarPerfilModal';
 import HistorialDonacion from '../components/layout/HistorialDonacion';
 import HistorialRecepcion from '../components/layout/HistorialRecepcion';
+import { InfoUsuarioGeneralDinamico, InfoUsuarioEmpresaDinamico } from '../components/profile/InfoUsuarioDinamico'; // Asumimos que moveremos los componentes de Info aquí
 
 const MiPerfilPage = () => {
     const { currentUserDataFromDB, isLoadingUserProfile, updateProfileState } = useContext(ProfileStatusContext);
     
- 
     const [activeTab, setActiveTab] = useState('info'); 
-
     const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
 
@@ -33,14 +32,26 @@ const MiPerfilPage = () => {
         setIsInfoModalOpen(false);
     };
 
-    
-    const ProfileHeaderComponent = currentUserDataFromDB.rol === 'LOCAL' 
-        ? PerfilEmpresaView 
-        : PerfilGeneralView;
+    const isGeneralUser = currentUserDataFromDB.rol === 'GENERAL';
+    const ProfileHeaderComponent = isGeneralUser ? PerfilGeneralView : PerfilEmpresaView;
+    const InfoComponent = isGeneralUser ? InfoUsuarioGeneralDinamico : InfoUsuarioEmpresaDinamico;
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'info':
+                return <InfoComponent userData={currentUserDataFromDB} />;
+            case 'hechas':
+                return <HistorialDonacion userId={currentUserDataFromDB._id} />;
+            case 'recibidas':
+                return isGeneralUser ? <HistorialRecepcion userId={currentUserDataFromDB._id} /> : null;
+            default:
+                return <InfoComponent userData={currentUserDataFromDB} />;
+        }
+    };
 
     return (
-        <div className="max-w-4xl mx-auto">
-            {/* Cabecera del Perfil */}
+        <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+            {/* 1. Cabecera del Perfil (Ahora solo muestra la parte superior) */}
             <ProfileHeaderComponent 
                 userData={currentUserDataFromDB}
                 isEditable={true}
@@ -48,48 +59,42 @@ const MiPerfilPage = () => {
                 onEditInfoClick={() => setIsInfoModalOpen(true)}
             />
             
-            {/* Navegación de Pestañas */}
-            <div className="mt-6 border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button
-                        onClick={() => setActiveTab('info')}
-                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                            activeTab === 'info' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }`}
-                    >
-                        Información
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('hechas')}
-                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                            activeTab === 'hechas' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }`}
-                    >
-                        Donaciones Hechas
-                    </button>
-                    
-                    {currentUserDataFromDB.rol === 'GENERAL' && (
-                        <button
-                            onClick={() => setActiveTab('recibidas')}
-                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                                activeTab === 'recibidas' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
-                        >
-                            Donaciones Recibidas
-                        </button>
-                    )}
-                </nav>
+            {/* 2. Navegación de Pestañas (Única y controlada por esta página) */}
+            <div className="mt-8">
+              <div className="flex justify-center border-b border-gray-200">
+                  <button
+                      onClick={() => setActiveTab('info')}
+                      className={`px-4 py-3 text-sm font-medium ${
+                          activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                      Información
+                  </button>
+                  <button
+                      onClick={() => setActiveTab('hechas')}
+                      className={`px-4 py-3 text-sm font-medium ${
+                          activeTab === 'hechas' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                      Donaciones Hechas
+                  </button>
+                  
+                  {isGeneralUser && (
+                      <button
+                          onClick={() => setActiveTab('recibidas')}
+                          className={`px-4 py-3 text-sm font-medium ${
+                              activeTab === 'recibidas' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                      >
+                          Donaciones Recibidas
+                      </button>
+                  )}
+              </div>
             </div>
 
-            {/* Contenido de las Pestañas */}
+            {/* 3. Contenido de las Pestañas */}
             <div className="mt-6">
-                {activeTab === 'info' && (
-                    <div className="text-center p-4 bg-white rounded-lg shadow-sm border">
-                        
-                    </div>
-                )}
-                {activeTab === 'hechas' && <HistorialDonacion />}
-                {activeTab === 'recibidas' && currentUserDataFromDB.rol === 'GENERAL' && <HistorialRecepcion />}
+                {renderTabContent()}
             </div>
 
             {/* Modales */}
