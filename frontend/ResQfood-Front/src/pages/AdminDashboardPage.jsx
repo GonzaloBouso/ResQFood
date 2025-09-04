@@ -1,13 +1,13 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { Search, Edit, ShieldAlert, Users } from 'lucide-react';
+import { Search, Edit, ShieldAlert, Users, BookText } from 'lucide-react'; 
 import API_BASE_URL from '../api/config';
 import ManageUserModal from '../components/modals/ManageUserModal';
-import TablaReportes from '../components/admin/TablaReportes'; // Asumiendo que creaste este componente
+import TablaReportes from '../components/admin/TablaReportes'; 
+import BitacoraTable from '../components/admin/BitacoraTable'; 
 import toast from 'react-hot-toast';
 
-// --- Sub-componente para la Tabla de Usuarios (sin cambios) ---
+
 const UserTable = ({ users, onEditUser }) => {
     if (!users || users.length === 0) {
         return <p className="text-center text-gray-500 py-10">No se encontraron usuarios con los filtros actuales.</p>;
@@ -41,7 +41,7 @@ const UserTable = ({ users, onEditUser }) => {
     );
 };
 
-// --- Sub-componente para la Paginación (sin cambios) ---
+
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -63,6 +63,7 @@ const AdminDashboardPage = () => {
     const [vistaActual, setVistaActual] = useState('usuarios'); 
     const [users, setUsers] = useState([]);
     const [reportes, setReportes] = useState([]);
+    const [bitacora, setBitacora] = useState([]); 
     const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalItems: 0 });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -104,15 +105,39 @@ const AdminDashboardPage = () => {
         }
     }, [getToken]);
 
+   
+    const fetchBitacora = useCallback(async () => {
+        setIsLoading(true); 
+        setError(null);
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/bitacoraAdmin`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || 'No se pudo cargar la bitácora.');
+            }
+            const data = await response.json();
+            setBitacora(data.bitacora);
+        } catch (err) { 
+            setError(err.message); 
+        } finally { 
+            setIsLoading(false); 
+        }
+    }, [getToken]);
+
+    
     useEffect(() => {
         if (vistaActual === 'usuarios') {
             const debounceTimer = setTimeout(() => { fetchUsers(page, filters); }, 300);
             return () => clearTimeout(debounceTimer);
         } else if (vistaActual === 'reportes') {
             fetchReportes();
+        } else if (vistaActual === 'bitacora') {
+            fetchBitacora();
         }
-    }, [page, filters, vistaActual, fetchUsers, fetchReportes]);
-    
+    }, [page, filters, vistaActual, fetchUsers, fetchReportes, fetchBitacora]);
     
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -124,12 +149,16 @@ const AdminDashboardPage = () => {
         setVistaActual(view);
         setError(null);
         setPage(1);
-        setPagination({ currentPage: 1, totalPages: 1, totalItems: 0 });
-        setUsers([]);
-        setReportes([]);
     };
     
-    const handleUpdateAndRefresh = () => { setEditingUser(null); fetchUsers(page, filters); };
+    const handleUpdateAndRefresh = () => {
+        setEditingUser(null);
+        fetchUsers(page, filters);
+        
+        if (vistaActual === 'bitacora') {
+            fetchBitacora();
+        }
+    };
     
     const handleResolverReporte = async (reporteId) => { toast.error("Función no implementada"); };
     const handleSuspenderUsuario = async (userId, reporteId) => { toast.error("Función no implementada"); };
@@ -139,13 +168,18 @@ const AdminDashboardPage = () => {
         <div className="container mx-auto py-10">
             <h1 className="text-4xl font-bold mb-8">Panel de Administrador</h1>
             
+            
             <div className="mb-6 flex border-b">
                 <button onClick={() => handleViewChange('usuarios')} className={`px-4 py-2 font-semibold flex items-center gap-2 ${vistaActual === 'usuarios' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}><Users size={18}/> Gestión de Usuarios</button>
                 <button onClick={() => handleViewChange('reportes')} className={`px-4 py-2 font-semibold flex items-center gap-2 ${vistaActual === 'reportes' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>
                     <ShieldAlert size={18}/> Gestión de Reportes {reportes.length > 0 && <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{reportes.length}</span>}
                 </button>
+                <button onClick={() => handleViewChange('bitacora')} className={`px-4 py-2 font-semibold flex items-center gap-2 ${vistaActual === 'bitacora' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}>
+                    <BookText size={18}/> Bitácora de Actividad
+                </button>
             </div>
 
+            
             {vistaActual === 'usuarios' && (
                 <div className="bg-white p-6 rounded-lg shadow-md animate-fade-in-up">
                     <h2 className="text-2xl font-semibold mb-4">Usuarios Registrados ({pagination.totalItems || 0})</h2>
@@ -171,12 +205,23 @@ const AdminDashboardPage = () => {
                 </div>
             )}
 
+          
             {vistaActual === 'reportes' && (
                 <div className="bg-white p-6 rounded-lg shadow-md animate-fade-in-up">
                     <h2 className="text-2xl font-semibold mb-4">Reportes Pendientes ({reportes.length})</h2>
                     {isLoading ? <p className="text-center py-10">Cargando...</p> 
                                : error ? <p className="text-center py-10 text-red-500">{error}</p> 
                                : <TablaReportes reportes={reportes} onResolver={handleResolverReporte} onSuspenderUsuario={handleSuspenderUsuario} onEliminarDonacion={handleEliminarDonacion}/>}
+                </div>
+            )}
+
+          
+            {vistaActual === 'bitacora' && (
+                 <div className="bg-white p-6 rounded-lg shadow-md animate-fade-in-up">
+                    <h2 className="text-2xl font-semibold mb-4">Registro de Actividad de Administradores</h2>
+                    {isLoading ? <p className="text-center py-10">Cargando bitácora...</p> 
+                               : error ? <p className="text-center py-10 text-red-500">{error}</p> 
+                               : <BitacoraTable registros={bitacora} />}
                 </div>
             )}
 

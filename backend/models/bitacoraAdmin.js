@@ -1,12 +1,13 @@
+
 import mongoose from 'mongoose';
 
-const {Schema, Types} = mongoose;
+const { Schema, Types } = mongoose;
 
 const bitacoraAccionesAdminSchema = new Schema(
   {
     actorId: {
       type: Types.ObjectId,
-      ref: 'User', // Referencia a la colección de usuarios
+      ref: 'User', 
       required: true,
       index: true,
     },
@@ -16,35 +17,30 @@ const bitacoraAccionesAdminSchema = new Schema(
     },
     tipoElementoAfectado: {
       type: String,
-      enum: ['User', 'Donacion', 'Solicitud', 'Entrega', 'Reporte'], // Opcional pero limitado a tipos conocidos
+      enum: ['User', 'Donacion', 'Solicitud', 'Entrega', 'Reporte'],
       default: null,
     },
     elementoAfectadoId: {
       type: Types.ObjectId,
-      default: null, // Relación opcional a cualquier elemento afectado
+      default: null,
     },
     justificacionOMotivo: {
       type: String,
-      default: null, // Explicación opcional del motivo
+      default: null,
     },
     detallesAdicionales: {
-      type: Schema.Types.Mixed, // Permite guardar datos flexibles según la acción
+      type: Schema.Types.Mixed,
       default: null,
     },
     ipAddress: {
       type: String,
-      default: null, // Dirección IP opcional
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now, // Fecha de creación automática
-      immutable: true,
+      default: null,
     },
   },
   {
-    timestamps: false, // Ya usamos `createdAt`
-    versionKey: false, // Evita el uso de __v
+    timestamps: { createdAt: true, updatedAt: false }, 
+    versionKey: false,
   }
 );
 
-export default mongoose.model('BitacoraAccionesAdmin', bitacoraAccionesAdminSchema)
+export default mongoose.model('BitacoraAccionesAdmin', bitacoraAccionesAdminSchema);

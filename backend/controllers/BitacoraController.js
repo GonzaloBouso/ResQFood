@@ -1,14 +1,18 @@
+// backend/controllers/BitacoraController.js
+
 import Bitacora from '../models/bitacoraAdmin.js';
 
 export class BitacoraController {
-    static async createCambio (req, res){
+    static async getAllCambios(req, res) {
         try {
-            const nuevoCambio = new Bitacora(req.body);
-            await nuevoCambio.save()
-            res.status(200).json({message: 'Bitacora actualizada con éxito',nuevoCambio})
+            const cambios = await Bitacora.find({})
+                .populate('actorId', 'nombre email') // Trae el nombre y email del admin
+                .sort({ createdAt: -1 }); // Ordena del más reciente al más antiguo
+
+            res.status(200).json({ bitacora: cambios });
         } catch (error) {
-            console.error("Error al actualizar bitacora:", error);
-            res.status(400).json({message:'Error al ralizar cambio en la bitacora', error:error.message})
+            console.error("Error al obtener la bitácora:", error);
+            res.status(500).json({ message: 'Error interno del servidor al obtener la bitácora.' });
         }
     }
 }
