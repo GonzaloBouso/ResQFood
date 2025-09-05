@@ -7,29 +7,43 @@ import { getIoInstance, getSocketIdForUser } from '../socket.js';
 
 export class CalificacionController {
     static async createCalificacion(req, res){
+        console.log("--- INICIANDO createCalificacion ---");
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
+            console.log("Paso 1: Obteniendo datos del calificador.");
             const calificadorClerkId = req.auth?.userId;
             const calificador = await User.findOne({ clerkUserId: calificadorClerkId }).session(session);
-            if (!calificador) throw new Error('Usuario calificador no encontrado.');
-            
-            const { calificadoId, puntuacion, entregaId } = req.body;
+            if (!calificador) {
+              
+                throw new Error('Usuario calificador no encontrado en la base de datos.');
+            }
+            console.log(`Calificador encontrado: ${calificador.nombre}`);
 
-            // 1. Verificar que la entrega no haya sido calificada antes
+            const { calificadoId, puntuacion, entregaId } = req.body;
+            console.log("Paso 2: Datos recibidos del frontend ->", { calificadoId, puntuacion, entregaId });
+
+            if (!mongoose.Types.ObjectId.isValid(entregaId) || !mongoose.Types.ObjectId.isValid(calificadoId)) {
+                throw new Error('ID de entrega o de usuario calificado no es válido.');
+            }
+
+            console.log("Paso 3: Verificando la entrega.");
             const entrega = await Entrega.findById(entregaId).session(session);
             if (!entrega) throw new Error('La entrega asociada no existe.');
             if (entrega.calificacionRealizada) throw new Error('Esta entrega ya ha sido calificada.');
+            console.log("Entrega válida y no calificada.");
 
-            // 2. Crear y guardar la nueva calificación
+            console.log("Paso 4: Creando el documento de calificación.");
             const nuevaCalificacion = new Calificacion({ ...req.body, calificadorId: calificador._id });
             await nuevaCalificacion.save({ session });
+            console.log("Calificación guardada temporalmente.");
 
-            // 3. Actualizar la entrega para marcarla como calificada
+            console.log("Paso 5: Actualizando la entrega.");
             entrega.calificacionRealizada = true;
             await entrega.save({ session });
+            console.log("Entrega marcada como calificada.");
 
-            // 4. Encontrar y actualizar las estadísticas del usuario calificado (donante)
+            console.log("Paso 6: Actualizando estadísticas del usuario calificado.");
             const usuarioCalificado = await User.findById(calificadoId).session(session);
             if (!usuarioCalificado) throw new Error('Usuario calificado no encontrado.');
             
@@ -40,8 +54,9 @@ export class CalificacionController {
             usuarioCalificado.calificaciones.totalCalificaciones = nuevoTotalCalificaciones;
             usuarioCalificado.calificaciones.promedio = nuevoPromedio;
             await usuarioCalificado.save({ session });
+            console.log(`Estadísticas de ${usuarioCalificado.nombre} actualizadas.`);
             
-            // 5. Crear y enviar notificación al donante
+            console.log("Paso 7: Creando notificación para el donante.");
             const notificacion = new Notificacion({
                 destinatarioId: usuarioCalificado._id,
                 tipoNotificacion: 'NUEVA_CALIFICACION',
@@ -51,26 +66,33 @@ export class CalificacionController {
                 enlace: '/mi-perfil'
             });
             await notificacion.save({ session });
+            console.log("Notificación creada. Enviando por socket...");
 
             const io = getIoInstance();
             const donanteSocketId = getSocketIdForUser(usuarioCalificado.clerkUserId);
             if (donanteSocketId) {
                 io.to(donanteSocketId).emit('nueva_notificacion', notificacion.toObject());
+                console.log("Notificación enviada a socket ID:", donanteSocketId);
+            } else {
+                console.log("No se encontró socket para el donante.");
             }
 
-            // 6. Confirmar la transacción
+            console.log("Paso 8: Confirmando transacción (commit).");
             await session.commitTransaction();
             res.status(201).json({ message: 'Calificación creada exitosamente', calificacion: nuevaCalificacion });
+            console.log("--- createCalificacion COMPLETADO CON ÉXITO ---");
 
         } catch (error) {
             await session.abortTransaction();
-            console.error("Error al crear calificación:", error);
+            
+            console.error("--- ERROR EN createCalificacion ---");
+            console.error("Mensaje de error:", error.message);
+            console.error("Stack de error:", error.stack);
             res.status(500).json({ message:'Error al crear la calificación', error: error.message });
         } finally {
             session.endSession();
         }
     }
-
    
     static async getCalificacionesRecibidas(req, res) {
         try {
