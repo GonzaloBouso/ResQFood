@@ -44,6 +44,7 @@ const EntregaSchema = new mongoose.Schema(
             required: true, 
             index: true,
         },
+        calificacionRealizada: { type: Boolean, default: false },
         notasEntrega: { type: String, default: null },
         fechaCompletada: { type: Date, default: null },
         fechaFallida: { type: Date, default: null },

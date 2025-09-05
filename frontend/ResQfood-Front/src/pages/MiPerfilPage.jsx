@@ -6,6 +6,7 @@ import ChangePhotoProfileModal from '../components/layout/ChangePhotoProfileModa
 import EditarPerfilModal from '../components/profile/EditarPerfilModal';
 import HistorialDonacion from '../components/layout/HistorialDonacion';
 import HistorialRecepcion from '../components/layout/HistorialRecepcion';
+import CalificacionesRecibidas from '../components/profile/CalificacionesRecibidas'; 
 import { InfoUsuarioGeneralDinamico, InfoUsuarioEmpresaDinamico } from '../components/profile/InfoUsuarioDinamico';
 
 const MiPerfilPage = () => {
@@ -44,6 +45,8 @@ const MiPerfilPage = () => {
                 return <HistorialDonacion userId={currentUserDataFromDB._id} />;
             case 'recibidas':
                 return isGeneralUser ? <HistorialRecepcion userId={currentUserDataFromDB._id} /> : null;
+            case 'calificaciones': 
+                return <CalificacionesRecibidas userId={currentUserDataFromDB._id} />;
             default:
                 return <InfoComponent userData={currentUserDataFromDB} />;
         }
@@ -51,7 +54,7 @@ const MiPerfilPage = () => {
 
     return (
         <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-            {/* 1. Cabecera del Perfil (Ahora solo muestra la parte superior) */}
+            {/* 1. Cabecera del Perfil  */}
             <ProfileHeaderComponent 
                 userData={currentUserDataFromDB}
                 isEditable={true}
@@ -59,7 +62,7 @@ const MiPerfilPage = () => {
                 onEditInfoClick={() => setIsInfoModalOpen(true)}
             />
             
-            {/* 2. Navegación de Pestañas (Única y controlada por esta página) */}
+            {/* 2. Navegación de Pestañas */}
             <div className="mt-8">
               <div className="flex justify-center border-b border-gray-200">
                   <button
@@ -89,6 +92,14 @@ const MiPerfilPage = () => {
                           Donaciones Recibidas
                       </button>
                   )}
+                     <button
+                        onClick={() => setActiveTab('calificaciones')}
+                        className={`px-4 py-3 text-sm font-medium ${
+                          activeTab === 'calificaciones' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                      Calificaciones Recibidas
+                  </button>
               </div>
             </div>
 
