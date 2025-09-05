@@ -10,7 +10,7 @@ const notificacionSchema = new mongoose.Schema(
         },
         tipoNotificacion:{
             type:String,
-            enum: ['SOLICITUD', 'APROBACION', 'RECHAZO', 'ENTREGA', 'GENERAL', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO'],
+            enum: ['SOLICITUD', 'APROBACION', 'RECHAZO', 'ENTREGA', 'GENERAL', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO',   'NUEVA_CALIFICACION',],
             required:true,
         },
         mensaje:{
@@ -25,7 +25,7 @@ const notificacionSchema = new mongoose.Schema(
         },
         tipoReferencia:{
             type:String,
-            enum:['Donacion', 'Solicitud', 'Entrega', 'User'],
+            enum:['Donacion', 'Solicitud', 'Entrega', 'User', 'Calificacion'],
             default:null,
         },
         leida:{

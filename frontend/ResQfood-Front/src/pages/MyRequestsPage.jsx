@@ -27,16 +27,13 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy, o
                             <span>¡Retiro exitoso!</span>
                         </div>
                        
-                         {entrega && (
-                            entrega.calificacionRealizada ? (
-                                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Calificado</span>
-                            ) : (
-                                <button onClick={() => onCalificarClick(entrega)}
-                                    className="bg-yellow-400 text-yellow-900 font-bold text-xs px-3 py-1.5 rounded-full hover:bg-yellow-500 transition-colors">
-                                    Calificar Donante
-                                </button>
-                            )
-                        )}
+                         {entrega && entrega.estadoEntrega === 'COMPLETADA' && !entrega.calificacionRealizada && (
+                          <button onClick={() => onCalificarClick(entrega)}
+                           className="bg-yellow-400 text-yellow-900 font-bold text-xs px-3 py-1.5 rounded-full hover:bg-yellow-500 transition-colors"
+                            >
+                                 Calificar Donante
+                             </button>
+                         )}
                     </div>
                 );
 
