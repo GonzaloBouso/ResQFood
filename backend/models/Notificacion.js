@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const notificacionSchema = new mongoose.Schema(
@@ -10,7 +11,16 @@ const notificacionSchema = new mongoose.Schema(
         },
         tipoNotificacion:{
             type:String,
-            enum: ['SOLICITUD', 'APROBACION', 'RECHAZO', 'ENTREGA', 'GENERAL', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO',   'NUEVA_CALIFICACION',],
+            enum: [
+                'SOLICITUD', 
+                'APROBACION', 
+                'RECHAZO', 
+                'ENTREGA', 
+                'GENERAL', 
+                'HORARIO_CONFIRMADO', 
+                'HORARIO_RECHAZADO',
+                'NUEVA_CALIFICACION', 
+            ],
             required:true,
         },
         mensaje:{
@@ -25,7 +35,13 @@ const notificacionSchema = new mongoose.Schema(
         },
         tipoReferencia:{
             type:String,
-            enum:['Donacion', 'Solicitud', 'Entrega', 'User', 'Calificacion'],
+            enum:[
+                'Donacion', 
+                'Solicitud', 
+                'Entrega', 
+                'User', 
+                'Calificacion' 
+            ],
             default:null,
         },
         leida:{
@@ -37,14 +53,13 @@ const notificacionSchema = new mongoose.Schema(
             type:Date,
             default:null,
         },
-        createdAt:{
-            type:Date,
-            default:Date.now,
-        },
+       
+        datosEntrega: { type: Object, default: null }, 
     },
     {
         timestamps: true
     }
-)
+);
 
-export default mongoose.model('Notificacion', notificacionSchema)
+
+export default mongoose.model('Notificacion', notificacionSchema);
