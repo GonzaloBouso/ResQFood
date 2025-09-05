@@ -36,6 +36,11 @@ const estadisticasGeneralesSchema = new mongoose.Schema({
     numeroCalificacionesComoReceptor: { type: Number, default: 0 },
 });
 
+const calificacionesSchema = new mongoose.Schema({
+    promedio: { type: Number, default: 0 },
+    totalCalificaciones: { type: Number, default: 0 }
+});
+
 const permisosSchema = new mongoose.Schema({
     puedeSuspenderUsuarios: { type: Boolean, default: false },
     puedeEliminarPublicaciones: { type: Boolean, default: false },
@@ -78,6 +83,9 @@ const userSchema = new mongoose.Schema(
             type: estadisticasGeneralesSchema,
             default: null,
         },
+        calificaciones: { 
+            type: calificacionesSchema, 
+            default: () => ({}) },
         permisos: {
             type: permisosSchema,
             default: null,
