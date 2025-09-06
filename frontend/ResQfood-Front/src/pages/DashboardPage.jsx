@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import CardDonacion from '../components/donations/CardDonacion.jsx'; // Se ajusta la ruta por si acaso
+import CardDonacion from '../components/layout/CardDonacion.jsx';
 import WelcomeCard from '../components/layout/WelcomeCard.jsx'; 
 import HeroSlider from '../components/home_unregistered/HeroSlider.jsx';
 
