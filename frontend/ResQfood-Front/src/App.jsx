@@ -175,23 +175,39 @@ const useGlobalState = () => {
 };
 
 const ProtectedLayout = ({ adminOnly = false }) => {
-    const { isLoadingUserProfile, isComplete, currentUserRole, currentUserDataFromDB } = useContext(ProfileStatusContext);
+    const { 
+        isLoadingUserProfile, 
+        isComplete, 
+        currentUserRole, 
+        updateProfileState, 
+        currentUserDataFromDB 
+    } = useContext(ProfileStatusContext);
 
     // 1. Muestra un loader mientras la petición del perfil está en curso.
     if (isLoadingUserProfile) {
-        return <div className="flex justify-center items-center h-[calc(100vh-10rem)]"><p>Verificando tu perfil...</p></div>;
+        return (
+            <div className="flex justify-center items-center h-[calc(100vh-10rem)]">
+                <p>Verificando tu perfil...</p>
+            </div>
+        );
     }
-
+    
     // 2. --- LA CORRECCIÓN CLAVE ---
-    // Si la carga terminó pero NO hay datos de usuario, significa que algo falló.
-    // NO intentamos renderizar la página hija. Esto detiene la "race condition".
-    if (!currentUserDataFromDB) {
-        return <div className="text-center py-20">Error al cargar datos de sesión. Por favor, refresca la página.</div>;
-    }
-
-    // 3. Si el perfil no está completo, SIEMPRE redirige a la página para completarlo.
+    // Si la carga terminó y el perfil NO está completo, SIEMPRE muestra la página para completarlo.
+    // Esto maneja correctamente el caso del 404 para un nuevo usuario.
     if (!isComplete) {
-        return <CompleteProfilePage onProfileComplete={useContext(ProfileStatusContext).updateProfileState} />;
+        return <CompleteProfilePage onProfileComplete={updateProfileState} />;
+    }
+    
+    // 3. Si el perfil está completo pero por alguna razón no hay datos de usuario,
+    // es un estado de error inesperado.
+    if (!currentUserDataFromDB) {
+        return (
+            <div className="text-center py-20">
+                <p>Error al cargar los datos de sesión.</p>
+                <p className="text-sm text-gray-600 mt-2">Por favor, refresca la página.</p>
+            </div>
+        );
     }
     
     // 4. Lógica para el rol de admin
@@ -199,7 +215,7 @@ const ProtectedLayout = ({ adminOnly = false }) => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    // 5. Solo si TODAS las comprobaciones anteriores pasan, se permite el renderizado de la página hija.
+    // 5. Si todas las comprobaciones pasan, se permite el renderizado de la página hija.
     return <Outlet />;
 };
 
