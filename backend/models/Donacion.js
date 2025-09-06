@@ -1,4 +1,3 @@
-// backend/models/Donacion.js (CÓDIGO COMPLETO Y CORREGIDO)
 import mongoose from "mongoose";
 
 const { Schema } = mongoose;
