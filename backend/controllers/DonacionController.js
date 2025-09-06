@@ -146,7 +146,6 @@ export class DonacionController {
     // --- FUNCIÓN 'getDonacionesCercanas' CORREGIDA Y COMPLETADA ---
     static async getDonacionesCercanas(req, res) {
         try {
-            // 1. Se leen TODOS los posibles filtros de la URL
             const { lat, lon, distanciaMaxKm, q, categorias, rangoFecha } = req.query;
             
             if (!lat || !lon) {
@@ -155,16 +154,12 @@ export class DonacionController {
 
             const latNum = parseFloat(lat);
             const lonNum = parseFloat(lon);
-            const distanciaMaxMetros = (parseFloat(distanciaMaxKm) || 20) * 1000;
+            const distanciaMaxMetros = (parseFloat(distanciaMaxKm) || 50) * 1000;
 
-            // 2. Se construye el objeto de consulta base para MongoDB
             let query = {
                 'ubicacionRetiro.coordenadas': {
                     $nearSphere: {
-                        $geometry: {
-                            type: "Point",
-                            coordinates: [lonNum, latNum]
-                        },
+                        $geometry: { type: "Point", coordinates: [lonNum, latNum] },
                         $maxDistance: distanciaMaxMetros
                     }
                 },
@@ -172,18 +167,23 @@ export class DonacionController {
                 fechaExpiracionPublicacion: { $gte: new Date() }
             };
 
-            // 3. Se añaden los filtros adicionales de forma condicional
             if (q) {
                 const regex = new RegExp(q.trim(), 'i');
-                query.$or = [
-                    { titulo: regex },
-                    { descripcion: regex }
-                ];
+                query.$or = [{ titulo: regex }, { descripcion: regex }];
             }
 
+            // --- CORRECCIÓN CLAVE ---
+            // Se asegura de manejar correctamente los espacios en los nombres de las categorías.
             if (categorias) {
-                const categoriasArray = categorias.split(',');
-                query.categoria = { $in: categoriasArray };
+                const categoriasArray = categorias.split(',').map(cat => cat.trim());
+                // Si el array contiene "Frutas y Verduras", separamos la búsqueda
+                if (categoriasArray.includes("Frutas y Verduras")) {
+                    const otrasCategorias = categoriasArray.filter(c => c !== "Frutas y Verduras");
+                    query.$or = query.$or || [];
+                    query.$or.push({ categoria: { $in: ["Frutas y Verduras", ...otrasCategorias] } });
+                } else {
+                    query.categoria = { $in: categoriasArray };
+                }
             }
 
             if (rangoFecha === 'ultimaSemana') {
@@ -192,7 +192,6 @@ export class DonacionController {
                 query.createdAt = { $gte: unaSemanaAtras };
             }
 
-            // 4. Se ejecuta la consulta final con todos los filtros aplicados
             const donaciones = await Donacion.find(query)
                 .populate('donanteId', 'nombre fotoDePerfilUrl')
                 .sort({ createdAt: -1 });
@@ -204,6 +203,7 @@ export class DonacionController {
             res.status(500).json({ message: "Error interno al buscar donaciones." });
         }
     }
+    
 
     static async updateDonation(req, res) {
         try {
