@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Search } from 'lucide-react';
 
-const CATEGORIAS_DISPONIBLES = ["Frutas", "Panadería", "Comida preparada", "Verduras", "Lácteos", "Carnes"];
+const CATEGORIAS_DISPONIBLES = ["Frutas y verduras", "Panificados", "Comida preparada", "Enlatados y Conservas", "Lácteos", "Bebidas", "Otros"];
 
 const FilterModal = ({ isOpen, onClose, currentFilters, onFiltersChange, onResetFilters }) => {
     // Usamos un estado local para no modificar el estado global hasta que el usuario aplique los cambios.
