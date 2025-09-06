@@ -99,32 +99,30 @@ export class DonacionController {
         }
     }
 
- static async getDonacionesByUsuario(req, res) {
-    try {
-        const userId = req.params.id;
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'ID de usuario inválido.' });
+    static async getDonacionesByUsuario(req, res) {
+        try {
+            const userId = req.params.id;
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ message: 'ID de usuario inválido.' });
+            }
+
+            const donaciones = await Donacion.find({ 
+                donanteId: userId,
+                estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] },
+                fechaExpiracionPublicacion: { $gte: new Date() } 
+            })
+            .populate('donanteId', 'nombre fotoDePerfilUrl') 
+            .sort({ createdAt: -1 });
+
+            res.status(200).json({ donaciones });
+        } catch (error) {
+            console.error('Error al obtener las donaciones del usuario:', error);
+            res.status(500).json({
+                message: 'Error interno al obtener las donaciones del usuario',
+                errorDetails: error.message,
+            });
         }
-
-       
-        const donaciones = await Donacion.find({ 
-            donanteId: userId,
-            estadoPublicacion: { $in: ['DISPONIBLE', 'PENDIENTE-ENTREGA'] },
-            
-            fechaExpiracionPublicacion: { $gte: new Date() } 
-        })
-        .populate('donanteId', 'nombre fotoDePerfilUrl') 
-        .sort({ createdAt: -1 });
-
-        res.status(200).json({ donaciones });
-    } catch (error) {
-        console.error('Error al obtener las donaciones del usuario:', error);
-        res.status(500).json({
-            message: 'Error interno al obtener las donaciones del usuario',
-            errorDetails: error.message,
-        });
     }
-}
 
     static async getDonationById(req, res) {
         try {
@@ -145,54 +143,65 @@ export class DonacionController {
         }
     }
 
+    // --- FUNCIÓN 'getDonacionesCercanas' CORREGIDA Y COMPLETADA ---
     static async getDonacionesCercanas(req, res) {
-        const { lat, lon, distanciaMaxKm = 20, q} = req.query;
-
-        if (!lat || !lon) {
-            return res.status(400).json({ message: "Latitud y longitud son requeridas." });
-        }
-
-        const latitud = parseFloat(lat);
-        const longitud = parseFloat(lon);
-        const maxDistanciaMetros = parseFloat(distanciaMaxKm) * 1000;
-
-        if (isNaN(latitud) || isNaN(longitud) || isNaN(maxDistanciaMetros)) {
-            return res.status(400).json({ message: "Valores de latitud, longitud o distancia inválidos." });
-        }
-
         try {
-            const filter = {
-                'ubicacionRetiro.coordenadas': {
-                $nearSphere: {
-                    $geometry: {
-                        type: "Point",
-                        coordinates: [longitud, latitud]
-                    },
-                    $maxDistance: maxDistanciaMetros
-                }
-            },
-             estadoPublicacion: 'DISPONIBLE',
-             fechaExpiracionPublicacion: { $gte: new Date() }
+            // 1. Se leen TODOS los posibles filtros de la URL
+            const { lat, lon, distanciaMaxKm, q, categorias, rangoFecha } = req.query;
+            
+            if (!lat || !lon) {
+                return res.status(400).json({ message: 'Se requieren coordenadas de latitud y longitud.' });
             }
 
+            const latNum = parseFloat(lat);
+            const lonNum = parseFloat(lon);
+            const distanciaMaxMetros = (parseFloat(distanciaMaxKm) || 20) * 1000;
 
-             if (q && q.trim() !== '') {
-            const regex = new RegExp(q.trim(), 'i');
-            filter.$or = [
-                { titulo: { $regex: regex } },
-                { descripcion: { $regex: regex } },
-                { categoria: { $regex: regex } }
-            ];
-        }
+            // 2. Se construye el objeto de consulta base para MongoDB
+            let query = {
+                'ubicacionRetiro.coordenadas': {
+                    $nearSphere: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [lonNum, latNum]
+                        },
+                        $maxDistance: distanciaMaxMetros
+                    }
+                },
+                estadoPublicacion: 'DISPONIBLE',
+                fechaExpiracionPublicacion: { $gte: new Date() }
+            };
 
-            const donacionesCercanas = await Donacion.find(filter)
+            // 3. Se añaden los filtros adicionales de forma condicional
+            if (q) {
+                const regex = new RegExp(q.trim(), 'i');
+                query.$or = [
+                    { titulo: regex },
+                    { descripcion: regex }
+                ];
+            }
+
+            if (categorias) {
+                const categoriasArray = categorias.split(',');
+                query.categoria = { $in: categoriasArray };
+            }
+
+            if (rangoFecha === 'ultimaSemana') {
+                const unaSemanaAtras = new Date();
+                unaSemanaAtras.setDate(unaSemanaAtras.getDate() - 7);
+                query.createdAt = { $gte: unaSemanaAtras };
+            }
+
+            // 4. Se ejecuta la consulta final con todos los filtros aplicados
+            const donaciones = await Donacion.find(query)
                 .populate('donanteId', 'nombre fotoDePerfilUrl')
                 .sort({ createdAt: -1 });
-            res.status(200).json({ donaciones: donacionesCercanas });
+
+            res.status(200).json({ donaciones });
 
         } catch (error) {
             console.error('Error al obtener donaciones cercanas:', error);
-            res.status(500).json({ message: 'Error interno al buscar donaciones cercanas.', errorDetails: error.message });
+            res.status(500).json({ message: "Error interno al buscar donaciones." });
         }
     }
 
