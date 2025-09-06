@@ -52,8 +52,30 @@ const useGlobalState = () => {
 
   const [activeSearchLocation, setActiveSearchLocation] = useState(null);
   const [donationCreationTimestamp, setDonationCreationTimestamp] = useState(Date.now());
-  const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState([]);
+
+// FILTRO
+const [filters, setFilters] = useState({
+        searchTerm: '',
+        categories: [],
+        dateRange: 'all',
+        useUserLocation: false
+    });
+
+    const updateFilters = (newFilterValues) => {
+        setFilters(prevFilters => ({ ...prevFilters, ...newFilterValues }));
+    };
+
+    const resetFilters = () => {
+        setFilters({
+            searchTerm: '',
+            categories: [],
+            dateRange: 'all',
+            useUserLocation: false
+        });
+    };
+
+
 
   const DONATION_NOTIFICATION_TYPES = useMemo(() => ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO', 'GENERAL'], []);
   const REQUEST_NOTIFICATION_TYPES = useMemo(() => ['APROBACION', 'RECHAZO', 'ENTREGA'], []);
@@ -163,14 +185,16 @@ const useGlobalState = () => {
     setActiveSearchLocation,
     donationCreationTimestamp,
     triggerDonationReFetch,
-    searchQuery,
-    setSearchQuery,
     notifications,
     setNotifications,
     unreadCount,
     addNotification,
     hasNewRequestNotifications,
     hasNewDonationNotifications,
+    filters,
+    updateFilters,
+    resetFilters,
+
   };
 };
 

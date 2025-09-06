@@ -6,21 +6,28 @@ import logoResQFood from '../../assets/Logo-ResQfood.png';
 import { ProfileStatusContext } from '../../context/ProfileStatusContext';
 import { LocationModalWorkflow } from '../map/Location';
 import API_BASE_URL from '../../api/config';
+import FilterModal from '../modals/FilterModal';
 
 const Header = () => {
   const { getToken } = useAuth(); 
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  
+  // --- ESTADO AÑADIDO PARA EL MODAL DE FILTROS ---
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false); 
 
+  // Se extraen los valores y funciones del contexto, incluyendo los de filtros
   const { 
     isLoadingUserProfile, 
     isComplete, 
     currentUserRole, 
     activeSearchLocation,
     setActiveSearchLocation,
-    searchQuery,
-    setSearchQuery,
+    // La búsqueda de texto ahora se gestiona en el estado global de filtros
+    filters,
+    updateFilters,
+    resetFilters,
     setNotifications,
     unreadCount,
     hasNewDonationNotifications,
@@ -62,142 +69,152 @@ const Header = () => {
     displayLocationTextShort = latLngText;
   }
 
-  // --- LÓGICA DE NOTIFICACIONES CORREGIDA Y CENTRALIZADA ---
- const markAsRead = async (type) => {
-    // Si getToken no está listo, no hacemos nada para evitar errores.
+  // La lógica para marcar notificaciones como leídas se mantiene
+  const markAsRead = async (type) => {
     if (!getToken) return;
-
     const typesToUpdate = type === 'donations'
       ? ['SOLICITUD', 'HORARIO_CONFIRMADO', 'HORARIO_RECHAZADO', 'GENERAL']
       : ['APROBACION', 'RECHAZO', 'ENTREGA'];
-    
-    // 1. Actualización optimista (el estado visual cambia al instante)
     if (setNotifications) {
         setNotifications(prev => prev.map(n => typesToUpdate.includes(n.tipoNotificacion) ? { ...n, leida: true } : n));
     }
-    
-    // 2. Sincronización con el backend (ahora con la garantía de tener el token)
     try {
         const endpoint = type === 'donations' ? 'marcar-donaciones-leidas' : 'marcar-solicitudes-leidas';
         const token = await getToken();
-        if (!token) return; // Doble chequeo de seguridad
-        
-        await fetch(`${API_BASE_URL}/api/notificacion/${endpoint}`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        if (!token) return;
+        await fetch(`${API_BASE_URL}/api/notificacion/${endpoint}`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
     } catch (error) {
         console.error(`Fallo al sincronizar notificaciones de '${type}' como leídas:`, error);
     }
   };
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <div className="container mx-auto px-2 sm:px-4 lg:px-8">
-        <div className="flex items-center justify-between h-20 lg:h-24">
-
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <img src={logoResQFood} alt="ResQFood Logo" className="h-14 sm:h-16 md:h-20 lg:w-[120px] lg:h-auto" />
-            </Link>
-            <div className="hidden md:flex"><LocationModalWorkflow onLocationSelected={handleLocationSelected} currentDisplayAddress={displayLocationText}/></div>
-            <div className="flex md:hidden"><LocationModalWorkflow onLocationSelected={handleLocationSelected} currentDisplayAddress={displayLocationTextShort}/></div>
-          </div>
-          
-          <div className="hidden lg:flex flex-1 justify-center items-center px-4">
-            <div className="w-full max-w-lg xl:max-w-xl">
-              <div className="relative flex items-center bg-gray-100 rounded-full shadow-sm h-10">
-                <div className="pl-4 pr-2"><MenuIcon size={20} className="text-gray-500"/></div>
-                <input type="text" placeholder="Buscar alguna donacion" className="w-full h-full bg-transparent text-sm focus:outline-none px-2" value={searchQuery || ''} onChange={(e)=>setSearchQuery(e.target.value)}/>
-                <div className="pr-4 pl-2"><SearchIcon size={18} className="text-gray-500"/></div>
+    <>
+      <header className="bg-white shadow-md sticky top-0 z-50">
+        <div className="container mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-20 lg:h-24">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link to="/" className="flex-shrink-0 flex items-center">
+                <img src={logoResQFood} alt="ResQFood Logo" className="h-14 sm:h-16 md:h-20 lg:w-[120px] lg:h-auto" />
+              </Link>
+              <div className="hidden md:flex"><LocationModalWorkflow onLocationSelected={handleLocationSelected} currentDisplayAddress={displayLocationText}/></div>
+              <div className="flex md:hidden"><LocationModalWorkflow onLocationSelected={handleLocationSelected} currentDisplayAddress={displayLocationTextShort}/></div>
+            </div>
+            
+            <div className="hidden lg:flex flex-1 justify-center items-center px-4">
+              <div className="w-full max-w-lg xl:max-w-xl">
+                <div className="relative flex items-center bg-gray-100 rounded-full shadow-sm h-10">
+                  {/* --- BOTÓN DE FILTROS --- */}
+                  <button onClick={() => setIsFilterModalOpen(true)} className="pl-4 pr-2 text-gray-500 hover:text-primary">
+                    <MenuIcon size={20} />
+                  </button>
+                  <input 
+                    type="text" 
+                    placeholder="Buscar alguna donacion" 
+                    className="w-full h-full bg-transparent text-sm focus:outline-none px-2" 
+                    value={filters?.searchTerm || ''}
+                    onChange={(e) => updateFilters({ searchTerm: e.target.value })}
+                  />
+                  <div className="pr-4 pl-2"><SearchIcon size={18} className="text-gray-500"/></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-            <Link to="/sobreNosotros" className="hidden lg:block text-sm text-gray-700 hover:text-primary-600 px-3 py-2">Sobre Nosotros</Link>
-            <button className="lg:hidden p-2 rounded-full text-gray-700 hover:bg-gray-100"><SearchIcon size={20} /></button>
-            <SignedOut>
-              <button onClick={() => navigate('/sign-in')} className={`${authButtonBaseClasses} text-primary border border-primary hover:bg-primary/10`}>Sign in</button>
-              <button onClick={() => navigate('/sign-up')} className={`${authButtonBaseClasses} bg-primary text-white hover:bg-brandPrimaryDarker`}>Register</button>
-            </SignedOut>
+            <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
+              <Link to="/sobreNosotros" className="hidden lg:block text-sm text-gray-700 hover:text-primary-600 px-3 py-2">Sobre Nosotros</Link>
+              <button className="lg:hidden p-2 rounded-full text-gray-700 hover:bg-gray-100" onClick={() => setIsFilterModalOpen(true)}>
+                <SearchIcon size={20} />
+              </button>
+              <SignedOut>
+                <button onClick={() => navigate('/sign-in')} className={`${authButtonBaseClasses} text-primary border border-primary hover:bg-primary/10`}>Sign in</button>
+                <button onClick={() => navigate('/sign-up')} className={`${authButtonBaseClasses} bg-primary text-white hover:bg-brandPrimaryDarker`}>Register</button>
+              </SignedOut>
 
-            <SignedIn>
-              <div className="relative flex items-center" ref={menuRef}>
-                <UserButton afterSignOutUrl="/" />
-                {!isLoadingUserProfile && isComplete && (
-                  <button
-                     onClick={toggleProfileMenu}
-                     className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100"
-                     aria-label="Opciones de perfil"
-                  >
-                    <MoreVertical size={22} />
-                    {unreadCount > 0 && (
-                        <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                        </span>
-                    )}
-                  </button>
-                )}
+              <SignedIn>
+                <div className="relative flex items-center" ref={menuRef}>
+                  <UserButton afterSignOutUrl="/" />
+                  {!isLoadingUserProfile && isComplete && (
+                    <button
+                       onClick={toggleProfileMenu}
+                       className="relative p-2 ml-1 sm:ml-2 rounded-full text-gray-700 hover:bg-gray-100"
+                       aria-label="Opciones de perfil"
+                    >
+                      <MoreVertical size={22} />
+                      {unreadCount > 0 && (
+                          <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                          </span>
+                      )}
+                    </button>
+                  )}
 
-                {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
-                    <div className="py-1">
-                      
-                      {currentUserRole === 'ADMIN' && (
-                        <>
-                          <Link to="/admin" className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left font-semibold" onClick={toggleProfileMenu}>
-                            Panel de Admin
+                  {isProfileMenuOpen && !isLoadingUserProfile && isComplete && (
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 z-[60]">
+                      <div className="py-1">
+                        
+                        {currentUserRole === 'ADMIN' && (
+                          <>
+                            <Link to="/admin" className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left font-semibold" onClick={toggleProfileMenu}>
+                              Panel de Admin
+                            </Link>
+                            <div className="border-t border-gray-100 my-1"></div>
+                          </>
+                        )}
+                        
+                        <Link to={profilePath} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onClick={toggleProfileMenu}>
+                          Ir a mi perfil
+                        </Link>
+                        
+                        {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
+                          <Link
+                            to={misDonacionesPath}
+                            className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
+                            onClick={() => {
+                              markAsRead('donations');
+                              toggleProfileMenu();
+                            }}
+                          >
+                            <span>Mis donaciones</span>
+                            {hasNewDonationNotifications && (
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                            )}
                           </Link>
-                          <div className="border-t border-gray-100 my-1"></div>
-                        </>
-                      )}
-                      
-                      <Link to={profilePath} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" onClick={toggleProfileMenu}>
-                        Ir a mi perfil
-                      </Link>
-                      
-                      {(currentUserRole === 'LOCAL' || currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
-                        <Link
-                          to={misDonacionesPath}
-                          className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
-                          onClick={() => {
-                            markAsRead('donations');
-                            toggleProfileMenu();
-                          }}
-                        >
-                          <span>Mis donaciones</span>
-                          {hasNewDonationNotifications && (
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                          )}
-                        </Link>
-                      )}
+                        )}
 
-                      {(currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
-                        <Link
-                          to={misSolicitudesPath}
-                          className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
-                          onClick={() => {
-                            markAsRead('requests');
-                            toggleProfileMenu();
-                          }}
-                        >
-                          <span>Mis solicitudes</span>
-                          {hasNewRequestNotifications && (
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                          )}
-                        </Link>
-                      )}
+                        {(currentUserRole === 'GENERAL' || currentUserRole === 'ADMIN') && (
+                          <Link
+                            to={misSolicitudesPath}
+                            className="relative px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex justify-between items-center"
+                            onClick={() => {
+                              markAsRead('requests');
+                              toggleProfileMenu();
+                            }}
+                          >
+                            <span>Mis solicitudes</span>
+                            {hasNewRequestNotifications && (
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                            )}
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </SignedIn>
+                  )}
+                </div>
+              </SignedIn>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+      
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        currentFilters={filters}
+        onFiltersChange={updateFilters}
+        onResetFilters={resetFilters}
+      />
+    </>
   );
 };
 

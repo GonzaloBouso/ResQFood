@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import CardDonacion from '../components/layout/CardDonacion.jsx';
+import CardDonacion from '../components/donations/CardDonacion.jsx'; // Se ajusta la ruta por si acaso
 import WelcomeCard from '../components/layout/WelcomeCard.jsx'; 
 import HeroSlider from '../components/home_unregistered/HeroSlider.jsx';
 
@@ -10,13 +10,14 @@ import API_BASE_URL from '../api/config.js';
 const DashboardPage = () => {
   const { getToken } = useAuth();
   
+  // Se extraen los filtros del contexto
   const { 
     isLoadingUserProfile, 
     currentUserDataFromDB, 
     activeSearchLocation, 
     setActiveSearchLocation,
     donationCreationTimestamp,
-    searchQuery
+    filters // <-- Se usa el estado de filtros global
   } = useContext(ProfileStatusContext);
 
   const [donaciones, setDonaciones] = useState([]);
@@ -24,6 +25,7 @@ const DashboardPage = () => {
   const [errorDonaciones, setErrorDonaciones] = useState(null);
   const [mensajeUbicacion, setMensajeUbicacion] = useState('Determinando tu ubicación...');
 
+  // Efecto para establecer la ubicación inicial del usuario
   useEffect(() => {
     if (isLoadingUserProfile || activeSearchLocation) return;
     if (currentUserDataFromDB?.ubicacion?.coordenadas?.coordinates?.length === 2) {
@@ -50,6 +52,7 @@ const DashboardPage = () => {
     }
   }, [isLoadingUserProfile, currentUserDataFromDB, activeSearchLocation, setActiveSearchLocation]);
 
+  // Efecto para actualizar el mensaje de ubicación
   useEffect(() => {
     if (activeSearchLocation?.address) {
       setMensajeUbicacion(`Mostrando donaciones cerca de: ${activeSearchLocation.address}`);
@@ -58,38 +61,60 @@ const DashboardPage = () => {
     }
   }, [activeSearchLocation, isLoadingUserProfile]);
 
-  useEffect(() => {
+  // --- FUNCIÓN DE FETCH ACTUALIZADA PARA USAR LOS FILTROS GLOBALES ---
+  const fetchDonacionesCercanas = useCallback(async () => {
+    // Si no hay una ubicación activa, no hacemos la búsqueda.
     if (!activeSearchLocation?.lat || !activeSearchLocation?.lng) {
       setDonaciones([]);
       return;
     }
 
-    const fetchDonacionesCercanas = async () => {
-      setIsLoadingDonaciones(true); 
-      setErrorDonaciones(null);
-      try {
-        const token = await getToken();
-        const { lat, lng } = activeSearchLocation;
-        const distanciaMaxKm = 50;
-        let apiUrl = `${API_BASE_URL}/api/donacion/cercanas?lat=${lat}&lon=${lng}&distanciaMaxKm=${distanciaMaxKm}`;
-        if (searchQuery && searchQuery.trim() !== '') {
-          apiUrl += `&q=${encodeURIComponent(searchQuery.trim())}`;
-        }
-        const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
-        const data = await response.json();
-        setDonaciones(data.donaciones || []);
-      } catch (error) {
-        console.error("Dashboard: Error al buscar donaciones cercanas:", error);
-        setErrorDonaciones(error.message); 
-        setDonaciones([]);
-      } finally {
-        setIsLoadingDonaciones(false);
-      }
-    };
+    setIsLoadingDonaciones(true); 
+    setErrorDonaciones(null);
+    try {
+      const token = await getToken();
+      const { lat, lng } = activeSearchLocation;
+      const distanciaMaxKm = 50; // Esto podría ser un filtro en el futuro
 
+      // 1. Construimos los parámetros de la URL a partir del estado de filtros
+      const params = new URLSearchParams({
+        lat: lat,
+        lon: lng,
+        distanciaMaxKm: distanciaMaxKm
+      });
+
+      if (filters.searchTerm) {
+        params.append('q', filters.searchTerm);
+      }
+      if (filters.categories && filters.categories.length > 0) {
+        params.append('categorias', filters.categories.join(','));
+      }
+      if (filters.dateRange === 'lastWeek') {
+        params.append('rangoFecha', 'ultimaSemana');
+      }
+
+      // 2. Se construye la URL final
+      const apiUrl = `${API_BASE_URL}/api/donacion/cercanas?${params.toString()}`;
+      
+      const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!response.ok) throw new Error(`Error del servidor: ${response.statusText}`);
+      
+      const data = await response.json();
+      setDonaciones(data.donaciones || []);
+    } catch (error) {
+      console.error("Dashboard: Error al buscar donaciones cercanas:", error);
+      setErrorDonaciones(error.message); 
+      setDonaciones([]);
+    } finally {
+      setIsLoadingDonaciones(false);
+    }
+  // 3. Se añade 'filters' al array de dependencias
+  }, [getToken, activeSearchLocation, filters]);
+
+  // El efecto ahora se re-ejecuta si la ubicación, los filtros o el timestamp cambian
+  useEffect(() => {
     fetchDonacionesCercanas();
-  }, [activeSearchLocation, donationCreationTimestamp, getToken, searchQuery]);
+  }, [fetchDonacionesCercanas, donationCreationTimestamp]);
   
   const userName = currentUserDataFromDB?.nombre?.split(' ')[0] || 'Usuario';
 
@@ -118,7 +143,7 @@ const DashboardPage = () => {
 
         {!isLoadingDonaciones && !errorDonaciones && donaciones.length === 0 && (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">{activeSearchLocation ? 'No se encontraron donaciones cerca de ti en este momento.' : 'Por favor, selecciona una ubicación para empezar.'}</p>
+            <p className="text-gray-500">{activeSearchLocation ? 'No se encontraron donaciones con los filtros aplicados.' : 'Por favor, selecciona una ubicación para empezar.'}</p>
           </div>
         )}
       </section>
