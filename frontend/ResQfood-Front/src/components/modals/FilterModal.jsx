@@ -50,12 +50,6 @@ const FilterModal = ({ isOpen, onClose, currentFilters, onFiltersChange, onReset
 
                 <div className="p-4 space-y-4">
                     <div className="flex flex-wrap gap-2 text-sm">
-                        <button 
-                            className={`px-3 py-1.5 rounded-lg ${localFilters.useUserLocation ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-                            onClick={() => setLocalFilters(prev => ({...prev, useUserLocation: !prev.useUserLocation}))}
-                        >
-                            📍 Usar mi ubicación
-                        </button>
                         <button
                             className={`px-3 py-1.5 rounded-lg ${localFilters.dateRange === 'lastWeek' ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
                             onClick={() => setLocalFilters(prev => ({...prev, dateRange: prev.dateRange === 'lastWeek' ? 'all' : 'lastWeek'}))}
