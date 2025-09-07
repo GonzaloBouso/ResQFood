@@ -263,87 +263,90 @@ export class UserController {
 }
 
 static async manageUser(req, res) {
-        try {
-            const { id } = req.params;
-            const { rol, activo } = req.body;
+    try {
+        const { id } = req.params;
+        const { rol, activo } = req.body;
 
-            // 1. Identificar al administrador que realiza la acción
-            const adminClerkId = req.auth.userId; 
-            if (!adminClerkId) {
-                return res.status(401).json({ message: "No autenticado." });
-            }
-            
-            const adminUser = await User.findOne({ clerkUserId: adminClerkId });
-            if (!adminUser) {
-                return res.status(403).json({ message: "Perfil de administrador no encontrado." });
-            }
-
-            // 2. Validar el ID del usuario a modificar
-            if (!mongoose.Types.ObjectId.isValid(id)) {
-                return res.status(400).json({ message: "ID de usuario inválido." });
-            }
-            
-            const userToManage = await User.findById(id);
-            if (!userToManage) {
-                return res.status(404).json({ message: "Usuario no encontrado." });
-            }
-
-            // 3. Preparar el registro de cambios para la bitácora
-            const cambios = { antes: {}, despues: {} };
-            let accionRealizada = "Gestión de usuario"; 
-            let huboCambios = false; 
-
-            // 4. Aplicar cambios
-            if (rol !== undefined && userToManage.rol !== rol) {
-                cambios.antes.rol = userToManage.rol;
-                cambios.despues.rol = rol;
-                userToManage.rol = rol;
-                huboCambios = true;
-                accionRealizada = `Cambio de rol para ${userToManage.nombre}`;
-            }
-
-            if (activo !== undefined && userToManage.activo !== activo) {
-                cambios.antes.activo = userToManage.activo;
-                cambios.despues.activo = activo;
-                
-                await clerkClient.users.updateUser(userToManage.clerkUserId, { banned: !activo });
-                
-                userToManage.activo = activo;
-                huboCambios = true;
-                accionRealizada = activo ? `Reactivación del usuario ${userToManage.nombre}` : `Suspensión del usuario ${userToManage.nombre}`;
-            }
-            
-            // 5. Guardar cambios si hubo
-            if (huboCambios) {
-                await userToManage.save();
-
-                // 6. Crear el registro en la Bitácora
-                try {
-                    const logEntry = new Bitacora({
-                        actorId: adminUser._id,
-                        accion: accionRealizada,
-                        tipoElementoAfectado: 'User',
-                        elementoAfectadoId: userToManage._id,
-                        justificacionOMotivo: `Cambios realizados desde el panel de administrador.`,
-                        detallesAdicionales: cambios,
-                        ipAddress: req.ip
-                    });
-                    await logEntry.save();
-                } catch (logError) {
-                    console.error("ADVERTENCIA: Fallo al guardar el registro en la bitácora:", logError);
-                }
-            }
-            
-            // 7. Enviar respuesta exitosa
-            res.status(200).json({ message: 'Usuario actualizado por el administrador.', user: userToManage.toJSON() });
-
-        } catch (error) {
-            console.error("Error crítico en manageUser:", error);
-            
-            if (error.clerkError) {
-                 return res.status(502).json({ message: "Error al actualizar estado en el servicio de autenticación." });
-            }
-            res.status(500).json({ message: "Error interno del servidor al gestionar el usuario." });
+        // 1. Identificar al administrador que realiza la acción
+        const adminClerkId = req.auth.userId; 
+        if (!adminClerkId) {
+            return res.status(401).json({ message: "No autenticado." });
         }
+        
+        const adminUser = await User.findOne({ clerkUserId: adminClerkId });
+        if (!adminUser) {
+            return res.status(403).json({ message: "Perfil de administrador no encontrado." });
+        }
+
+        // 2. Validar el ID del usuario a modificar
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "ID de usuario inválido." });
+        }
+        
+        const userToManage = await User.findById(id);
+        if (!userToManage) {
+            return res.status(404).json({ message: "Usuario no encontrado." });
+        }
+
+        // 3. Preparar el registro de cambios para la bitácora
+        const cambios = { antes: {}, despues: {} };
+        let accionRealizada = "Gestión de usuario"; 
+        let huboCambios = false; 
+
+        // 4. Aplicar cambios
+        if (rol !== undefined && userToManage.rol !== rol) {
+            cambios.antes.rol = userToManage.rol;
+            cambios.despues.rol = rol;
+            userToManage.rol = rol;
+            huboCambios = true;
+            accionRealizada = `Cambio de rol para ${userToManage.nombre}`;
+        }
+
+        if (activo !== undefined && userToManage.activo !== activo) {
+            cambios.antes.activo = userToManage.activo;
+            cambios.despues.activo = activo;
+            
+            await clerkClient.users.updateUser(userToManage.clerkUserId, { banned: !activo });
+            
+            userToManage.activo = activo;
+            huboCambios = true;
+            accionRealizada = activo ? `Reactivación del usuario ${userToManage.nombre}` : `Suspensión del usuario ${userToManage.nombre}`;
+        }
+        
+        // 5. Guardar cambios si hubo
+        if (huboCambios) {
+            await userToManage.save();
+
+            // 6. Crear el registro en la Bitácora
+            try {
+                // ---- ¡AQUÍ ESTÁ LA CORRECCIÓN! ----
+                // Faltaba la palabra `new` antes de `Bitacora`.
+                const logEntry = new Bitacora({
+                    actorId: adminUser._id,
+                    accion: accionRealizada,
+                    tipoElementoAfectado: 'User',
+                    elementoAfectadoId: userToManage._id,
+                    justificacionOMotivo: `Cambios realizados desde el panel de administrador.`,
+                    detallesAdicionales: cambios,
+                    ipAddress: req.ip
+                });
+                await logEntry.save();
+            } catch (logError) {
+                console.error("ADVERTENCIA: Fallo al guardar el registro en la bitácora:", logError);
+            }
+        }
+        
+        // 7. Enviar respuesta exitosa
+        res.status(200).json({ message: 'Usuario actualizado por el administrador.', user: userToManage.toJSON() });
+
+    } catch (error) {
+        console.error("Error crítico en manageUser:", error);
+        
+        // Asumiendo que clerkClient lanza un error con una propiedad específica
+        if (error.isClerkError) {
+             return res.status(502).json({ message: "Error al actualizar estado en el servicio de autenticación." });
+        }
+        res.status(500).json({ message: "Error interno del servidor al gestionar el usuario." });
     }
+}
 }
