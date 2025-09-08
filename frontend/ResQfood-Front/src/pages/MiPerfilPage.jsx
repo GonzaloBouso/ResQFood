@@ -53,8 +53,8 @@ const MiPerfilPage = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-            {/* 1. Cabecera del Perfil  */}
+       
+        <div className="max-w-4xl mx-auto"> 
             <ProfileHeaderComponent 
                 userData={currentUserDataFromDB}
                 isEditable={true}
@@ -62,48 +62,50 @@ const MiPerfilPage = () => {
                 onEditInfoClick={() => setIsInfoModalOpen(true)}
             />
             
-            {/* 2. Navegación de Pestañas */}
-            <div className="mt-8">
-              <div className="flex justify-center border-b border-gray-200">
-                  <button
-                      onClick={() => setActiveTab('info')}
-                      className={`px-4 py-3 text-sm font-medium ${
-                          activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                      Información
-                  </button>
-                  <button
-                      onClick={() => setActiveTab('hechas')}
-                      className={`px-4 py-3 text-sm font-medium ${
-                          activeTab === 'hechas' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                      Donaciones Hechas
-                  </button>
-                  
-                  {isGeneralUser && (
-                      <button
-                          onClick={() => setActiveTab('recibidas')}
-                          className={`px-4 py-3 text-sm font-medium ${
-                              activeTab === 'recibidas' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
-                          }`}
-                      >
-                          Donaciones Recibidas
-                      </button>
-                  )}
-                     <button
-                        onClick={() => setActiveTab('calificaciones')}
-                        className={`px-4 py-3 text-sm font-medium ${
-                          activeTab === 'calificaciones' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                      Calificaciones Recibidas
-                  </button>
-              </div>
+          
+            <div className="mt-8 sticky top-[80px] lg:top-[96px] bg-gray-50 z-10">
+                <div className="overflow-x-auto">
+                    <nav className="flex justify-start sm:justify-center border-b border-gray-200 whitespace-nowrap">
+                        <button
+                            onClick={() => setActiveTab('info')}
+                            className={`px-4 py-3 text-sm font-medium shrink-0 ${
+                                activeTab === 'info' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Información
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('hechas')}
+                            className={`px-4 py-3 text-sm font-medium shrink-0 ${
+                                activeTab === 'hechas' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Donaciones Hechas
+                        </button>
+                        
+                        {isGeneralUser && (
+                            <button
+                                onClick={() => setActiveTab('recibidas')}
+                                className={`px-4 py-3 text-sm font-medium shrink-0 ${
+                                    activeTab === 'recibidas' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                Donaciones Recibidas
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setActiveTab('calificaciones')}
+                            className={`px-4 py-3 text-sm font-medium shrink-0 ${
+                                activeTab === 'calificaciones' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Calificaciones Recibidas
+                        </button>
+                    </nav>
+                </div>
             </div>
 
-            {/* 3. Contenido de las Pestañas */}
+           
             <div className="mt-6">
                 {renderTabContent()}
             </div>
