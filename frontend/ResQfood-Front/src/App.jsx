@@ -86,6 +86,11 @@ const [filters, setFilters] = useState({
     () => notifications.some(n => !n.leida && DONATION_NOTIFICATION_TYPES.includes(n.tipoNotificacion)),
     [notifications, DONATION_NOTIFICATION_TYPES]
   );
+    
+  const hasUrgentNotifications = useMemo(
+    () => notifications.some(n => !n.leida && n.tipoNotificacion !== 'NUEVA_CALIFICACION'),
+    [notifications]
+  );
 
   const hasNewRequestNotifications = useMemo(
     () => notifications.some(n => !n.leida && REQUEST_NOTIFICATION_TYPES.includes(n.tipoNotificacion)),
@@ -191,6 +196,7 @@ const [filters, setFilters] = useState({
     addNotification,
     hasNewRequestNotifications,
     hasNewDonationNotifications,
+     hasUrgentNotifications,
     filters,
     updateFilters,
     resetFilters,

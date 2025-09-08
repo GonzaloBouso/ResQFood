@@ -13,23 +13,19 @@ const Header = () => {
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  
-  // --- ESTADO AÑADIDO PARA EL MODAL DE FILTROS ---
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false); 
 
-  // Se extraen los valores y funciones del contexto, incluyendo los de filtros
   const { 
     isLoadingUserProfile, 
     isComplete, 
     currentUserRole, 
     activeSearchLocation,
     setActiveSearchLocation,
-    // La búsqueda de texto ahora se gestiona en el estado global de filtros
     filters,
     updateFilters,
     resetFilters,
     setNotifications,
-    unreadCount,
+    hasUrgentNotifications, 
     hasNewDonationNotifications,
     hasNewRequestNotifications,
   } = useContext(ProfileStatusContext) || {};
@@ -69,7 +65,6 @@ const Header = () => {
     displayLocationTextShort = latLngText;
   }
 
-  // La lógica para marcar notificaciones como leídas se mantiene
   const markAsRead = async (type) => {
     if (!getToken) return;
     const typesToUpdate = type === 'donations'
@@ -104,7 +99,6 @@ const Header = () => {
             <div className="hidden lg:flex flex-1 justify-center items-center px-4">
               <div className="w-full max-w-lg xl:max-w-xl">
                 <div className="relative flex items-center bg-gray-100 rounded-full shadow-sm h-10">
-                  {/* --- BOTÓN DE FILTROS --- */}
                   <button onClick={() => setIsFilterModalOpen(true)} className="pl-4 pr-2 text-gray-500 hover:text-primary">
                     <MenuIcon size={20} />
                   </button>
@@ -140,7 +134,8 @@ const Header = () => {
                        aria-label="Opciones de perfil"
                     >
                       <MoreVertical size={22} />
-                      {unreadCount > 0 && (
+                      {/* --- ¡CORRECCIÓN APLICADA AQUÍ! --- */}
+                      {hasUrgentNotifications && (
                           <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                               <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
