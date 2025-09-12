@@ -21,8 +21,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 # --- CONFIGURACIÓN DE LA PRUEBA ---
-EMAIL_DE_PRUEBA = "gonzalobouso002+z@gmail.com"
-CONTRASENA_DE_PRUEBA = "24090765"
+EMAIL_DE_PRUEBA = ""
+CONTRASENA_DE_PRUEBA = ""
 
 # --- INICIO DEL SCRIPT DE PRUEBA ---
 print(">>> Iniciando prueba: Cierre de sesión de usuario...")

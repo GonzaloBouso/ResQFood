@@ -7,7 +7,7 @@ Nombre del Script: M01_Cambiar_Foto_Perfil.py
 ----------------------------------------------------------------------------------
 Objetivo del Script:
 Este script automatiza el flujo de "camino feliz" para un usuario existente que
-cambia su foto de perfil.
+cambia su foto de perfil, usando una ruta de archivo simplificada.
 ----------------------------------------------------------------------------------
 """
 
@@ -17,11 +17,13 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 
 # --- CONFIGURACIÓN DE LA PRUEBA ---
-EMAIL_DE_PRUEBA = "gonzalobouso002+z@gmail.com"
-CONTRASENA_DE_PRUEBA = "24090765"
-IMAGEN_DE_PRUEBA = "test_image.jpg"
+EMAIL_DE_PRUEBA = ""
+CONTRASENA_DE_PRUEBA = ""
+# --- RUTA DE IMAGEN SIMPLIFICADA ---
+RUTA_IMAGEN = "C:\\test_image.jpg"
 
 # --- INICIO DEL SCRIPT DE PRUEBA ---
 print(">>> Iniciando prueba: Cambio de foto de perfil...")
@@ -31,11 +33,7 @@ driver = webdriver.Chrome()
 driver.maximize_window()
 wait = WebDriverWait(driver, 30)
 
-# Obtener la ruta absoluta del archivo de imagen
-ruta_imagen = os.path.abspath(IMAGEN_DE_PRUEBA)
-# Si la ruta contiene una comilla simple, la reemplazamos para evitar errores
-ruta_imagen_corregida = ruta_imagen.replace("\\'\\", "\\")
-print(f"Ruta de la imagen de prueba corregida: {ruta_imagen_corregida}")
+print(f"Ruta de la imagen de prueba: {RUTA_IMAGEN}")
 
 try:
     # 2. Abrir la página y hacer login
@@ -53,33 +51,39 @@ try:
     wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Opciones de perfil']"))).click()
     wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Ir a mi perfil')]"))).click()
 
-    # --- INICIO DEL FLUJO DE CAMBIO DE FOTO (LÓGICA CORREGIDA) ---
+    # --- INICIO DEL FLUJO DE CAMBIO DE FOTO ---
     
-    # 4. Esperar a que la página de perfil cargue y obtener la URL de la imagen actual
+    # 4. Obtener la URL de la imagen actual
     print("Esperando la página de perfil...")
-    imagen_perfil_actual = wait.until(
-        EC.visibility_of_element_located((By.XPATH, "//div[contains(@class, 'rounded-full')]//img"))
+    contenedor_imagen = wait.until(
+        EC.visibility_of_element_located((By.XPATH, "//div[contains(@class, 'relative w-32 h-32')]"))
     )
-    url_imagen_inicial = imagen_perfil_actual.get_attribute("src")
+    url_imagen_inicial = contenedor_imagen.find_element(By.TAG_NAME, "img").get_attribute("src")
     print(f"URL de la imagen inicial: {url_imagen_inicial}")
 
-    # 5. Hacer clic en el botón para cambiar la foto
+    # 5. Mover el ratón sobre la imagen de perfil
+    print("Moviendo el ratón sobre la imagen de perfil...")
+    actions = ActionChains(driver)
+    actions.move_to_element(contenedor_imagen).perform()
+
+    # 6. Hacer clic en el botón para cambiar la foto
     print("Haciendo clic en el botón para cambiar la foto...")
-    wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Cambiar foto de perfil']"))).click()
+    boton_cambiar_foto = wait.until(
+        EC.element_to_be_clickable((By.XPATH, "//button[@title='Cambiar foto de perfil']"))
+    )
+    boton_cambiar_foto.click()
     
-    # 6. Esperar a que el modal propio se abra y subir el archivo
+    # 7. Esperar a que el modal se abra y subir el archivo
     print("Esperando a que el modal para subir foto se abra...")
-    # Buscamos el input de tipo 'file' que está dentro del nuevo modal
     input_archivo = wait.until(
         EC.presence_of_element_located((By.XPATH, "//input[@type='file']"))
     )
     
-    print(f"Subiendo el archivo '{IMAGEN_DE_PRUEBA}'...")
-    input_archivo.send_keys(ruta_imagen_corregida)
+    print(f"Subiendo el archivo desde '{RUTA_IMAGEN}'...")
+    input_archivo.send_keys(RUTA_IMAGEN)
 
-    # 7. Esperar y hacer clic en el botón "Guardar Foto"
+    # 8. Esperar y hacer clic en el botón "Guardar Foto"
     print("Esperando y haciendo clic en el botón 'Guardar Foto'...")
-    # Esperamos a que el botón sea clickable, por si hay alguna animación
     boton_guardar_foto = wait.until(
         EC.element_to_be_clickable((By.XPATH, "//button[text()='Guardar Foto']"))
     )
@@ -87,7 +91,7 @@ try:
 
     # --- VERIFICACIÓN FINAL ---
 
-    # 8. Esperar a que la URL de la imagen de perfil cambie
+    # 9. Esperar a que la URL de la imagen de perfil cambie
     print("Verificando que la URL de la imagen haya cambiado...")
     wait.until(
         lambda driver: driver.find_element(By.XPATH, "//div[contains(@class, 'rounded-full')]//img").get_attribute("src") != url_imagen_inicial
