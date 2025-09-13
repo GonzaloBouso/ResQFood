@@ -182,6 +182,12 @@ const [filters, setFilters] = useState({
     fetchUserProfileFunction();
   }, [isAuthLoaded, isSignedIn, getToken, updateProfileState]);
 
+   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+    const toggleFilterModal = (state) => {
+        setIsFilterModalOpen(prev => typeof state === 'boolean' ? state : !prev);
+    };
+
   return {
     ...profileStatus,
     updateProfileState,
@@ -200,6 +206,8 @@ const [filters, setFilters] = useState({
     filters,
     updateFilters,
     resetFilters,
+    isFilterModalOpen,
+    toggleFilterModal,
 
   };
 };

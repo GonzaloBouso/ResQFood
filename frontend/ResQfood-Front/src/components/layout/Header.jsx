@@ -12,8 +12,7 @@ const Header = () => {
   const { getToken } = useAuth(); 
   const navigate = useNavigate();
   const menuRef = useRef(null);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false); 
+
 
   const { 
     isLoadingUserProfile, 
@@ -24,6 +23,8 @@ const Header = () => {
     filters,
     updateFilters,
     resetFilters,
+    isFilterModalOpen, 
+    toggleFilterModal,  
     setNotifications,
     hasUrgentNotifications, 
     hasNewDonationNotifications,
@@ -99,7 +100,7 @@ const Header = () => {
             <div className="hidden lg:flex flex-1 justify-center items-center px-4">
               <div className="w-full max-w-lg xl:max-w-xl">
                 <div className="relative flex items-center bg-gray-100 rounded-full shadow-sm h-10">
-                  <button onClick={() => setIsFilterModalOpen(true)} className="pl-4 pr-2 text-gray-500 hover:text-primary">
+                  <button onClick={() => toggleFilterModal(true)} className="pl-4 pr-2 text-gray-500 hover:text-primary">
                     <MenuIcon size={20} />
                   </button>
                   <input 
@@ -134,7 +135,6 @@ const Header = () => {
                        aria-label="Opciones de perfil"
                     >
                       <MoreVertical size={22} />
-                      {/* --- ¡CORRECCIÓN APLICADA AQUÍ! --- */}
                       {hasUrgentNotifications && (
                           <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -204,7 +204,7 @@ const Header = () => {
       
       <FilterModal
         isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
+        onClose={() => toggleFilterModal(false)}
         currentFilters={filters}
         onFiltersChange={updateFilters}
         onResetFilters={resetFilters}
