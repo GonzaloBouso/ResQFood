@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SignedIn, SignedOut, UserButton, useAuth } from '@clerk/clerk-react';
@@ -12,8 +13,7 @@ const Header = () => {
   const { getToken } = useAuth(); 
   const navigate = useNavigate();
   const menuRef = useRef(null);
-
-const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const { 
     isLoadingUserProfile, 
@@ -101,7 +101,7 @@ const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
             <div className="hidden lg:flex flex-1 justify-center items-center px-4">
               <div className="w-full max-w-lg xl:max-w-xl">
                 <div className="relative flex items-center bg-gray-100 rounded-full shadow-sm h-10">
-                  <button onClick={() => toggleFilterModal(true)} className="pl-4 pr-2 text-gray-500 hover:text-primary">
+                  <button onClick={() => toggleFilterModal && toggleFilterModal(true)} className="pl-4 pr-2 text-gray-500 hover:text-primary">
                     <MenuIcon size={20} />
                   </button>
                   <input 
@@ -109,7 +109,7 @@ const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
                     placeholder="Buscar alguna donacion" 
                     className="w-full h-full bg-transparent text-sm focus:outline-none px-2" 
                     value={filters?.searchTerm || ''}
-                    onChange={(e) => updateFilters({ searchTerm: e.target.value })}
+                    onChange={(e) => updateFilters && updateFilters({ searchTerm: e.target.value })}
                   />
                   <div className="pr-4 pl-2"><SearchIcon size={18} className="text-gray-500"/></div>
                 </div>
@@ -118,7 +118,8 @@ const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
             <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
               <Link to="/sobreNosotros" className="hidden lg:block text-sm text-gray-700 hover:text-primary-600 px-3 py-2">Sobre Nosotros</Link>
-              <button className="lg:hidden p-2 rounded-full text-gray-700 hover:bg-gray-100" onClick={() => setIsFilterModalOpen(true)}>
+              {/* --- BOTÓN MÓVIL CORREGIDO --- */}
+              <button className="lg:hidden p-2 rounded-full text-gray-700 hover:bg-gray-100" onClick={() => toggleFilterModal && toggleFilterModal(true)}>
                 <SearchIcon size={20} />
               </button>
               <SignedOut>
@@ -203,13 +204,16 @@ const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
         </div>
       </header>
       
-      <FilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => toggleFilterModal(false)}
-        currentFilters={filters}
-        onFiltersChange={updateFilters}
-        onResetFilters={resetFilters}
-      />
+      {/* Se asegura de que las funciones existan antes de pasarlas como props */}
+      {toggleFilterModal && (
+        <FilterModal
+            isOpen={isFilterModalOpen}
+            onClose={() => toggleFilterModal(false)}
+            currentFilters={filters}
+            onFiltersChange={updateFilters}
+            onResetFilters={resetFilters}
+        />
+      )}
     </>
   );
 };
