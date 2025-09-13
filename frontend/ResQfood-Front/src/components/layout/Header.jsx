@@ -13,6 +13,7 @@ const Header = () => {
   const navigate = useNavigate();
   const menuRef = useRef(null);
 
+const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const { 
     isLoadingUserProfile, 
