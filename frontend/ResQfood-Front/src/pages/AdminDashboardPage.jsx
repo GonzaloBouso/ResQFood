@@ -139,6 +139,9 @@ const AdminDashboardPage = () => {
         }
     }, [page, filters, vistaActual, fetchUsers, fetchReportes, fetchBitacora]);
     
+
+
+    
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setPage(1); 
@@ -160,9 +163,64 @@ const AdminDashboardPage = () => {
         }
     };
     
-    const handleResolverReporte = async (reporteId) => { toast.error("Función no implementada"); };
-    const handleSuspenderUsuario = async (userId, reporteId) => { toast.error("Función no implementada"); };
-    const handleEliminarDonacion = async (donacionId, reporteId) => { toast.error("Función no implementada"); };
+
+    const handleResolverReporte = async (reporteId) => {
+        if (!window.confirm("¿Seguro que quieres desestimar este reporte como 'resuelto' sin tomar más acciones?")) return;
+        
+        const toastId = toast.loading('Desestimando reporte...');
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/reporte/${reporteId}/resolver`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error((await response.json()).message || 'Error al desestimar');
+            
+            toast.success('Reporte desestimado.', { id: toastId });
+            fetchReportes(); 
+        } catch (err) {
+            toast.error(`Error: ${err.message}`, { id: toastId });
+        }
+    };
+
+    const handleSuspenderUsuario = async (reporteId, usuarioId) => {
+        if (!window.confirm("¿Seguro que quieres SUSPENDER a este usuario? Esta acción es reversible.")) return;
+
+        const toastId = toast.loading('Suspendiendo usuario...');
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/reporte/${reporteId}/usuario/${usuarioId}/suspender`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+             if (!response.ok) throw new Error((await response.json()).message || 'Error al suspender');
+
+            toast.success('Usuario suspendido.', { id: toastId });
+            fetchReportes(); 
+            fetchUsers(page, filters); 
+        } catch (err) {
+            toast.error(`Error: ${err.message}`, { id: toastId });
+        }
+    };
+
+    const handleEliminarDonacion = async (reporteId, donacionId) => {
+        if (!window.confirm("¡ADVERTENCIA! ¿Seguro que quieres ELIMINAR esta donación permanentemente? Esta acción NO se puede deshacer.")) return;
+        
+        const toastId = toast.loading('Eliminando donación...');
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/api/reporte/${reporteId}/donacion/${donacionId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error((await response.json()).message || 'Error al eliminar');
+
+            toast.success('Donación eliminada.', { id: toastId });
+            fetchReportes(); 
+        } catch (err) {
+            toast.error(`Error: ${err.message}`, { id: toastId });
+        }
+    };
 
     return (
         <div className="container mx-auto py-10">
