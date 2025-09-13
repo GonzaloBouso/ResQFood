@@ -5,7 +5,7 @@ import mision from "../assets/mision.png";
 import vision from "../assets/vision.png";
 import nuestrosValores from "../assets/nuestrosValores.png";
 import nuestroEquipo from "../assets/nuestroEquipo.png";
-import impacctoEsperado from "../assets/impactoEsperado.png";
+import impactoEsperado from "../assets/impactoEsperado.png";
 
 const SobreNosotros = () => {
   return (
