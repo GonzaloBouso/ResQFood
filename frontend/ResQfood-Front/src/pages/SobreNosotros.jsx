@@ -101,7 +101,7 @@ const SobreNosotros = () => {
           <img
             src={nuestroEquipo}
             alt="Nuestro Equipo"
-            className="w-full max-w-3xl mx-auto rounded-2xl shadow-lg hover:scale-105 transition-transform"
+            className="w-full max-w-2xl mx-auto rounded-2xl shadow-lg hover:scale-105 transition-transform"
           />
         </motion.section>
 
