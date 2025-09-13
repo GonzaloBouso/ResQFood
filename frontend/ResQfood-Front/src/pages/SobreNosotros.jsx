@@ -5,7 +5,7 @@ import mision from "../assets/mision.png";
 import vision from "../assets/vision.png";
 import nuestrosValores from "../assets/nuestrosValores.png";
 import nuestroEquipo from "../assets/nuestroEquipo.png";
-import impacctoEsperado from "../assets/impacctoEsperado.png";
+import impacctoEsperado from "../assets/impactoEsperado.png";
 
 const SobreNosotros = () => {
   return (
@@ -117,7 +117,7 @@ const SobreNosotros = () => {
             🌱 Impacto Esperado
           </h2>
           <img
-            src={impacctoEsperado}
+            src={impactoEsperado}
             alt="Impacto Esperado"
             className="w-full max-w-3xl mx-auto rounded-2xl shadow-lg hover:scale-105 transition-transform"
           />
