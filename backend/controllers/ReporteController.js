@@ -1,13 +1,11 @@
-import mongoose from 'mongoose';
 import Reporte from '../models/Reporte.js';
-import Donacion from '../models/Donacion.js';
 import User from '../models/User.js';
-import Bitacora from '../models/bitacoraAdmin.js';
-import { clerkClient } from '@clerk/clerk-sdk-node';
+import Donacion from '../models/Donacion.js';
 
 export class ReporteController {
-    
+    // Para que un usuario cree un reporte
     static async createReporte(req, res) {
+       
         try {
             const { donacionId } = req.params;
             const { motivo, detalles } = req.body;
@@ -35,18 +33,20 @@ export class ReporteController {
         }
     }
 
-    
-    static async getAllReportes(req, res) {
+    // Para que un admin obtenga todos los reportes pendientes
+    static async getReportesPendientes(req, res) {
         try {
             const reportesPopulated = await Reporte.find({ estado: 'PENDIENTE' })
                 .populate('reportadoPor', 'nombre email')
                 .populate('usuarioReportado', 'nombre email activo _id')
                 .populate('donacionReportada', 'titulo _id')
                 .sort({ createdAt: -1 });
+
         
             const reportesValidos = reportesPopulated.filter(reporte => 
                 reporte.reportadoPor && reporte.usuarioReportado && reporte.donacionReportada
             );
+
             res.status(200).json({ reportes: reportesValidos });
         } catch (error) {
             console.error('Error al obtener reportes:', error);
@@ -54,114 +54,17 @@ export class ReporteController {
         }
     }
 
-    
+    // Para que un admin resuelva un reporte (sin tomar acción)
     static async resolverReporte(req, res) {
-        const { reporteId } = req.params;
-        const adminClerkId = req.auth.userId;
-        const session = await mongoose.startSession();
-        session.startTransaction();
+       
         try {
-            const adminUser = await User.findOne({ clerkUserId: adminClerkId }).session(session);
-            if (!adminUser) throw new Error('Administrador no encontrado.');
-
-            const reporte = await Reporte.findByIdAndUpdate(reporteId, 
-                { estado: 'RESUELTO', resueltoPor: adminUser._id, fechaResuelto: new Date() },
-                { new: true, session }
-            );
-            if (!reporte) throw new Error('Reporte no encontrado.');
-
-            const logEntry = new Bitacora({
-                actorId: adminUser._id,
-                accion: `Desestimó el reporte #${reporte._id.toString().slice(-6)}`,
-                tipoElementoAfectado: 'Reporte',
-                elementoAfectadoId: reporte._id,
-            });
-            await logEntry.save({ session });
-
-            await session.commitTransaction();
-            res.status(200).json({ message: 'Reporte resuelto y desestimado.' });
+            const { reporteId } = req.params;
+            const reporte = await Reporte.findByIdAndUpdate(reporteId, { estado: 'RESUELTO' }, { new: true });
+            if (!reporte) return res.status(404).json({ message: "Reporte no encontrado." });
+            res.status(200).json({ message: 'Reporte desestimado y marcado como resuelto.', reporte });
         } catch (error) {
-            await session.abortTransaction();
-            res.status(500).json({ message: error.message });
-        } finally {
-            session.endSession();
-        }
-    }
-
-    static async eliminarDonacionReportada(req, res) {
-        const { reporteId, donacionId } = req.params;
-        const adminClerkId = req.auth.userId;
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
-            const adminUser = await User.findOne({ clerkUserId: adminClerkId }).session(session);
-            if (!adminUser) throw new Error('Administrador no encontrado.');
-
-            const donacionEliminada = await Donacion.findByIdAndDelete(donacionId, { session });
-            if (!donacionEliminada) throw new Error('La donación ya no existe.');
-
-            const reporte = await Reporte.findByIdAndUpdate(reporteId,
-                { estado: 'RESUELTO_ACCION_TOMADA', resueltoPor: adminUser._id, fechaResuelto: new Date() },
-                { new: true, session }
-            );
-            if (!reporte) throw new Error('Reporte no encontrado.');
-            
-            const logEntry = new Bitacora({
-                actorId: adminUser._id,
-                accion: `Eliminó la donación "${donacionEliminada.titulo}" por reporte.`,
-                tipoElementoAfectado: 'Donacion',
-                elementoAfectadoId: donacionEliminada._id,
-            });
-            await logEntry.save({ session });
-            
-            await session.commitTransaction();
-            res.status(200).json({ message: 'Donación eliminada y reporte cerrado.' });
-        } catch (error) {
-            await session.abortTransaction();
-            res.status(500).json({ message: error.message });
-        } finally {
-            session.endSession();
-        }
-    }
-
-    static async suspenderUsuarioReportado(req, res) {
-        const { reporteId, usuarioId } = req.params;
-        const adminClerkId = req.auth.userId;
-        const session = await mongoose.startSession();
-        session.startTransaction();
-        try {
-            const adminUser = await User.findOne({ clerkUserId: adminClerkId }).session(session);
-            if (!adminUser) throw new Error('Administrador no encontrado.');
-
-            const usuarioASuspender = await User.findById(usuarioId).session(session);
-            if (!usuarioASuspender) throw new Error('Usuario reportado no encontrado.');
-            
-            usuarioASuspender.activo = false;
-            await usuarioASuspender.save({ session });
-            await clerkClient.users.updateUser(usuarioASuspender.clerkUserId, { banned: true });
-
-            const reporte = await Reporte.findByIdAndUpdate(reporteId,
-                { estado: 'RESUELTO_ACCION_TOMADA', resueltoPor: adminUser._id, fechaResuelto: new Date() },
-                { new: true, session }
-            );
-            if (!reporte) throw new Error('Reporte no encontrado.');
-
-            const logEntry = new Bitacora({
-                actorId: adminUser._id,
-                accion: `Suspendió al usuario "${usuarioASuspender.nombre}" por reporte.`,
-                tipoElementoAfectado: 'User',
-                elementoAfectadoId: usuarioASuspender._id,
-                detallesAdicionales: { antes: { activo: true }, despues: { activo: false } }
-            });
-            await logEntry.save({ session });
-
-            await session.commitTransaction();
-            res.status(200).json({ message: 'Usuario suspendido y reporte cerrado.' });
-        } catch (error) {
-            await session.abortTransaction();
-            res.status(500).json({ message: error.message });
-        } finally {
-            session.endSession();
+            console.error('Error al resolver reporte:', error);
+            res.status(500).json({ message: 'Error interno del servidor.' });
         }
     }
 }

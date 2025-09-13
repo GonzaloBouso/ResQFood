@@ -43,23 +43,8 @@ const TablaReportes = ({ reportes, onResolver, onSuspenderUsuario, onEliminarDon
                                 <div className="flex items-center gap-2">
                                     <button onClick={() => onResolver(reporte._id)} title="Desestimar Reporte" className="p-2 text-green-600 hover:bg-green-100 rounded-full"><Check size={16} /></button>
                                     
-                                    <button 
-                                        disabled={!reporte.donacionReportada} 
-                                        onClick={() => onEliminarDonacion(reporte._id, reporte.donacionReportada._id)} 
-                                        title="Eliminar Donación" 
-                                        className="p-2 text-orange-600 hover:bg-orange-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-
-                                    <button 
-                                        disabled={!reporte.usuarioReportado} 
-                                        onClick={() => onSuspenderUsuario(reporte._id, reporte.usuarioReportado._id)} 
-                                        title="Suspender Usuario Reportado" 
-                                        className="p-2 text-red-600 hover:bg-red-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
-                                    >
-                                        <UserX size={16} />
-                                    </button>
+                                    <button disabled={!reporte.donacionReportada} onClick={() => onEliminarDonacion(reporte.donacionReportada._id, reporte._id)} title="Eliminar Donación" className="p-2 text-orange-600 hover:bg-orange-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"><Trash2 size={16} /></button>
+                                    <button disabled={!reporte.usuarioReportado} onClick={() => onSuspenderUsuario(reporte.usuarioReportado._id, reporte._id)} title="Suspender Usuario Reportado" className="p-2 text-red-600 hover:bg-red-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed"><UserX size={16} /></button>
                                 </div>
                             </td>
                         </tr>
