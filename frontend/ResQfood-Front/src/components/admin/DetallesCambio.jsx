@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Función para formatear valores booleanos o nulos a texto legible
+
 const formatValue = (key, value) => {
   if (typeof value === 'boolean') {
     return value ? 'Activo' : 'Suspendido';
@@ -12,7 +12,7 @@ const formatValue = (key, value) => {
 };
 
 const DetallesCambio = ({ detalles }) => {
-  // Si no hay detalles o no hay cambios, muestra un texto alternativo
+  
   if (!detalles || !detalles.antes || !detalles.despues || Object.keys(detalles.despues).length === 0) {
     return <span className="text-gray-400 italic">Sin detalles</span>;
   }

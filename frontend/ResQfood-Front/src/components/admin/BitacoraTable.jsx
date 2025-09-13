@@ -1,5 +1,5 @@
 import React from 'react';
-import DetallesCambio from './DetallesCambio'; 
+import DetallesCambio from './DetallesCambio';
 const BitacoraTable = ({ registros }) => {
     if (!registros || registros.length === 0) {
         return <p className="text-center text-gray-500 py-10">No hay registros de actividad recientes.</p>;
@@ -31,7 +31,7 @@ const BitacoraTable = ({ registros }) => {
                             <td className="px-4 py-3 text-gray-700">{log.accion}</td>
                             <td className="px-4 py-3">
                                 
-                                <DetallesCambio detalles={log.detallesAdicionales} />
+                                  <DetallesCambio detalles={log.detallesAdicionales} />
                             </td>
                         </tr>
                     ))}

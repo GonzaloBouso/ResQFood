@@ -1,5 +1,5 @@
 import User from '../models/User.js';
-import Bitacora from '../models/bitacoraAdmin.js';
+import Bitacora from '../models/bitacoraAdmin.js'
 import { updateUserSchema, completeInitialProfileSchema, createUserSchema } from '../validations/UserValidation.js';
 import { z } from 'zod';
 import { clerkClient } from '@clerk/clerk-sdk-node';
