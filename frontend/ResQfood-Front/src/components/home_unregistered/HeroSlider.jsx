@@ -5,15 +5,15 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 
-import slide1Image from '../../assets/slider-1.jpg'; 
-import slide2Image from '../../assets/slider-2.jpg';
-import slide3Image from '../../assets/slider-3.jpg';
+import slide1Image from '../../assets/sliderNuevo1.jpg'; 
+import slide2Image from '../../assets/sliderNuevo2.jpg';
+import slide3Image from '../../assets/sliderNuevo3.jpg';
 
 const slidesData = [
   { 
     id: 1, 
     imageUrl: slide1Image, 
-    alt: 'Mujer sonriendo recibiendo una bolsa de alimentos',
+    alt: 'Voluntario donando comida',
     title: 'Conectando Corazones, Compartiendo Alimentos', 
     description: 'Únete a ResQFood y sé parte de una comunidad que combate el desperdicio y ayuda a quienes más lo necesitan.' 
   },
