@@ -1,6 +1,7 @@
 import React from 'react';
 
-import IconAccesoAlimentos from '../../assets/Recurso-Canasta.png'; // Reemplaza con tus nombres de archivo reales
+import IconAccesoAlimentos from '../../assets/Recurso-Canasta.png'; 
+
 import IconContribucionSocial from '../../assets/Recurso-Corazon.png';
 import IconReduccionDesperdicio from '../../assets/Recurso-Planeta.png';
 import IconFacilRapido from '../../assets/Recurso-Reloj.png';
@@ -61,13 +62,13 @@ const BenefitsSection = () => {
               key={index} 
               className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out flex flex-col items-center text-center"
             >
-              {/* 3. USA UNA ETIQUETA <img> PARA MOSTRAR EL ÍCONO */}
-              <div className="mb-5 p-3 bg-primary/10 rounded-full inline-flex items-center justify-center"> {/* Contenedor del ícono */}
+             
+              <div className="mb-5 p-3 bg-primary/10 rounded-full inline-flex items-center justify-center"> 
                 <img 
                   src={benefit.iconSrc} 
                   alt={`${benefit.title} icon`} // Texto alternativo descriptivo
-                  className="h-10 w-10" // Ajusta el tamaño del ícono PNG según necesites (ej. h-10 w-10, h-12 w-12)
-                                      // Si tus PNGs no son cuadrados, w-auto podría ser mejor o definir ambos.
+                  className="h-10 w-10" 
+                                     
                 />
               </div>
               <h3 className="text-xl font-semibold text-textMain mb-2">
