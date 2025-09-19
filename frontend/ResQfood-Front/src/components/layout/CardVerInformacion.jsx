@@ -1,5 +1,3 @@
-// src/components/layout/CardVerInformacion.jsx
-
 import React from "react";
 
 export default function CardVerInformacion({ titulo, descripcion, imagenUrl, estado, fecha }) {

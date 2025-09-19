@@ -30,7 +30,7 @@ export class EntregaController {
                 return res.status(400).json({ message: 'Esta propuesta ya no es válida.' });
             }
 
-            // --- CORRECCIÓN CLAVE AÑADIDA ---
+          
             // Se marca la notificación de 'APROBACION' que recibió el solicitante como leída.
             await Notificacion.updateMany(
                 { referenciaId: entrega._id, tipoNotificacion: 'APROBACION' },
@@ -169,7 +169,7 @@ export class EntregaController {
                 return res.status(400).json({ message: 'La entrega no está lista para ser completada.' });
             }
 
-            // --- CORRECCIÓN CLAVE AÑADIDA ---
+         
             // Se marca la notificación de 'HORARIO_CONFIRMADO' que recibió el donante como leída.
             await Notificacion.updateMany(
                 { referenciaId: entrega._id, tipoNotificacion: 'HORARIO_CONFIRMADO' },

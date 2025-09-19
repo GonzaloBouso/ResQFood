@@ -3,16 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- AÑADE ESTO --- */
+
 @layer utilities {
   .shadow-text {
-    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra negra semitransparente */
-    /* Puedes ajustar los valores: 
-       - 0px: desplazamiento horizontal
-       - 2px: desplazamiento vertical (prueba con 1px o 3px)
-       - 4px: desenfoque (blur) (prueba con 3px o 5px)
-       - rgba(0, 0, 0, 0.5): color de la sombra (negro con 50% de opacidad)
-    */
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5); 
+    
   }
   
 }

@@ -1,7 +1,5 @@
-// src/components/modals/CodigoRetiroModal.jsx
-
 import React from 'react';
-import { X, Copy } from 'lucide-react'; // Re-introducimos lucide-react de forma segura aquí
+import { X, Copy } from 'lucide-react'; 
 import toast from 'react-hot-toast';
 
 const CodigoRetiroModal = ({ codigo, onClose }) => {

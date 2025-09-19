@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import API_BASE_URL from '../../api/config.js';
-import { ChevronLeft, ChevronRight } from 'lucide-react'; // <<< 1. Importamos iconos para el carrusel
+import { ChevronLeft, ChevronRight } from 'lucide-react'; 
 
 const FALLBACK_IMAGE = 'https://via.placeholder.com/400x400.png?text=Sin+Imagen';
 
@@ -11,7 +11,7 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
   const [error, setError] = useState(null);
   const { getToken } = useAuth();
 
-  // <<< 2. Estado para manejar la imagen actual en el carrusel >>>
+  //  Estado para manejar la imagen actual en el carrusel 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
     fetchDonacion();
   }, [donacionId, getToken]);
 
-  // <<< 3. Funciones para navegar por el carrusel de imágenes >>>
+  //  Funciones para navegar por el carrusel de imágenes 
   const goToNextImage = () => {
     if (donacion?.imagenesUrl) {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % donacion.imagenesUrl.length);
@@ -61,7 +61,7 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
 
   if (!donacionId) return null;
 
-  // El JSX principal ha sido reestructurado para ser responsivo y scrollable
+  
   return (
     <div 
       onClick={onClose} // Cierra el modal si se hace clic en el fondo
@@ -69,7 +69,8 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
     >
       <div 
         onClick={(e) => e.stopPropagation()} // Evita que el clic dentro del modal lo cierre
-        className="bg-white rounded-xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]" // <<< 4. Estructura principal del modal
+        className="bg-white rounded-xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]"
+
       >
         {/* Encabezado del Modal */}
         <div className="flex-shrink-0 p-4 border-b border-gray-200 flex justify-between items-center">
@@ -93,7 +94,7 @@ const DetallesCardDonacion = ({ donacionId, onClose }) => {
             <div className="p-8 text-center text-red-600">{error}</div>
           ) : (
             <div>
-              {/* <<< 5. Carrusel de Imágenes >>> */}
+              {/* Carrusel de Imágenes */}
               <div className="relative w-full aspect-video bg-gray-100">
                 <img
                   src={donacion.imagenesUrl?.[currentImageIndex] || FALLBACK_IMAGE}

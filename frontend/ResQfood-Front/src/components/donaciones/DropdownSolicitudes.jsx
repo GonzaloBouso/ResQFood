@@ -1,17 +1,15 @@
-// frontend/src/components/solicitudes/DropdownSolicitudes.jsx (VERSIÓN CORREGIDA)
-
 import React, { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import toast from 'react-hot-toast'; // Usaremos toasts para mejor feedback
+import toast from 'react-hot-toast'; 
 
-import ProposeScheduleModal from './ProposeScheduleModal'; // Importamos el modal correcto
+import ProposeScheduleModal from './ProposeScheduleModal'; 
 import API_BASE_URL from '../../api/config';
 
 const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, onActionComplete }) => {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [solicitudParaAceptar, setSolicitudParaAceptar] = useState(null); // Estado para manejar el modal
+  const [solicitudParaAceptar, setSolicitudParaAceptar] = useState(null); 
   const { getToken } = useAuth();
 
   const handleRechazarClick = async (solicitud) => {
@@ -33,7 +31,7 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, onActionComplete 
       }
       
       toast.success('Solicitud rechazada.', { id: toastId });
-      if (onActionComplete) onActionComplete(); // Llama a la función para recargar datos
+      if (onActionComplete) onActionComplete(); 
       
     } catch (error) {
       toast.error(`Error: ${error.message}`, { id: toastId });
@@ -42,8 +40,7 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, onActionComplete 
     }
   };
 
-  // --- FUNCIÓN CORREGIDA Y SIMPLIFICADA ---
-  // Esta función ahora es idéntica a la de MyDonationsPage.jsx
+
   const handleAcceptAndPropose = async (solicitudId, propuesta) => {
     setIsSubmitting(true);
     const toastId = toast.loading('Enviando propuesta...');
@@ -53,7 +50,7 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, onActionComplete 
       const response = await fetch(`${API_BASE_URL}/api/solicitud/${solicitudId}/aceptar-y-proponer`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        // El 'body' ahora es el objeto plano que espera el backend
+        
         body: JSON.stringify(propuesta),
       });
 
@@ -63,8 +60,8 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, onActionComplete 
       }
 
       toast.success('¡Propuesta enviada con éxito!', { id: toastId });
-      setSolicitudParaAceptar(null); // Cierra el modal
-      if (onActionComplete) onActionComplete(); // Recarga los datos
+      setSolicitudParaAceptar(null); 
+      if (onActionComplete) onActionComplete(); 
       
     } catch (err) {
       toast.error(`Error: ${err.message}`, { id: toastId });
@@ -96,7 +93,7 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, onActionComplete 
                   </div>
                   <div className="flex gap-2 mt-2 sm:mt-0">
                     <button
-                        // Abre el modal de proponer horario
+                        
                         onClick={() => setSolicitudParaAceptar(s)}
                         className={`text-xs px-3 py-1 rounded transition ${
                         solicitudAceptada
@@ -122,7 +119,7 @@ const DropdownSolicitudes = ({ solicitudes, solicitudAceptada, onActionComplete 
         )}
       </div>
 
-      {/* Usamos el modal estandarizado que ya funciona */}
+      
       {solicitudParaAceptar && (
           <ProposeScheduleModal 
               solicitud={solicitudParaAceptar} 

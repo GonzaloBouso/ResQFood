@@ -53,7 +53,7 @@ export const useSocket = (addNotification) => {
       connectSocket();
     }
     
-    // --- Función de limpieza ---
+    //  Función de limpieza 
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();

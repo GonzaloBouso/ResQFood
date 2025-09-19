@@ -1,7 +1,7 @@
 import User from '../models/User.js';
 
 export const requireAuth = async (req, res, next) => {
-  // El middleware de Clerk ya ha verificado el token y poblado req.auth
+
   if (!req.auth || !req.auth.userId) {
     return res.status(401).json({ message: 'No autenticado.' });
   }

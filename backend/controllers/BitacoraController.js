@@ -1,5 +1,3 @@
-// backend/controllers/BitacoraController.js
-
 import Bitacora from '../models/bitacoraAdmin.js';
 
 export class BitacoraController {

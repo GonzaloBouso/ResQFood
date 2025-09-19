@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SignedIn, SignedOut, UserButton, useAuth } from '@clerk/clerk-react';
@@ -118,7 +117,7 @@ const Header = () => {
 
             <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
               <Link to="/sobreNosotros" className="hidden lg:block text-sm text-gray-700 hover:text-primary-600 px-3 py-2">Sobre Nosotros</Link>
-              {/* --- BOTÓN MÓVIL CORREGIDO --- */}
+              
               <button className="lg:hidden p-2 rounded-full text-gray-700 hover:bg-gray-100" onClick={() => toggleFilterModal && toggleFilterModal(true)}>
                 <SearchIcon size={20} />
               </button>
@@ -204,7 +203,7 @@ const Header = () => {
         </div>
       </header>
       
-      {/* Se asegura de que las funciones existan antes de pasarlas como props */}
+     
       {toggleFilterModal && (
         <FilterModal
             isOpen={isFilterModalOpen}

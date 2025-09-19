@@ -9,7 +9,7 @@ const Calificacion = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log({ rating, opinion });
-    // enviar al backend si es necesario
+    
   };
 
   return (

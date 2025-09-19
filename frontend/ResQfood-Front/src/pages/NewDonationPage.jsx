@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { GoogleMap, Marker, Autocomplete } from '@react-google-maps/api'; 
 import API_BASE_URL from '../api/config.js';
 
-// --- Constantes para el mapa ---
+
 const mapContainerStyle = {
   width: '100%',
   height: '300px',
@@ -27,7 +27,7 @@ const NewDonationPage = ({ onDonationCreated }) => {
   const navigate = useNavigate();
   const { getToken } = useAuth();
 
-  // --- Estados del Componente ---
+ 
   const [formData, setFormData] = useState({
     titulo: '',
     descripcion: '',

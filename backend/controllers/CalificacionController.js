@@ -33,13 +33,11 @@ export class CalificacionController {
             const usuarioCalificado = await User.findById(calificadoId).session(session);
             if (!usuarioCalificado) throw new Error('Usuario calificado no encontrado.');
             
-            // --- ¡CORRECCIÓN CLAVE! ---
-            // Asegurarse de que el objeto 'calificaciones' exista antes de usarlo.
+            
             if (!usuarioCalificado.calificaciones) {
                 usuarioCalificado.calificaciones = { promedio: 0, totalCalificaciones: 0 };
             }
-            // --- FIN DE LA CORRECCIÓN ---
-
+         
             const totalPuntuacionAnterior = usuarioCalificado.calificaciones.promedio * usuarioCalificado.calificaciones.totalCalificaciones;
             const nuevoTotalCalificaciones = usuarioCalificado.calificaciones.totalCalificaciones + 1;
             const nuevoPromedio = (totalPuntuacionAnterior + puntuacion) / nuevoTotalCalificaciones;
@@ -71,7 +69,7 @@ export class CalificacionController {
 
         } catch (error) {
             await session.abortTransaction();
-            console.error("--- ERROR EN createCalificacion ---:", error); // <-- Dejamos este log para futuros problemas
+            console.error("--- ERROR EN createCalificacion ---:", error);
             res.status(500).json({ message: error.message || 'Error al crear la calificación' });
         } finally {
             session.endSession();

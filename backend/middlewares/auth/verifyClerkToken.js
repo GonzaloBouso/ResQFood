@@ -3,8 +3,7 @@ import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 
 const clerkAuth = ClerkExpressRequireAuth();
 
-// Este middleware solo verifica el token de Clerk y añade `req.auth`.
-// NO consulta nuestra base de datos.
+
 export const verifyClerkToken = async (req, res, next) => {
   try {
     await new Promise((resolve, reject) => {
@@ -20,7 +19,7 @@ export const verifyClerkToken = async (req, res, next) => {
       return res.status(401).json({ message: "ID de usuario no encontrado en el token." });
     }
 
-    // El token es válido, continuamos.
+   
     next();
 
   } catch (error) {

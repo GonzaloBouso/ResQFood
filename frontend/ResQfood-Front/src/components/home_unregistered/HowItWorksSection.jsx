@@ -1,9 +1,9 @@
-// src/components/home_unregistered/HowItWorksSection.jsx
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// 1. IMPORTA TUS IMÁGENES PARA LOS PASOS
-import step1Image from '../../assets/Recurso-UserPlus.png'; // Reemplaza con tus nombres de archivo reales
+
+import step1Image from '../../assets/Recurso-UserPlus.png'; 
 import step2Image from '../../assets/Recurso-Frutas.png';
 import step3Image from '../../assets/Recurso-Mensaje.png';
 import step4Image from '../../assets/Recurso-Corazon2.png';
@@ -54,20 +54,21 @@ const HowItWorksSection = () => {
           {stepsData.map((step) => (
             <div 
               key={step.id} 
-              className="flex flex-col items-center text-center p-4" // Reducido p-6 a p-4 si las imágenes son el foco
+              className="flex flex-col items-center text-center p-4" 
             >
-              {/* NÚMERO DEL PASO (opcional, si tus imágenes no lo incluyen) */}
+              
               <div className="flex items-center justify-center w-12 h-12 mb-4 bg-primary text-white rounded-full text-xl font-bold shadow-md">
                 {step.id}
               </div>
 
-              {/* IMAGEN DEL PASO */}
-              <div className="mb-4"> {/* Puedes ajustar el margen inferior */}
+            
+              <div className="mb-4"> 
                 <img 
                   src={step.imageSrc} 
                   alt={`Paso ${step.id}: ${step.title}`} 
-                  className="h-24 w-24 mx-auto object-contain" // Ajusta h- y w- según el tamaño de tus imágenes
-                                                                // object-contain asegura que toda la imagen se vea
+                  className="h-24 w-24 mx-auto object-contain" 
+
+                  
                 />
               </div>
               

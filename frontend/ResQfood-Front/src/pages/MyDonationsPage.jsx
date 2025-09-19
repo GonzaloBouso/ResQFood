@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../api/config';
 import ProposeScheduleModal from '../components/ProposeScheduleModal';
-import toast from 'react-hot-toast'; // Se mantiene solo para acciones seguras
+import toast from 'react-hot-toast'; 
 import { ProfileStatusContext } from '../context/ProfileStatusContext';
 
 const SolicitudesList = ({ solicitudes, onAcceptClick, onReject, isSubmitting }) => {

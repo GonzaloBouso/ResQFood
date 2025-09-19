@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { X } from 'lucide-react';
 import API_BASE_URL from '../../api/config';
 
-// --- Helpers para el Horario (copiados de CompleteProfilePage) ---
+
 const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
 const generarOpcionesHora = () => {
     const opciones = [];
@@ -20,7 +20,7 @@ const opcionesHora = generarOpcionesHora();
 const EditarPerfilModal = ({ userData, onClose, onProfileUpdate }) => {
   const { getToken } = useAuth();
   
-  // 1. El estado del formulario ahora incluye todos los campos necesarios
+  
   const [formData, setFormData] = useState({
     nombre: userData.nombre || '',
     telefono: userData.telefono || '',
@@ -44,11 +44,11 @@ const EditarPerfilModal = ({ userData, onClose, onProfileUpdate }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // Efecto para parsear y establecer el horario existente al abrir el modal
+
   useEffect(() => {
       if (userData.rol === 'LOCAL' && userData.localData?.horarioAtencion) {
           const parts = userData.localData.horarioAtencion.split(' ');
-          if (parts.length >= 5) { // ej: LUNES a VIERNES de 09:00 a 18:00
+          if (parts.length >= 5) { 
             setDiaInicio(parts[0]);
             setDiaFin(parts[2]);
             setHoraApertura(parts[4]);

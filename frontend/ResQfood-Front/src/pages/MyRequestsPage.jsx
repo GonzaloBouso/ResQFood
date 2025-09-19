@@ -86,7 +86,7 @@ const SolicitudCard = ({ solicitud, isSubmitting, onConfirm, onReject, onCopy, o
     );
 };
 
-// --- Componente MyRequestsPage MODIFICADO ---
+
 const MyRequestsPage = () => {
     const { getToken } = useAuth();
     const { currentUserDataFromDB } = useContext(ProfileStatusContext);
@@ -98,7 +98,7 @@ const MyRequestsPage = () => {
     const [entregaParaCalificar, setEntregaParaCalificar] = useState(null); 
     
     const fetchSolicitudes = useCallback(async () => {
-        // Ponemos setIsLoading en false al final, no importa si hay error o no.
+        
         setIsLoading(true);
         try {
             const token = await getToken();
@@ -136,14 +136,14 @@ const MyRequestsPage = () => {
 
     const handleCloseModal = () => {
         setCodigoParaMostrar(null);
-        fetchSolicitudes(); // Refrescamos para ver el nuevo estado
+        fetchSolicitudes(); 
     };
     
    
     const handleCloseCalificacionModal = (seCalifico) => {
         setEntregaParaCalificar(null);
         if (seCalifico) {
-            // Si el usuario calificó, refrescamos la lista para que el botón "Calificar" desaparezca.
+            
             fetchSolicitudes();
         }
     };

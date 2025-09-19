@@ -51,14 +51,14 @@ export class UserController {
                 fotoDePerfilUrl: clerkUser.imageUrl,
             };
 
-            // 5. Utiliza findOneAndUpdate con upsert. Es la forma más robusta.
-            //    - Si el webhook creó un usuario básico, esto lo ACTUALIZARÁ.
-            //    - Si el webhook falló, esto lo CREARÁ.
+            // 5. Utiliza findOneAndUpdate con upsert.
+            //    - Si el webhook creó un usuario básico, esto lo actualizará.
+            //    - Si el webhook falló, esto lo creará.
             console.log("[createProfile] Guardando perfil en la base de datos con upsert...", userProfileData);
             const updatedOrCreatedUser = await User.findOneAndUpdate(
-                { clerkUserId: clerkUserId },   // Condición de búsqueda
-                { $set: userProfileData },      // Datos para establecer/actualizar
-                { new: true, upsert: true, runValidators: true } // Opciones
+                { clerkUserId: clerkUserId },  
+                { $set: userProfileData },      
+                { new: true, upsert: true, runValidators: true } 
             );
             
             console.log(`[createProfile] ¡Éxito! Perfil para ${clerkUserId} guardado en DB.`);
@@ -68,14 +68,14 @@ export class UserController {
             if (error instanceof z.ZodError) {
                 return res.status(400).json({ message: 'Error de validación al crear el perfil.', errors: error.errors });
             }
-             // Logueamos el error completo para verlo en Render
+            
             console.error('ERROR CRÍTICO en createProfileFromFrontend:', error);
             return res.status(500).json({ message: 'Error interno del servidor.' })
         }
     }
 
 
-    // Método para obtener el perfil del usuario actual (usado por App.jsx)
+    // Método para obtener el perfil del usuario actual 
     static async getCurrentUserProfile(req, res) {
         try {
             const clerkUserId = req.auth?.userId;
@@ -84,7 +84,7 @@ export class UserController {
             }
             const userProfile = await User.findOne({ clerkUserId });
             if (!userProfile) {
-                // Esto es normal para un usuario nuevo que aún no ha completado su perfil.
+                
                 return res.status(404).json({ message: "Perfil de usuario no encontrado en nuestra base de datos." });
             }
             return res.status(200).json({ user: userProfile.toJSON() });
@@ -94,7 +94,7 @@ export class UserController {
         }
     }
     
-    // Método para ACTUALIZAR el perfil de un usuario que YA EXISTE
+    // Método para ACTUALIZAR el perfil de un usuario que 
     static async updateCurrentUserProfile(req, res) {
         const clerkUserId = req.auth?.userId;
         if (!clerkUserId) { return res.status(401).json({ message: 'No autenticado.' }); }
@@ -105,7 +105,7 @@ export class UserController {
 
             const validatedData = updateUserSchema.parse(req.body);
 
-            // --- Actualización Manual y Segura (Evita errores de Object.assign) ---
+            //  Actualización Manual y Segura 
             if (validatedData.nombre !== undefined) userToUpdate.nombre = validatedData.nombre;
             if (validatedData.telefono !== undefined) userToUpdate.telefono = validatedData.telefono;
             if (validatedData.ubicacion) userToUpdate.ubicacion = { ...userToUpdate.ubicacion?.toObject(), ...validatedData.ubicacion };
@@ -124,19 +124,19 @@ export class UserController {
         }
     }
 
-    // (Opcional) Método para que un admin actualice a cualquier usuario
+    // Método para que un admin actualice a cualquier usuario
     static async updateUser(req, res) {
         const { clerkUserId } = req.params;
         const loggedInUserId = req.auth?.userId;
 
-        // Aquí podrías añadir lógica para un rol de 'admin'
+        
         if (!loggedInUserId || clerkUserId !== loggedInUserId) {
             return res.status(403).json({ message: 'No tiene permiso para modificar este usuario.' });
         }
-        // ...resto de la lógica de actualización
+      
     }
 
-    // (Opcional) Método para crear un usuario manualmente (vía webhook u otro sistema)
+    
     static async createUser(req, res) {
         try {
             const validatedData = createUserSchema.parse(req.body);
@@ -144,7 +144,7 @@ export class UserController {
             await newUser.save();
             res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser.toJSON() });
         } catch (error) {
-            // ...manejo de errores
+            
         }
     }
 
@@ -194,7 +194,7 @@ export class UserController {
             const updatedUser = await User.findOneAndUpdate(
                 { clerkUserId },
                 { fotoDePerfilUrl: newAvatarUrl },
-                { new: true } // Devuelve el documento actualizado
+                { new: true } 
             );
 
             if (!updatedUser) {
@@ -216,12 +216,12 @@ export class UserController {
    static async getAllUsers(req, res) {
     try {
         // --- 1. Paginación ---
-        const page = parseInt(req.query.page) || 1; // Página actual, por defecto 1
-        const limit = parseInt(req.query.limit) || 10; // Resultados por página, por defecto 10
+        const page = parseInt(req.query.page) || 1; 
+        const limit = parseInt(req.query.limit) || 10; 
         const skip = (page - 1) * limit;
 
         // --- 2. Filtros y Búsqueda ---
-        const query = {}; // Objeto de consulta inicial para MongoDB
+        const query = {}; 
 
         // Filtro por rol
         if (req.query.rol) {
@@ -231,7 +231,7 @@ export class UserController {
         // Búsqueda por nombre o email
         if (req.query.search) {
             const searchTerm = req.query.search;
-            // Usamos una expresión regular para una búsqueda "case-insensitive"
+            
             query.$or = [
                 { nombre: { $regex: searchTerm, $options: 'i' } },
                 { email: { $regex: searchTerm, $options: 'i' } }
@@ -239,10 +239,10 @@ export class UserController {
         }
         
         // --- 3. Ejecutar la Consulta ---
-        // Primero, contamos el número total de documentos que coinciden con la consulta (para la paginación)
+     
         const totalUsers = await User.countDocuments(query);
         
-        // Luego, buscamos los usuarios con la paginación aplicada
+       
         const users = await User.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -319,8 +319,7 @@ static async manageUser(req, res) {
 
             // 6. Crear el registro en la Bitácora
             try {
-                // ---- ¡AQUÍ ESTÁ LA CORRECCIÓN! ----
-                // Faltaba la palabra `new` antes de `Bitacora`.
+                
                 const logEntry = new Bitacora({
                     actorId: adminUser._id,
                     accion: accionRealizada,
@@ -342,7 +341,7 @@ static async manageUser(req, res) {
     } catch (error) {
         console.error("Error crítico en manageUser:", error);
         
-        // Asumiendo que clerkClient lanza un error con una propiedad específica
+        
         if (error.isClerkError) {
              return res.status(502).json({ message: "Error al actualizar estado en el servicio de autenticación." });
         }

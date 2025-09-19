@@ -1,5 +1,3 @@
-// frontend/src/pages/FormularioContacto.jsx
-
 import React, { useState } from "react";
 import API_BASE_URL from '../api/config.js'; 
 const FormularioContacto = () => {
