@@ -1,7 +1,9 @@
+// frontend/src/components/layout/CardDonacion.jsx (CÓDIGO COMPLETO Y FINAL)
+
 import React, { useState, useContext } from 'react';
 import { MoreVertical, Flag } from 'lucide-react';
-import { ProfileStatusContext } from '../../context/ProfileStatusContext';
-import ReportModal from '../modals/ReportModal'; 
+import { ProfileStatusContext } from '../../context/ProfileStatusContext'; // Importamos el contexto
+import ReportModal from '../modals/ReportModal'; // Importamos el nuevo modal
 
 const CardDonacion = ({ donacion }) => {
     // Estados para controlar los menús y modales
@@ -16,7 +18,7 @@ const CardDonacion = ({ donacion }) => {
     const { _id, titulo, imagenesUrl = [], categoria, donanteId, ubicacionRetiro } = donacion;
     const img = imagenesUrl[0] || 'https://via.placeholder.com/150';
 
-    //  el ID del donante con el ID del usuario actual 
+    // --- LÓGICA CLAVE: Comparamos el ID del donante con el ID del usuario actual ---
     const isMyDonation = currentUserDataFromDB?._id === donanteId?._id;
 
     return (
@@ -36,13 +38,13 @@ const CardDonacion = ({ donacion }) => {
                             <h3 className="font-bold text-xl text-gray-900 mt-1">{titulo}</h3>
                             <p className="text-sm text-gray-500 mt-1">📍 {ubicacionRetiro?.ciudad || 'Ubicación no especificada'}</p>
                         </div>
-                       
-                       
+                        {/* --- RENDERIZADO CONDICIONAL DEL MENÚ DE 3 PUNTOS --- */}
+                        {/* Solo se muestra si NO es mi donación y estoy logueado */}
                         {!isMyDonation && currentUserDataFromDB && (
                             <div className="relative">
                                 <button 
                                     onClick={() => setMenuOpen(prev => !prev)}
-                                    onBlur={() => setTimeout(() => setMenuOpen(false), 200)} 
+                                    onBlur={() => setTimeout(() => setMenuOpen(false), 200)} // Cierra el menú si se pierde el foco
                                     className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
                                 >
                                     <MoreVertical size={20} />
@@ -67,7 +69,7 @@ const CardDonacion = ({ donacion }) => {
                 </div>
             </article>
 
-
+            {/* Renderizado del modal de reporte */}
             {reportModalOpen && (
                 <ReportModal donacion={donacion} onClose={() => setReportModalOpen(false)} />
             )}

@@ -22,19 +22,22 @@ const ProposeScheduleModal = ({ solicitud, onClose, onSubmit, isSubmitting }) =>
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Validación extra en el frontend para una mejor experiencia de usuario
     if (horaInicio >= horaFin) {
       toast.error('La hora de fin debe ser posterior a la hora de inicio.');
       return;
     }
 
-   
+    // --- CORRECCIÓN CLAVE ---
+    // Creamos el objeto 'propuesta' de forma simple y plana,
+    // exactamente como el backend (SolicitudController) lo espera.
     const propuesta = {
       fecha: fecha,
       horaInicio: horaInicio,
       horaFin: horaFin
     };
 
-  
+    // Llamamos a la función del componente padre con los datos correctos
     onSubmit(solicitud._id, propuesta);
   };
 
@@ -62,7 +65,7 @@ const ProposeScheduleModal = ({ solicitud, onClose, onSubmit, isSubmitting }) =>
                 value={fecha} 
                 onChange={e => setFecha(e.target.value)} 
                 required 
-                className="mt-1 block w-full input-style" 
+                className="mt-1 block w-full input-style" // Usando un estilo consistente
                 min={getTodayString()} // No permitir fechas pasadas
               />
             </div>

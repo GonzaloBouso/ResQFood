@@ -1,3 +1,4 @@
+// src/components/map/Location.jsx
 import React, { useState, useCallback, useRef } from 'react';
 import { GoogleMap, Marker, Autocomplete } from '@react-google-maps/api';
 import Modal from './Modal';
@@ -6,9 +7,9 @@ import { MapPin, ChevronDown, LocateFixed } from 'lucide-react';
 // --- ESTILOS Y CONFIGURACIÓN DEL MAPA ---
 const mapContainerStyle = { width: '100%', height: '250px' };
 const mapOptions = { disableDefaultUI: true, zoomControl: true };
-const initialCenter = { lat: -34.6037, lng: -58.3816 };
+const initialCenter = { lat: -34.6037, lng: -58.3816 }; // Buenos Aires
 
-
+// --- COMPONENTE PRINCIPAL ---
 export function LocationModalWorkflow({ onLocationSelected, currentDisplayAddress }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(initialCenter);
@@ -27,7 +28,7 @@ export function LocationModalWorkflow({ onLocationSelected, currentDisplayAddres
     const newPos = { lat, lng };
     setSelectedLocation(newPos);
     
-  
+    // Reverse Geocode para obtener la dirección
     const geocoder = new window.google.maps.Geocoder();
     geocoder.geocode({ location: newPos }, (results, status) => {
         if (status === 'OK' && results[0]) {

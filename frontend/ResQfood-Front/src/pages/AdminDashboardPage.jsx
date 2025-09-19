@@ -191,7 +191,7 @@ const AdminDashboardPage = () => {
 
             toast.success('Usuario suspendido.', { id: toastId });
             fetchReportes(); // Actualiza la lista
-            fetchUsers(page, filters); // refrescamos la lista de usuarios para ver el cambio de estado
+            fetchUsers(page, filters); // También refrescamos la lista de usuarios para ver el cambio de estado
         } catch (err) {
             toast.error(`Error: ${err.message}`, { id: toastId });
         }

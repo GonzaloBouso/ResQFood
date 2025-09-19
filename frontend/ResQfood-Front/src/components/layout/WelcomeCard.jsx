@@ -1,16 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
+// Este componente recibe el nombre del usuario para personalizar el saludo.
 const WelcomeCard = ({ userName }) => {
   const navigate = useNavigate();
 
-  
+  // Función para navegar a la página de nueva donación.
   const handlePublishClick = () => {
     navigate('/publicar-donacion');
   };
 
-  
+  // Función para hacer scroll suave hacia la sección de donaciones.
   const handleExploreClick = () => {
     const donationsSection = document.getElementById('donaciones-cercanas');
     if (donationsSection) {

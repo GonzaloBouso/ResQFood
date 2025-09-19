@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, User, Search, PlusCircle } from 'lucide-react';
-import { ProfileStatusContext } from '../../context/ProfileStatusContext'; 
+import { ProfileStatusContext } from '../../context/ProfileStatusContext'; // <-- Importamos el contexto
 
 const navItems = [
   { name: 'Inicio', href: '/dashboard', icon: Home, exact: true }, 

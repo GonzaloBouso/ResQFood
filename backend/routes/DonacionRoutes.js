@@ -1,3 +1,4 @@
+// backend/routes/DonacionRoutes.js (CÓDIGO COMPLETO Y CORREGIDO)
 import express from 'express';
 import { DonacionController } from '../controllers/DonacionController.js';
 import { requireAuth } from '../middlewares/autMiddleware.js';

@@ -9,7 +9,8 @@ if (!CLERK_WEBHOOK_SECRET) {
   console.error("FATAL ERROR: CLERK_WEBHOOK_SECRET no está configurado en las variables de entorno.");
   console.error("Por favor, revisa tu archivo .env en la raíz del backend.");
   console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
+  // En un entorno de producción, considera detener la aplicación si falta.
+  // process.exit(1); 
 }
 
 export const handleClerkWebhook = async (req, res) => {
@@ -35,11 +36,11 @@ export const handleClerkWebhook = async (req, res) => {
   console.log("[WEBHOOK_HANDLER] Payload recibido (inicio):", payload.substring(0, 200) + "..."); 
 
   const wh = new Webhook(CLERK_WEBHOOK_SECRET);
-  let evt; 
+  let evt; // <<< DECLARAR evt AQUÍ AFUERA, ANTES DEL TRY
 
   try {
     console.log("[WEBHOOK_HANDLER] Intentando verificar firma del webhook...");
-    evt = wh.verify(payload, { 
+    evt = wh.verify(payload, { // <<< ASIGNAR A evt DENTRO DEL TRY
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
@@ -47,7 +48,7 @@ export const handleClerkWebhook = async (req, res) => {
     console.log("[WEBHOOK_HANDLER] ¡Firma del webhook verificada exitosamente!");
   } catch (err) {
     console.error("[WEBHOOK_HANDLER] ERROR AL VERIFICAR FIRMA DEL WEBHOOK:", err.message);
-  
+    // console.error("[WEBHOOK_HANDLER] Detalles del error de verificación:", err); // Descomentar para más detalle del error de Svix si es necesario
     return res.status(400).json({ error: "Error de verificación de webhook: Firma inválida." });
   }
 
@@ -56,7 +57,7 @@ export const handleClerkWebhook = async (req, res) => {
   const eventData = evt.data;
 
   console.log(`[WEBHOOK_HANDLER] Evento verificado. Tipo: ${eventType}`);
-  
+  // console.log(`[WEBHOOK_HANDLER] Datos del evento (${eventType}):`, JSON.stringify(eventData, null, 2)); // Log completo de datos del evento
 
   // --- MANEJO DEL EVENTO 'user.created' ---
   if (eventType === 'user.created') {
@@ -82,7 +83,7 @@ export const handleClerkWebhook = async (req, res) => {
     }
     if (!newUserPayload.email) {
         console.warn("[WEBHOOK_HANDLER | user.created] ADVERTENCIA: Email no encontrado en los datos del evento. clerkUserId:", newUserPayload.clerkUserId);
-       
+        // Tu modelo User requiere 'email', así que esto fallará en user.save() si es null y no hay un default o manejo.
     }
 
     try {
@@ -91,37 +92,28 @@ export const handleClerkWebhook = async (req, res) => {
 
       if (existingUser) {
         console.warn(`[WEBHOOK_HANDLER | user.created] ADVERTENCIA: Usuario con clerkUserId ${newUserPayload.clerkUserId} YA EXISTE en la DB. Saltando creación.`);
-       
+        // Podrías considerar actualizar algunos campos si han cambiado, aunque esto es más para 'user.updated'.
         return res.status(200).json({ message: "Usuario ya existía, no se realizaron cambios desde user.created." });
       }
       console.log(`[WEBHOOK_HANDLER | user.created] Usuario con clerkUserId ${newUserPayload.clerkUserId} no existe. Procediendo a crear...`);
       
       console.log("[WEBHOOK_HANDLER | user.created] Creando instancia de User con payload...");
-
       const user = new User(newUserPayload);
-
       console.log("[WEBHOOK_HANDLER | user.created] Instancia de User creada (antes de pre-save hook):", JSON.stringify(user.toObject(), null, 2));
       
       console.log("[WEBHOOK_HANDLER | user.created] Intentando user.save()...");
-
-      await user.save(); 
-
+      await user.save(); // El pre('save') del modelo User también se ejecutará aquí
       console.log("✅ [WEBHOOK_HANDLER | user.created] ¡ÉXITO! user.save() completado.");
       console.log("[WEBHOOK_HANDLER | user.created] Documento guardado:", JSON.stringify(user.toJSON(), null, 2));
-
       return res.status(201).json({ message: "Usuario creado exitosamente vía webhook.", userId: user._id, clerkUserId: user.clerkUserId });
 
     } catch (dbError) {
-
       console.error(`❌ [WEBHOOK_HANDLER | user.created] ERROR DURANTE user.save() o búsqueda previa (clerkUserId: ${id}):`);
       console.error("[WEBHOOK_HANDLER | user.created] Tipo de Error:", dbError.name); 
       console.error("[WEBHOOK_HANDLER | user.created] Mensaje de Error:", dbError.message);
-
       if (dbError.code) { 
-
           console.error("[WEBHOOK_HANDLER | user.created] Código de Error DB:", dbError.code);
           console.error("[WEBHOOK_HANDLER | user.created] Detalle de Clave Duplicada (si aplica):", dbError.keyValue);
-
       }
       if (dbError.errors) { 
           console.error("[WEBHOOK_HANDLER | user.created] Errores de Validación de Mongoose:", JSON.stringify(dbError.errors, null, 2));
@@ -140,6 +132,7 @@ export const handleClerkWebhook = async (req, res) => {
       return res.status(statusCode).json(responseError);
     }
   }
+  // --- FIN MANEJO 'user.created' ---
 
   // --- MANEJO DEL EVENTO 'user.updated' ---
   else if (eventType === 'user.updated') {
@@ -177,7 +170,8 @@ export const handleClerkWebhook = async (req, res) => {
       return res.status(500).json({ error: "Error interno del servidor al actualizar el usuario.", details: dbError.message });
     }
   }
- 
+  // --- FIN MANEJO 'user.updated' ---
+
   // --- MANEJO DEL EVENTO 'user.deleted' ---
   else if (eventType === 'user.deleted') {
     console.log("🗑️ [WEBHOOK_HANDLER | user.deleted] Evento 'user.deleted' recibido.");
@@ -207,7 +201,7 @@ export const handleClerkWebhook = async (req, res) => {
       return res.status(500).json({ error: "Error interno del servidor al procesar la eliminación.", details: dbError.message });
     }
   }
- 
+  // --- FIN MANEJO 'user.deleted' ---
   else {
     console.log(`[WEBHOOK_HANDLER] Tipo de evento no manejado activamente: ${eventType}. Respondiendo con éxito genérico.`);
   }

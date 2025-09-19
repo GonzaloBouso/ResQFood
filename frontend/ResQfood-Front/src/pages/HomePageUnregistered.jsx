@@ -1,3 +1,4 @@
+// src/pages/HomePageUnregistered.jsx
 import React from 'react';
 import HeroSlider from '../components/home_unregistered/HeroSlider';
 import BenefitsSection from '../components/home_unregistered/BenefitsSection';

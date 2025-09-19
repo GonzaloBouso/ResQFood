@@ -18,7 +18,7 @@ router.post('/:donacionId/solicitar', requireAuth, SolicitudController.createSol
 router.put('/:solicitudId/aceptar-y-proponer', requireAuth, SolicitudController.aceptarSolicitudYProponerHorario)
 
 // Donante rechaza una solicitud pendiente
-
+// Usamos el método POST porque es una acción que cambia el estado del recurso.
 router.post('/:solicitudId/rechazar', requireAuth, SolicitudController.rechazarSolicitud);
 
 // Cancelar una solicitud pendiente (Receptor) - para el botón "Descartar"

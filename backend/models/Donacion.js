@@ -57,5 +57,5 @@ donationSchema.virtual('solicitudes', {
 
 donationSchema.index({ 'ubicacionRetiro.coordenadas': '2dsphere' });
 
-
+// LA SOLUCIÓN: Verifica si el modelo ya existe.
 export default mongoose.models.Donacion || mongoose.model('Donacion', donationSchema);

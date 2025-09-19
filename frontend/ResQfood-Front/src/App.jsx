@@ -230,14 +230,15 @@ const ProtectedLayout = ({ adminOnly = false }) => {
         );
     }
     
-    // 2.  Si la carga terminó y el perfil NO está completo, siempre muestra la página para completarlo.
-  
+    // 2. --- LA CORRECCIÓN CLAVE ---
+    // Si la carga terminó y el perfil NO está completo, SIEMPRE muestra la página para completarlo.
+    // Esto maneja correctamente el caso del 404 para un nuevo usuario.
     if (!isComplete) {
         return <CompleteProfilePage onProfileComplete={updateProfileState} />;
     }
     
-    
-    // 3. Si el perfil está completo pero no hay datos de usuario,
+    // 3. Si el perfil está completo pero por alguna razón no hay datos de usuario,
+    // es un estado de error inesperado.
     if (!currentUserDataFromDB) {
         return (
             <div className="text-center py-20">

@@ -5,7 +5,7 @@ const TerminosCondiciones = () => {
     <main className="max-w-4xl mx-auto px-4 py-12 text-gray-800">
       <section className="text-center mb-12">
         <h1 className="text-3xl font-semibold mb-4">Términos y condiciones</h1>
-       
+        {/* Ícono omitido */}
       </section>
 
       <section className="mb-10">

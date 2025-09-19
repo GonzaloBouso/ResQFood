@@ -1,5 +1,5 @@
 import { useState } from 'react';
-
+//confirmacion del solicitante a lo propuesto por el donante
 const FormularioConfirmacion= ({ onSubmit }) => {
   const [fechaDesde, setFechaDesde] = useState(new Date().toISOString().split('T')[0]);
   const [fechaHasta, setFechaHasta] = useState('');

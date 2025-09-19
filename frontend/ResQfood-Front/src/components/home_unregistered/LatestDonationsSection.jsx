@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react'; // <<< 1. Importa useState y useEffect
 import { useNavigate } from 'react-router-dom';
 import DonationCardLimited from './DonationCardLimited';
-import API_BASE_URL from '../../api/config.js'; 
+import API_BASE_URL from '../../api/config.js'; // <<< 2. Importa la URL de tu API
 
 // --- Swiper ---
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -13,12 +13,12 @@ import { Navigation, Pagination } from 'swiper/modules';
 const LatestDonationsSection = () => {
   const navigate = useNavigate();
   
-  //  Creamos estados para manejar las donaciones, la carga y los errores 
+  // <<< 3. Creamos estados para manejar las donaciones, la carga y los errores >>>
   const [donations, setDonations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Usamos useEffect para buscar los datos cuando el componente se monta 
+  // <<< 4. Usamos useEffect para buscar los datos cuando el componente se monta >>>
   useEffect(() => {
     const fetchPublicDonations = async () => {
       setIsLoading(true);
@@ -44,7 +44,7 @@ const LatestDonationsSection = () => {
     navigate('/sign-up');
   };
 
-  // Creamos una función para renderizar el contenido del carrusel
+  // <<< 5. Creamos una función para renderizar el contenido del carrusel >>>
   const renderSwiperContent = () => {
     if (isLoading) {
       return <p className="text-center text-gray-500">Cargando donaciones...</p>;
@@ -89,7 +89,7 @@ const LatestDonationsSection = () => {
           </p>
         </div>
 
-        {/*  Renderizamos el contenido del carrusel */}
+        {/* <<< 6. Renderizamos el contenido del carrusel >>> */}
         {renderSwiperContent()}
 
         <div className="text-center mt-10">

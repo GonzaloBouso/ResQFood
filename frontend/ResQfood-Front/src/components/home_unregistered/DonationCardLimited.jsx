@@ -5,7 +5,7 @@ const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200/E0E0E0/BDBDBD?te
 const FALLBACK_AVATAR_URL = 'https://via.placeholder.com/40x40/A8D5BA/FFFFFF?text=A';
 
 const DonationCardLimited = ({ donation }) => {
-  if (!donation) return null; 
+  if (!donation) return null; // Guarda de seguridad
 
   const {
     titulo = "Título del Alimento",
@@ -45,7 +45,7 @@ const DonationCardLimited = ({ donation }) => {
         <h3 className="text-lg font-semibold text-textMain mb-1 truncate" title={titulo}>
           {titulo}
         </h3>
-        
+        {/* Usamos la categoría que sí viene del backend */}
         <p className="text-sm text-textMuted mb-4 flex-grow text-ellipsis overflow-hidden line-clamp-3">
           {categoria}
         </p>

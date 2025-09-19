@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// --- Esquema para Ubicación  ---
+// --- Esquema para Ubicación (cuando es obligatoria) ---
 const ubicacionSchemaObligatoria = z.object({
     direccion: z.string().min(1, 'La dirección es obligatoria'),
     ciudad: z.string().min(1, 'La ciudad es obligatoria'),
@@ -12,14 +12,14 @@ const ubicacionSchemaObligatoria = z.object({
     })
 });
 
-// --- Esquema para Datos de Local  ---
+// --- Esquema para Datos de Local (cuando son obligatorios) ---
 const localDataSchemaObligatoria = z.object({
     tipoNegocio: z.string().min(1, 'El tipo de negocio es obligatorio'),
     horarioAtencion: z.string().min(1, 'El horario de atención es obligatorio'),
     descripcionEmpresa: z.string().min(1, 'La descripción de la empresa es obligatoria'),
 });
 
-// --- Esquema para COMPLETAR PERFIL INICIAL ---
+// --- Esquema para COMPLETAR PERFIL INICIAL (cuando el rol es null y se establece por primera vez) ---
 export const completeInitialProfileSchema = z.discriminatedUnion("rol", [
     z.object({
         rol: z.literal("GENERAL"),
@@ -36,22 +36,25 @@ export const completeInitialProfileSchema = z.discriminatedUnion("rol", [
     })
 ]);
 
-// --- Esquema para ACTUALIZACIONES PARCIALES  ---
+// --- Esquema para ACTUALIZACIONES PARCIALES (cuando el rol ya está establecido) ---
 const ubicacionUpdateSchema = ubicacionSchemaObligatoria.deepPartial();
 const localDataUpdateSchema = localDataSchemaObligatoria.deepPartial();
 
-
+// ==================================================================
+// LA SOLUCIÓN:
+// Se elimina la línea duplicada de `localData` y se actualiza el `enum` de roles.
+// ==================================================================
 export const updateUserSchema = z.object({
     nombre: z.string().min(3, 'El nombre debe tener al menos 3 caracteres').optional(),
     telefono: z.string().regex(/^\d{7,15}$/, 'El teléfono no es válido (7-15 dígitos)').optional().nullable(),
     ubicacion: ubicacionUpdateSchema.optional(),
     fotoDePerfilUrl: z.string().url("URL de foto inválida").optional().nullable(),
-    rol: z.enum(['GENERAL', 'LOCAL', 'ADMIN']).optional(), 
-    localData: localDataUpdateSchema.optional(), 
+    rol: z.enum(['GENERAL', 'LOCAL', 'ADMIN']).optional(), // Se elimina 'MODERADOR'
+    localData: localDataUpdateSchema.optional(), // Se mantiene una sola definición de localData
 });
 
 
-// Esquemas auxiliares para createUserSchema 
+// --- Esquemas auxiliares para createUserSchema (restaurados de tu versión original) ---
 const estadisticasGeneralesSchema = z.object({
     totalDonacionesHechas: z.number().min(0).default(0),
     calificacionPromedioComoDonante: z.number().min(0).max(5).nullable().default(null),
@@ -69,12 +72,12 @@ const permisosSchema = z.object({
     puedeAccederEstadisticasGlobales: z.boolean().default(false),
 });
 
-// --- CREACIÓN DE USUARIO
+// --- Esquema para CREACIÓN DE USUARIO (restaurado de tu versión original) ---
 export const createUserSchema = z.object({
   clerkUserId: z.string().nonempty('El ID de Clerk es obligatorio'),
   email: z.string().email('El email no es válido'),
   nombre: z.string().min(3).optional(),
-  rol: z.enum(['GENERAL', 'LOCAL', 'ADMIN']).nullable().default(null), 
+  rol: z.enum(['GENERAL', 'LOCAL', 'ADMIN']).nullable().default(null), // Se elimina 'MODERADOR'
   activo: z.boolean().default(true),
   estadisticasGenerales: estadisticasGeneralesSchema.optional().nullable(),
   localData: localDataSchemaObligatoria.deepPartial().optional().nullable(),

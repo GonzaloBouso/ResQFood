@@ -12,13 +12,14 @@ const AdminRoute = () => {
   }
 
   // 3. La condición de seguridad:
-
+  //    El perfil debe estar completo Y el rol debe ser 'ADMIN'.
   if (isProfileComplete && currentUserRole === 'ADMIN') {
-    
+    // Si cumple la condición, permite el acceso a la página anidada (ej. AdminDashboardPage)
     return <Outlet />; 
   }
 
-  // 4. Si no es un administrador, lo redirige al dashboard normal 
+  // 4. Si no es un administrador, lo redirige al dashboard normal (o a donde quieras).
+  //    Esto previene que usuarios no autorizados vean el contenido de admin.
   return <Navigate to="/dashboard" replace />;
 };
 

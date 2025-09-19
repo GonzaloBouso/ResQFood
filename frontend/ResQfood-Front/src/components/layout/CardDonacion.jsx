@@ -1,28 +1,29 @@
-import React, { useState, useContext } from 'react'; 
+// frontend/src/components/layout/CardDonacion.jsx (CÓDIGO COMPLETO Y FINAL)
+
+import React, { useState, useContext } from 'react'; // 1. Importamos useContext
 import { Link } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import API_BASE_URL from '../../api/config'; 
 import DetallesCardDonacion from './DetallesCardDonacion';
 import ConfirmModal from '../modals/ConfirmModal'; 
-import ReportModal from '../modals/ReportModal'; 
-import { ProfileStatusContext } from '../../context/ProfileStatusContext'; 
-
-import { MoreVertical, Flag } from 'lucide-react'; 
+import ReportModal from '../modals/ReportModal'; // 2. Importamos el nuevo modal de reporte
+import { ProfileStatusContext } from '../../context/ProfileStatusContext'; // 3. Importamos el contexto de perfil
+import { MoreVertical, Flag } from 'lucide-react'; // 4. Importamos los íconos necesarios
 import toast from 'react-hot-toast';
 
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/300x200.png?text=Sin+Imagen';
 
 const CardDonacion = ({ donacion }) => { 
-  
+  // Estados que ya tenías
   const [mostrarModal, setMostrarModal] = useState(false);
   const { getToken } = useAuth(); 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   
-  // ---  Estados para el menú y el modal de reporte ---
+  // --- NUEVOS ESTADOS para el menú y el modal de reporte ---
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
   
- 
+  // --- OBTENEMOS EL USUARIO ACTUAL DEL CONTEXTO ---
   const { currentUserDataFromDB } = useContext(ProfileStatusContext);
 
   if (!donacion) return null;
@@ -35,7 +36,7 @@ const CardDonacion = ({ donacion }) => {
   const nombreDonante = isDonantePopulated ? donanteId.nombre : 'Donante Anónimo';
   const inicialesDonante = nombreDonante.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
-  
+  // --- LÓGICA CLAVE: Comparamos para saber si es nuestra donación ---
   const isMyDonation = currentUserDataFromDB?._id === donanteId?._id;
 
   const handleSolicitarClick = async () => {
@@ -88,7 +89,7 @@ const CardDonacion = ({ donacion }) => {
                 </span>
               </Link>
 
-              {/* RENDERIZADO CONDICIONAL DEL MENÚ DE 3 PUNTOS  */}
+              {/* --- RENDERIZADO CONDICIONAL DEL MENÚ DE 3 PUNTOS --- */}
               {!isMyDonation && currentUserDataFromDB && (
                 <div className="relative">
                   <button 

@@ -9,7 +9,7 @@ const ConfirmModal = ({
   message,
   confirmText = "Aceptar",
   cancelText = "Cancelar",
-  isDestructive = false 
+  isDestructive = false // Para acciones peligrosas como eliminar
 }) => {
   if (!isOpen) return null;
 
