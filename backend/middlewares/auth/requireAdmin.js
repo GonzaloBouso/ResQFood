@@ -16,7 +16,7 @@ export const requireAdmin = async (req, res, next) => {
       return res.status(403).json({ message: "Acceso denegado. Se requiere rol de administrador." });
     }
 
-    // Si todo está bien, permite que la petición continúe.
+    
     next();
   } catch (error) {
     console.error("Error en el middleware requireAdmin:", error);

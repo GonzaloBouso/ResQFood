@@ -123,8 +123,7 @@ export class SolicitudController {
                 throw new Error('El formato de fecha u hora proporcionado es inválido.');
             }
 
-            // --- CORRECCIÓN CLAVE AÑADIDA ---
-            // Se marca la notificación de 'SOLICITUD' original como leída.
+            
             await Notificacion.updateMany(
                 { referenciaId: solicitudAceptada._id, tipoNotificacion: 'SOLICITUD' },
                 { $set: { leida: true, fechaLeida: new Date() } },

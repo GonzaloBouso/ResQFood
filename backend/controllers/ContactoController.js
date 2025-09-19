@@ -14,7 +14,7 @@ export class ContactoController {
     try {
       //correos: uno para el admin y otro para el usuario
 
-      // Correo de notificación para el equipo de ResQFood
+      
       const correoAlAdmin = {
         from: `"Contacto ResQFood" <${process.env.EMAIL_USER}>`,
         to: process.env.ADMIN_EMAIL,

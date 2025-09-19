@@ -143,7 +143,7 @@ export class DonacionController {
         }
     }
 
-    // --- FUNCIÓN 'getDonacionesCercanas' CORREGIDA Y COMPLETADA ---
+   
     static async getDonacionesCercanas(req, res) {
         try {
             const { lat, lon, distanciaMaxKm, q, categorias, rangoFecha } = req.query;
@@ -172,11 +172,11 @@ export class DonacionController {
                 query.$or = [{ titulo: regex }, { descripcion: regex }];
             }
 
-            // --- CORRECCIÓN CLAVE ---
+           
             // Se asegura de manejar correctamente los espacios en los nombres de las categorías.
             if (categorias) {
                 const categoriasArray = categorias.split(',').map(cat => cat.trim());
-                // Si el array contiene "Frutas y Verduras", separamos la búsqueda
+                
                 if (categoriasArray.includes("Frutas y Verduras")) {
                     const otrasCategorias = categoriasArray.filter(c => c !== "Frutas y Verduras");
                     query.$or = query.$or || [];

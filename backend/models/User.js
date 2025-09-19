@@ -96,18 +96,18 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre('save', function(next) {
     if (this.isNew || this.isModified('rol')) {
-        // Lógica de limpieza: si el rol cambia, eliminamos los datos del rol antiguo.
+      
         if (this.rol === 'LOCAL') {
             this.estadisticasGenerales = undefined;
-            // NO creamos un localData vacío. Si no existe, es porque aún no se ha completado.
+           
         } else if (this.rol === 'GENERAL') {
             this.localData = undefined;
-        } else { // Para ADMIN o null
+        } else { 
             this.localData = undefined;
             this.estadisticasGenerales = undefined;
         }
 
-        // Lógica de asignación de permisos (sin cambios, ya era correcta)
+       
         if (this.rol === 'ADMIN') {
             this.permisos = {
                 puedeSuspenderUsuarios: true,

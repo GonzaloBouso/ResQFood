@@ -27,7 +27,7 @@ export class NotificacionController {
         }
     }
 
-     // --- FUNCIÓN CON LOGS DE DEPURACIÓN ---
+    
     static async marcarSolicitudesComoLeidas(req, res) {
         console.log("--- INICIANDO marcarSolicitudesComoLeidas ---");
         try {
@@ -61,7 +61,7 @@ export class NotificacionController {
         }
     }
     
-    // --- FUNCIÓN CORREGIDA Y ROBUSTA ---
+ 
     static async marcarDonacionesComoLeidas(req, res) {
         try {
             const clerkUserId = req.auth?.userId;

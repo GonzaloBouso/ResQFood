@@ -30,7 +30,7 @@ export class VoluntarioController {
       // B. Preparamos el correo de notificación para el administrador
       const correoAlAdmin = {
         from: `"Notificaciones ResQFood" <${process.env.EMAIL_USER}>`,
-        to: process.env.ADMIN_EMAIL, // <-- Usamos la nueva variable del .env
+        to: process.env.ADMIN_EMAIL, 
         subject: `Nueva solicitud de voluntariado: ${nombre}`,
         html: `
           <h1>Nueva solicitud de voluntariado recibida</h1>

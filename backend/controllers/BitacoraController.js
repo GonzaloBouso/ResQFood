@@ -1,13 +1,11 @@
-// backend/controllers/BitacoraController.js
-
 import Bitacora from '../models/bitacoraAdmin.js';
 
 export class BitacoraController {
     static async getAllCambios(req, res) {
         try {
             const cambios = await Bitacora.find({})
-                .populate('actorId', 'nombre email') // Trae el nombre y email del admin
-                .sort({ createdAt: -1 }); // Ordena del más reciente al más antiguo
+                .populate('actorId', 'nombre email') 
+                .sort({ createdAt: -1 }); 
 
             res.status(200).json({ bitacora: cambios });
         } catch (error) {

@@ -1,4 +1,3 @@
-// backend/models/Reporte.js (CÓDIGO COMPLETO Y CORREGIDO)
 import mongoose, { Schema } from "mongoose";
 
 const ReporteSchema = new Schema(
@@ -22,5 +21,4 @@ const ReporteSchema = new Schema(
     { timestamps: true }
 );
 
-// LA SOLUCIÓN: Verifica si el modelo ya existe antes de compilarlo.
 export default mongoose.models.Reporte || mongoose.model('Reporte', ReporteSchema);

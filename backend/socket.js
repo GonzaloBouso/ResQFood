@@ -4,10 +4,9 @@ const userSocketMap = new Map();
 const clerk = new Clerk({ secretKey: process.env.CLERK_SECRET_KEY });
 let ioInstance = null;
 
-// LA SOLUCIÓN:
-// La función ahora se llama 'configureSocket' y recibe la instancia 'io' ya creada.
+
 export function configureSocket(io) {
-    ioInstance = io; // Guardamos la instancia globalmente
+    ioInstance = io; 
 
     io.use(async (socket, next) => {
         const token = socket.handshake.auth.token;
@@ -34,7 +33,7 @@ export function configureSocket(io) {
     });
 }
 
-// Estas funciones de ayuda se mantienen igual
+
 export function getIoInstance() {
     if (!ioInstance) throw new Error('Socket.IO no ha sido inicializado!');
     return ioInstance;
